@@ -12,6 +12,7 @@ dim(pops)
 #look at the data
 #genotypes[1:5,1:10]
 
+# Remove first 5 rows as this tells you information about the chromosones (aleles)
 geno = genotypes[,-c(1:5)]
 rownames(geno) = genotypes$SNP
 
@@ -57,6 +58,7 @@ my_n = nrow(my_SNP) #number of samples
 ###################################################
 ### code chunk number 4: PartB - Quantitative Genetics.Rnw:83-84
 ###################################################
+# Diploid inviduals, so we expect 2 alleles per individual
 af_est = colMeans(my_SNP)/2
 
 
