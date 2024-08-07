@@ -49,5 +49,5 @@ po/*~
 rsconnect/
 
 
-**/out/
-**/data/
+**/out
+**/data
