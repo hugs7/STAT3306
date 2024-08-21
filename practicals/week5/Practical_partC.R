@@ -21,41 +21,60 @@ t <- qnorm(alpha/2,0,1)           # Normal distribution threshold for declaring 
 ###################################################
 ### code chunk number 3: PartF - Quantitative Genetics of Disease.Rnw:38-40
 ###################################################
-f0 <- K/(1+p*(R-1))^2             # Probability of disease in those homozygote for non-risk allele aa
-PG <- c((1-p)^2, 2*p*(1-p), p^2)  # Probability of genotypes aa, Aa, AA assumes HW equilibrium
+calculate_f0 <- function(p,R) {
+    f0 <- p^2*R^2 + 2*p*(1-p)*R + (1-p)^2    # Probability of disease in those homozygote for non-risk allele aa
+    return (f0)
+}
+f0 <- calculate_f0(p,R)
+
+calculate_PG <- function(PG) {
+    PG <- c((1-p)^2, 2*p*(1-p), p^2)  # Probability of genotypes aa, Aa, AA assumes HW equilibrium
+    return (PG)
+}
+PG <- calculate_PG(PG)
 
 
 ###################################################
 ### code chunk number 4: PartF - Quantitative Genetics of Disease.Rnw:47-54
 ###################################################
-PDgivG <- c(f0, f0*R, f0*R^2)     # Probability of disease given the genotype
-PDandG <- PDgivG*PG               # Probability of  genotype and disease 
-# PDandG <- c(f0*(1-p)^2,f0*R*2*p*(1-p),f0*R^2*p^2)
-sum(PDandG); K                    # Check equals K
-PGgivD <- PDandG/K                # Probability of genotype in people who are diseased - 
-                                  # compare PGgivD to PG
-pcase <- 0.5*PGgivD[2] + PGgivD[3]  # Frequency of allele A in cases
+calculate_p_case <- function(K) {
+    PDgivG <- c(f0, f0*R, f0*R^2)     # Probability of disease given the genotype
+    PDandG <- PDgivG*PG               # Probability of genotype and disease
+    # PDandG <- c(f0*(1-p)^2,f0*R*2*p*(1-p),f0*R^2*p^2)
+    sum(PDandG); K                    # Check equals K
+    PGgivD <- PDandG/K                # Probability of genotype in people who are diseased -
+                                    # compare PGgivD to PG
+    pcase <- 0.5*PGgivD[2] + PGgivD[3]  # Frequency of allele A in cases
+    return (pcase)
+}
+pcase <- calculate_p_case(K)
 
 
 ###################################################
 ### code chunk number 5: PartF - Quantitative Genetics of Disease.Rnw:61-69
 ###################################################
-PNDgivG <- 1 - PDgivG               # Probability of being not diseased given the genotype
-PGandND <- PNDgivG * PG             # Probability of  genotype and not diseased 
-sum(PGandND); (1-K)               # Check equals 1-K
-PGgivND <- PGandND / (1-K)          # Probability of genotype in not diseased - compare PGgivND + PG
-pcont <- 0.5 * PGgivND[2] + PGgivND[3]# Frequency of allele A in controlsp
-#pcontchk = (p/(1-K))*(1-K*R/(1+p*(R-1)))
-# Checks
-p;K*pcase + (1-K)*pcont             # Check that population weighted average of pcase and pcontrol is p
+calculate_p <- function(K) {
+    PNDgivG <- 1 - PDgivG               # Probability of being not diseased given the genotype
+    PGandND <- PNDgivG * PG             # Probability of  genotype and not diseased 
+    sum(PGandND); (1-K)               # Check equals 1-K
+    PGgivND <- PGandND / (1-K)          # Probability of genotype in not diseased - compare PGgivND + PG
+    pcont <- 0.5 * PGgivND[2] + PGgivND[3]# Frequency of allele A in controlsp
+    #pcontchk = (p/(1-K))*(1-K*R/(1+p*(R-1)))
+    # Checks
+    p;K*pcase + (1-K)*pcont             # Check that population weighted average of pcase and pcontrol is p
+    return (list(pcase=pcase,pcont=pcont))
+}
+
+p_res <- calculate_p(K)
+p_res
 
 
 ###################################################
 ### code chunk number 6: PartF - Quantitative Genetics of Disease.Rnw:76-80
 ###################################################
 pcase-pcont
-OR = (pcase/(1-pcase)) / (pcont/(1-pcont))
-OR = (pcase/pcont) / ((1-pcase)/(1-pcont)) # equivalent
+OR <- (pcase/(1-pcase)) / (pcont/(1-pcont))
+OR <- (pcase/pcont) / ((1-pcase)/(1-pcont)) # equivalent
 OR
 
 
@@ -66,25 +85,47 @@ pbar <- v*pcase + (1-v)*pcont       # Mean allele frequency in case-control samp
 NCP <- (pcase-pcont) * (pcase-pcont) * 2 * N * v * (1-v) / (pbar*(1-pbar)) 
                                   # Chi-square non-centrality parameter
 pow <- pnorm(sqrt(NCP)+t)         # Power - normal distribution is sqrt of chi-square
-pow; NCP                          # Check agrees with genetic power calculator: 
 
-# N <- 10000,v<-0.5,p<-0.2,R<-1.2,K<-0.01,alpha<-5e-8,Dprime<-1
+# Check agrees with genetic power calculator: 
+pow
+NCP
+
+N <- 10000
+v <- 0.5
+p <- 0.2
+R <- 1.2
+K <- 0.4
+alpha <- 5e-8
+Dprime <- 1
 
 
 ###################################################
 ### code chunk number 8: PartF - Quantitative Genetics of Disease.Rnw:108-121 (eval = FALSE)
 ###################################################
-## # N =10000,v = 0.5,p=0.2,R=1.2,K=0.01,alpha=5e-8
-## pcont=?
-## pbar <- v*pcase+(1-v)*pcont       # Mean allele frequency in case-control sample
-## #NCP
-## NCP <- (pcase-pcont)*(pcase-pcont)*2*N*v*(1-v)/(pbar*(1-pbar)) # Chi-square non-centrality parameter
-## pow <- pnorm(sqrt(NCP)+t)         # Power - normal distribution is sqrt of chi-square
-## pow; NCP  
-## 
-## #K=0.01
-## #screened pow  = ??? ; NCP =???
-## #unscreened pow = ???; NCP =???
+# N =10000,v = 0.5,p=0.2,R=1.2,K=0.01,alpha=5e-8
+calculate_power <- function(pcont) {
+    pbar <- v*pcase+(1-v)*pcont       # Mean allele frequency in case-control sample
+    #NCP
+    NCP <- (pcase-pcont)*(pcase-pcont)*2*N*v*(1-v)/(pbar*(1-pbar)) # Chi-square non-centrality parameter
+    pow <- pnorm(sqrt(NCP)+t)         # Power - normal distribution is sqrt of chi-square
+    return (list(pow=pow,NCP=NCP))
+}
+
+screened <- calculate_power(pcont)
+unscreened <- calculate_power(p)
+
+screened_power <- screened$pow
+unscreened_power <- unscreened$pow
+screened_NCP <- screened$NCP
+unscreened_NCP <- unscreened$NCP
+screened_power
+unscreened_power
+screened_NCP
+unscreened_NCP
+
+#K=0.01
+#screened pow  = ??? ; NCP =???
+#unscreened pow = ???; NCP =???
 ## 
 ## # the code above assumes controls are screened, for unscreened controls pcont=p
 
@@ -114,10 +155,10 @@ getpower=function(p,GRR,Ncase,Ncont,A,K){
   pbar=0.5*(pcase+pcont)
   Nequiv=NCP*pbar*(1-pbar)/pdiff^2   # sample size of equal cases and controls that gives same power
   result=list(pow=pow,NCP=NCP,Nequiv=Nequiv)
-  result
+  return (result)
 }
-getpower(0.2,1.2,5000,5000,5e-8,0.01) #confirm same as programmed above
-
+res <- getpower(0.2,1.2,5000,5000,5e-8,0.01) #confirm same as programmed above
+res
 #-------------------------
 # run this section to get a power graph
 #------------------------
@@ -165,10 +206,11 @@ y_parent = g_parent + e_parent
 ###################################################
 K = 0.2
 t = qnorm(1-K, 0, 1)
+t
 
 D_parent = rep(0, N)
 D_parent[y_parent>t] = 1 # P: phenotype
-
+sum(D_parent==1)/length(D_parent)
 
 ###################################################
 ### code chunk number 13: PartF - Quantitative Genetics of Disease.Rnw:242-247 (eval = FALSE)
@@ -288,7 +330,7 @@ parents = matrix(D_parent[sample(1:N,N, replace=TRUE)],ncol=2)
 
 # parent1 affected
 affected_parent1 = which(parents[,1] == 1)
-# how many parents are affected when parent1 is
+# How many parents are affected when parent1 is
 a = apply(parents[affected_parent1,],1,sum)
 # a==2: the second parent is affected when parent1 is
 risk_affected_parent1 = sum(a==2)/length(affected_parent1)
