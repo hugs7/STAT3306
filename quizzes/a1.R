@@ -26,4 +26,8 @@ environmental <- rnorm(indiv, 0, sqrt(1 - h2))
 
 trait <- genetic + environmental
 
+# Save histogram to current directory
+filename <- "histogram.png"
+png(filename)
 hist(trait, breaks = 20)
+dev.off()
