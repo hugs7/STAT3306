@@ -110,5 +110,7 @@ logger("table read")
 # Count the number of individuals in phenotype data
 dim(pheno)
 
+head(pheno)
 
+length(which(!is.na(pheno[,3])))
 
