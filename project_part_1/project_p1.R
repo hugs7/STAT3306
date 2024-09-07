@@ -55,6 +55,11 @@ cat0 <- function(...) {
     cat(msg, "\n")
 }
 
+pad <- function(width, ...) {
+    padded <- sprintf(paste0("%-", width, "s"), paste0(...))
+    return(padded)
+}
+
 logger <- function(log_level = "INFO", ...) {
     if (!(log_level %in% allowed_log_levels)) {
         logger(default_log_level, log_level, ...)
@@ -62,7 +67,7 @@ logger <- function(log_level = "INFO", ...) {
     }
 
     timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    msg <- paste0("[", timestamp, "]  ", log_level, "  ", ...)
+    msg <- paste0("[", timestamp, "]", "  ", pad(7, log_level), ...)
     
     colour_func <- level_colours[[log_level]]
     if (is.null(colour_func)) {
