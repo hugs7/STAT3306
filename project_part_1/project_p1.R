@@ -182,7 +182,9 @@ head(pheno)
 
 length(which(!is.na(pheno[,3])))
 
-# === Missing ===
+# ====== Analysis ======
+
+# === SNP QC (Missing) ===
 
 run_plink("--missing", "missing")
 
@@ -190,23 +192,23 @@ missing_ind <- wrap_read_table(file.path(plink_out_dir, "missing.imiss"))
 dim(missing_ind)
 head(missing_ind)
 
-threshold <- 0.05
+genotype_threshold <- 0.05
 hist_out_path <- file.path(plots_out, "fmiss.png")
 wrap_histogram(missing_ind, "F_MISS", hist_out_path)
-sum(missing_ind$"F_MISS" > threshold)
+sum(missing_ind$"F_MISS" > genotype_threshold)
 
-# === From Task Sheet ===
-# Analysis
-# Analyse your data set and wridffte a detailed report about all
-# your analyses. This should include:
-# • SNP QC
+# Filter our SNPs with missingness about threshold
+
+run_plink(paste("--geno", genotype_threshold, "--make-bed"), "filtered")
 
 
-# • Sample QC (excluding checking ancestry – you can assume this
-#   has been done already)
+# Sample QC (excluding checking ancestry)
+
 
 
 # • Genome-wide association analysis of the three traits
+
+
 
 # • Describe the most associated region of the quantitative trait
 
