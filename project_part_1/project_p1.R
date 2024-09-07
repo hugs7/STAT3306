@@ -141,15 +141,36 @@ wrap_read_table <- function(path, ...) {
     read.table(path, header=TRUE, ...)
 }
 
-
-run_plink <- function(plink_args, out_name) {
+run_plink_orig_data <- function(plink_args, out_name = NULL) {
     data_files_pattern <- file.path(data_path, plink_datafile_basename)
-    logger("INFO", "Plink Data Files Pattern '", data_files_pattern, "',")
-    out_path <- file.path(plink_out_dir, out_name)
-    plink_cmd <- paste0("plink --bfile ", data_files_pattern, " ", plink_args, " --out ", out_path)
+    logger("DEBUG", "Plink Data Files Pattern '", data_files_pattern, "',")
+
+    run_plink(data_files_pattern, plink_args, out_name)
+}
+
+run_plink <- function(bfile, plink_args, out_name = NULL) { 
+    plink_base_cmd <- paste0("plink --bfile ", bfile, " ", plink_args)
+
+    if (is.null(out_name)) {
+        # Non-outputting plink command. Output to console
+        plink_cmd <- plink_base_cmd
+        std_out <- TRUE
+    } else {
+        # Outputs to file
+        out_path <- file.path(plink_out_dir, out_name)
+        logger("DEBUG", "Plink out path, '", out_path, "'.")
+        plink_cmd <- paste0(plink_base_cmd, " --out ", out_path)
+        std_out <- FALSE
+    }
+
     logger("Running: ", plink_cmd)
-    shell_call(plink_cmd)
-    logger("Plink results directed to '", out_path, "'.")
+
+    if (std_out) {
+        system(plink_cmd)
+    } else {
+        shell_call(plink_cmd)
+        logger("Plink results directed to '", out_path, "'.")
+    }
 }
 
 wrap_histogram <- function(df, col_name, out_path, width = 600, height = 350) {
@@ -198,9 +219,14 @@ wrap_histogram(missing_ind, "F_MISS", hist_out_path)
 sum(missing_ind$"F_MISS" > genotype_threshold)
 
 # Filter our SNPs with missingness about threshold
+run_plink_orig_data(paste("--geno", genotype_threshold, "--make-bed"), "filtered")
 
-run_plink(paste("--geno", genotype_threshold, "--make-bed"), "filtered")
+# Filter individuals with high missingness
+filtered_path <- file.path(plink_out_dir, "filtered")
+run_plink(filtered_path, paste("--mind", genotype_threshold, "--make-bed"), "filtered_individuals")
 
+# Check for Duplicate SNPs
+#run_plink(paste0("--list-duplicate-vars")
 
 # Sample QC (excluding checking ancestry)
 
