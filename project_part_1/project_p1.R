@@ -5,16 +5,33 @@
 # Date: 7th September 2024
 # Due Date: 2pm 04 October 2024
 
+install_if_missing <- function(packages) {
+    missing_pkgs <- packages[!(packages %in% installed.packages()[, "Package"])]
+
+    if (length(missing_pkgs) > 0) {
+        install.packages(missing_pkgs)
+    }
+    invisible(NULL)
+}
+
 # === Packages ===
 
-library(futile.logger)
+required_packages <- c("crayon")
+install_if_missing(required_packages)
+invisible(lapply(required_packages, require, character.only = TRUE))
+
 
 # === Logging Config ===
 
 default_log_level <- "INFO"
 allowed_log_levels <- c("DEBUG", "INFO", "WARN", "ERROR")
-invisible(flog.threshold(DEBUG))
-invisible(flog.appender(appender.console()))
+app_log_level <- "DEBUG"
+level_colours <- list(
+    DEBUG = crayon::cyan,
+    INFO = crayon::green,
+    WARN = crayon::yellow,
+    ERROR = crayon::red
+)
 
 # === Globals ===
 
@@ -28,17 +45,23 @@ cat0 <- function(...) {
     cat(msg, "\n")
 }
 
-log <- function(log_level = "INFO", ...) {
+logger <- function(log_level = "INFO", ...) {
     if (!(log_level %in% allowed_log_levels)) {
-        log(default_log_level, log_level, ...)
+        logger(default_log_level, log_level, ...)
         return(invisible(NULL))
     }
 
-    msg <- paste0(...)
+    timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    msg <- paste0("[", timestamp, "]  ", log_level, "  ", ...)
     
-    log_func_name <- paste0("flog.", tolower(log_level))
-    flog_func <- match.fun(log_func_name)
-    flog_func(msg)
+    colour_func <- level_colours[[log_level]]
+    if (is.null(colour_func)) {
+        logger("ERROR", "Could not identify log level")
+        colour_func <- identity
+    }
+    
+    coloured_msg <- colour_func(msg)
+    cat(coloured_msg, "\n")
     invisible(NULL)
 }
 
@@ -79,9 +102,9 @@ phenotypes <- file.path(project_data, "Phenotypes")
 # bim <- read.table(path(prac_folder, "data.bim"))
 
 pheno_path <- file.path(phenotypes, paste0(space_to_underscore(phenotype), pheno_ext))
-log("Reading phenotype path:", pheno_path)
+logger("Reading phenotype path:", pheno_path)
 pheno <- read.table(pheno_path)
-log("table read")
+logger("table read")
 
 
 # Count the number of individuals in phenotype data
