@@ -5,18 +5,47 @@
 # Date: 7th September 2024
 # Due Date: 2pm 04 October 2024
 
+# === Packages ===
+
+library(futile.logger)
+
+# === Logging Config ===
+
+default_log_level <- "INFO"
+allowed_log_levels <- c("DEBUG", "INFO", "WARN", "ERROR")
+invisible(flog.threshold(DEBUG))
+invisible(flog.appender(appender.console()))
+
+# === Globals ===
 
 phenotype <- "Fasting Glucose"
 pheno_ext <- ".phen"
 
-log <- function(...) {
+# === Functions ===
+
+cat0 <- function(...) {
     msg <- paste0(...)
     cat(msg, "\n")
+}
+
+log <- function(log_level = "INFO", ...) {
+    if (!(log_level %in% allowed_log_levels)) {
+        log(default_log_level, log_level, ...)
+        return()
+    }
+
+    msg <- paste0(...)
+    
+    log_func_name <- paste0("flog.", tolower(log_level))
+    do.call(log_func_name, list(msg))
 }
 
 space_to_underscore <- function(str) {
     gsub(" ", "_", str)
 }
+
+# === Main ===
+
 
 # Analysis
 # Analyse your data set and write a detailed report about all
@@ -50,3 +79,4 @@ phenotypes <- file.path(project_data, "Phenotypes")
 pheno_path <- file.path(phenotypes, paste0(space_to_underscore(phenotype), pheno_ext))
 log("Reading phenotype path:", pheno_path)
 pheno <- read.table(pheno_path)
+log("table read")
