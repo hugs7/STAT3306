@@ -54,3 +54,4 @@ rsconnect/
 **/plots
 **/results
 *.log
+*/plink_out

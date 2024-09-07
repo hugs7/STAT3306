@@ -38,6 +38,16 @@ level_colours <- list(
 phenotype <- "Fasting Glucose"
 pheno_ext <- ".phen"
 
+# Data Paths
+data_folder <- file.path("/data/STAT3306")
+project_data <- file.path(data_folder, "Project")
+data_path <- file.path(project_data, "Data")
+phenotypes <- file.path(project_data, "Phenotypes")
+
+# Plink
+plink_out_dir <- file.path("./plink_out")
+plink_datafile_basename <- "test"
+
 # === Functions ===
 
 cat0 <- function(...) {
@@ -47,7 +57,7 @@ cat0 <- function(...) {
 
 logger <- function(log_level = "INFO", ...) {
     if (!(log_level %in% allowed_log_levels)) {
-        logger(default_log_level, ...)
+        logger(default_log_level, log_level, ...)
         return(invisible(NULL))
     }
 
@@ -69,11 +79,55 @@ space_to_underscore <- function(str) {
     gsub(" ", "_", str)
 }
 
+shell_call <- function(...) {
+    system(..., ignore.stdout = TRUE)
+    invisible(NULL)
+}
+
+mkdir_if_not_exist <- function(path) {
+    if (!dir.exists(path)) {
+        logger("INFO", "Path '", path, "' does not exist. Creating...")
+        dir.create(path, recursive = TRUE)
+        logger("DEBUG", "Path '", path, "' created.")
+    } else {
+        logger("DEBUG", "Path '", path, "' already exists.")
+    }
+}
+
+
+run_plink <- function(plink_args, out_name) {
+    mkdir_if_not_exist(plink_out_dir)
+    data_files_pattern <- file.path(data_path, plink_datafile_basename)
+    logger("INFO", "Plink Data Files Pattern '", data_files_pattern, "',")
+    out_path <- file.path(plink_out_dir, out_name)
+    plink_cmd <- paste0("plink --bfile ", data_files_pattern, " ", plink_args, " --out ", out_path)
+    logger("Running: ", plink_cmd)
+    shell_call(plink_cmd)
+    logger("Plink results directed to '", out_path, "'.")
+}
+
+
 # === Main ===
 
+pheno_path <- file.path(phenotypes, paste0(space_to_underscore(phenotype), pheno_ext))
+logger("Reading phenotype path:", pheno_path)
+pheno <- read.table(pheno_path)
+logger("table read")
 
+# Count the number of individuals in phenotype data
+dim(pheno)
+
+head(pheno)
+
+length(which(!is.na(pheno[,3])))
+
+
+run_plink("--missing", "missing")
+
+
+# === From Task Sheet ===
 # Analysis
-# Analyse your data set and write a detailed report about all
+# Analyse your data set and wridffte a detailed report about all
 # your analyses. This should include:
 # • SNP QC
 
@@ -84,7 +138,6 @@ space_to_underscore <- function(str) {
 
 # • Genome-wide association analysis of the three traits
 
-
 # • Describe the most associated region of the quantitative trait
 
 
@@ -92,25 +145,7 @@ space_to_underscore <- function(str) {
 #   demonstrating an understanding of how the results from the
 #   three traits relate to each other.
 
-data_folder <- file.path("/data/STAT3306")
-project_data <- file.path(data_folder, "Project")
-data_path <- file.path(project_data, "Data")
-phenotypes <- file.path(project_data, "Phenotypes")
-
-
 # fam <- read.table(path(prac_folder, "data.fam"))
 # bim <- read.table(path(prac_folder, "data.bim"))
 
-pheno_path <- file.path(phenotypes, paste0(space_to_underscore(phenotype), pheno_ext))
-logger("Reading phenotype path:", pheno_path)
-pheno <- read.table(pheno_path)
-logger("table read")
-
-
-# Count the number of individuals in phenotype data
-dim(pheno)
-
-head(pheno)
-
-length(which(!is.na(pheno[,3])))
 
