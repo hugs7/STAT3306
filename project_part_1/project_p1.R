@@ -9,10 +9,14 @@
 phenotype <- "Fasting Glucose"
 pheno_ext <- ".phen"
 
+log <- function(...) {
+    msg <- paste0(...)
+    cat(msg, "\n")
+}
+
 space_to_underscore <- function(str) {
     gsub(" ", "_", str)
 }
-
 
 # Analysis
 # Analyse your data set and write a detailed report about all
@@ -44,5 +48,5 @@ phenotypes <- file.path(project_data, "Phenotypes")
 # bim <- read.table(path(prac_folder, "data.bim"))
 
 pheno_path <- file.path(phenotypes, paste0(space_to_underscore(phenotype), pheno_ext))
-cat("Reading phenotype path:", pheno_path)
+log("Reading phenotype path:", pheno_path)
 pheno <- read.table(pheno_path)
