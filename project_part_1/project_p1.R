@@ -62,6 +62,10 @@ pad <- function(width, ...) {
     return(padded)
 }
 
+quotes <- function(path) {
+    paste0("'", path, "'")
+}
+
 get_calling_function <- function(ignore_names) {
     call_stack <- sys.calls()
 
@@ -111,45 +115,45 @@ shell_call <- function(...) {
 
 mkdir_if_not_exist <- function(path) {
     if (!dir.exists(path)) {
-        logger("INFO", "Path '", path, "' does not exist. Creating...")
+        logger("INFO", "Path ", quotes(path), " does not exist. Creating...")
         dir.create(path, recursive = TRUE)
-        logger("DEBUG", "Path '", path, "' created.")
+        logger("DEBUG", "Path ", quotes(path), " created.")
     } else {
-        logger("DEBUG", "Path '", path, "' already exists.")
+        logger("DEBUG", "Path ", quotes(path), " already exists.")
     }
 }
 
 file_exists <- function(path) {
     exists <- file.exists(path)
     if (exists) {
-        logger("DEBUG", "File exists at '", path, "'.")
+        logger("DEBUG", "File exists at ", quotes(path), ".")
     } else {
-        logger("DEBUG", "File does not exist at '", path, "'.")
+        logger("DEBUG", "File does not exist at ", quotes(path), ".")
     }
     return(exists)
 }
 
 delete_file <- function(path) {
     if (file_exists(path)) {
-        logger("WARN", "Deleting file at path '", path, "'.")
+        logger("WARN", "Deleting file at path ", quotes(path), ".")
         file.remove(path)
     }
 }
 
 wrap_read_table <- function(path, header = TRUE, ...) {
     if (!file_exists(path)) {
-        logger("ERROR", "Could not find file to read at '", path, "'.")
+        logger("ERROR", "Could not find file to read at ", quotes(path), ".")
         return(NULL)
     }
 
-    logger("DEBUG", "Reading table at '", path, "'.")
+    logger("DEBUG", "Reading table at ", quotes(path), ".")
 
     read.table(path, ...)
 }
 
 run_plink_orig_data <- function(plink_args, out_name = NULL) {
     data_files_pattern <- file.path(data_path, plink_datafile_basename)
-    logger("DEBUG", "Plink Data Files Pattern '", data_files_pattern, "',")
+    logger("DEBUG", "Plink Data Files Pattern ", quotes(data_files_pattern), ".")
 
     run_plink(data_files_pattern, plink_args, out_name)
 }
@@ -164,18 +168,18 @@ run_plink <- function(bfile, plink_args, out_name = NULL) {
     } else {
         # Outputs to file
         out_path <- file.path(plink_out_dir, out_name)
-        logger("DEBUG", "Plink out path, '", out_path, "'.")
+        logger("DEBUG", "Plink out path, ", quotes(out_path), ".")
         plink_cmd <- paste0(plink_base_cmd, " --out ", out_path)
         std_out <- FALSE
     }
 
-    logger("Running: ", plink_cmd)
+    logger("Running: ", quotes(plink_cmd))
 
     if (std_out) {
         system(plink_cmd)
     } else {
         shell_call(plink_cmd)
-        logger("Plink results directed to '", out_path, "'.")
+        logger("Plink results directed to ", quotes(out_path), ".")
     }
 }
 
