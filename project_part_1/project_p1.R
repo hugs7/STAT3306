@@ -47,7 +47,7 @@ cat0 <- function(...) {
 
 logger <- function(log_level = "INFO", ...) {
     if (!(log_level %in% allowed_log_levels)) {
-        logger(default_log_level, log_level, ...)
+        logger(default_log_level, ...)
         return(invisible(NULL))
     }
 
