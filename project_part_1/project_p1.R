@@ -20,7 +20,6 @@ required_packages <- c("crayon")
 install_if_missing(required_packages)
 invisible(lapply(required_packages, require, character.only = TRUE))
 
-
 # === Logging Config ===
 
 default_log_level <- "INFO"
@@ -137,13 +136,15 @@ delete_file <- function(path) {
     }
 }
 
-wrap_read_table <- function(path, ...) {
+wrap_read_table <- function(path, header = TRUE, ...) {
     if (!file_exists(path)) {
         logger("ERROR", "Could not find file to read at '", path, "'.")
         return(NULL)
     }
 
-    read.table(path, header=TRUE, ...)
+    logger("DEBUG", "Reading table at '", path, "'.")
+
+    read.table(path, ...)
 }
 
 run_plink_orig_data <- function(plink_args, out_name = NULL) {
