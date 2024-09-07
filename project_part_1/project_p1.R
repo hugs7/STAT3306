@@ -31,13 +31,15 @@ cat0 <- function(...) {
 log <- function(log_level = "INFO", ...) {
     if (!(log_level %in% allowed_log_levels)) {
         log(default_log_level, log_level, ...)
-        return()
+        return(invisible(NULL))
     }
 
     msg <- paste0(...)
     
     log_func_name <- paste0("flog.", tolower(log_level))
-    do.call(log_func_name, list(msg))
+    flog_func <- match.fun(log_func_name)
+    flog_func(msg)
+    invisible(NULL)
 }
 
 space_to_underscore <- function(str) {
