@@ -82,3 +82,10 @@ pheno_path <- file.path(phenotypes, paste0(space_to_underscore(phenotype), pheno
 log("Reading phenotype path:", pheno_path)
 pheno <- read.table(pheno_path)
 log("table read")
+
+
+# Count the number of individuals in phenotype data
+dim(pheno)
+
+
+
