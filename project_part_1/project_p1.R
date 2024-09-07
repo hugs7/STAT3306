@@ -201,87 +201,107 @@ init()
 
 # === Main ===
 
-pheno_path <- file.path(phenotypes, paste0(space_to_underscore(phenotype), pheno_ext))
-logger("Reading phenotype path:", pheno_path)
-pheno <- read.table(pheno_path)
-logger("table read")
-
-# Count the number of individuals in phenotype data
-dim(pheno)
-
-head(pheno)
-
-length(which(!is.na(pheno[,3])))
-
 # ====== Analysis ======
 
-# === SNP QC (Missing) ===
+analysis <- function() {
+    # === SNP QC (Missing) ===
 
-missing_name <- "missing"
-run_plink("--missing", missing_name)
+    missing_name <- "missing"
+    run_plink("--missing", missing_name)
 
-missing_ind <- wrap_read_table(file.path(plink_out_dir, paste0(missing_name, ".imiss")))
-dim(missing_ind)
-head(missing_ind)
+    missing_ind <- wrap_read_table(file.path(plink_out_dir, paste0(missing_name, ".imiss")))
+    dim(missing_ind)
+    head(missing_ind)
 
-genotype_threshold <- 0.05
-hist_out_path <- file.path(plots_out, "fmiss.png")
-wrap_histogram(missing_ind, "F_MISS", hist_out_path)
-sum(missing_ind$"F_MISS" > genotype_threshold)
+    genotype_threshold <- 0.05
+    hist_out_path <- file.path(plots_out, "fmiss.png")
+    wrap_histogram(missing_ind, "F_MISS", hist_out_path)
+    sum(missing_ind$"F_MISS" > genotype_threshold)
 
-# Filter our SNPs with missingness about threshold
-filtered_snps_name <- "filtered"
-run_plink_orig_data(paste("--geno", genotype_threshold, "--make-bed"), filtered_snps_name)
+    # Filter our SNPs with missingness about threshold
+    filtered_snps_name <- "filtered"
+    run_plink_orig_data(paste("--geno", genotype_threshold, "--make-bed"), filtered_snps_name)
 
-# === Sample QC (excluding checking ancestry) ===
+    # === Sample QC (excluding checking ancestry) ===
 
-# Filter individuals with high missingness
-filtered_path <- file.path(plink_out_dir, filtered_snps_name)
-filtered_indvs_name <- "filtered_individuals"
-run_plink(filtered_path, paste("--mind", genotype_threshold, "--make-bed"), filtered_indvs_name)
+    # Filter individuals with high missingness
+    filtered_path <- file.path(plink_out_dir, filtered_snps_name)
+    filtered_indvs_name <- "filtered_individuals"
+    run_plink(filtered_path, paste("--mind", genotype_threshold, "--make-bed"), filtered_indvs_name)
 
-# Check for Duplicate SNPs
-filtered_indvs_path <- file.path(plink_out_dir, filtered_indvs_name)
-dup_vars_name <- "duplicate_vars"
-run_plink(filtered_indvs_path, "--chr X --list-duplicate-vars", dup_vars_name)
+    # Check for Duplicate SNPs
+    filtered_indvs_path <- file.path(plink_out_dir, filtered_indvs_name)
+    dup_vars_name <- "duplicate_vars"
+    run_plink(filtered_indvs_path, "--chr X --list-duplicate-vars", dup_vars_name)
 
-# Check sex
-check_sex_name <- "check_sex"
-run_plink(filtered_indvs_path, "--check-sex", check_sex_name)
+    # Check sex
+    check_sex_name <- "check_sex"
+    run_plink(filtered_indvs_path, "--check-sex", check_sex_name)
 
-# === Genome-wide association analysis of the three traits ===
+    # === Genome-wide association analysis of the three traits ===
 
-# Quantitative Trait
-quant_trait_res_name <- "quantitative_trait_results"
-run_plink_orig_data("--assoc", quant_trait_res_name)
+    # Quantitative Trait
+    quant_trait_res_name <- "quantitative_trait_results"
+    run_plink_orig_data("--assoc", quant_trait_res_name)
 
-# Binary Trait (top 20%)
-binary_20_name <- "binary_trait_20_results"
-run_plink_orig_data("--pheno recorded_pheno.txt --assoc", binary_20_name)
+    # Binary Trait (top 20%)
+    binary_20_name <- "binary_trait_20_results"
+    run_plink_orig_data("--pheno recorded_pheno.txt --assoc", binary_20_name)
 
-# Binary Trait (top and bottom 30%)
-binary_30_name <- "binary_trait_30_results"
-run_plink_orig_data("--pheno recorded_pheno_30.txt --assoc", binary_30_name)
+    # Binary Trait (top and bottom 30%)
+    binary_30_name <- "binary_trait_30_results"
+    run_plink_orig_data("--pheno recorded_pheno_30.txt --assoc", binary_30_name)
 
-# === Describe the most associated region of the quantitative trait ===
+    # === Describe the most associated region of the quantitative trait ===
 
-# Manhattan Plot
-quant_traits_res_path <- file.path(plink_out_dir, paste0(quant_trait_res_name, ".assoc"))
-gwas_results <- wrap_read_table(quant_traits_res_path)
-if (!is.null(gwas_results)) {
-    manhattan_plot_path <- file.path(plots_out, "manhattan.png")
-    wrap_histogram(gwas_results, "P", manhattan_plot_path)
+    # Manhattan Plot
+    quant_traits_res_path <- file.path(plink_out_dir, paste0(quant_trait_res_name, ".assoc"))
+    gwas_results <- wrap_read_table(quant_traits_res_path)
+    if (!is.null(gwas_results)) {
+        manhattan_plot_path <- file.path(plots_out, "manhattan.png")
+        wrap_histogram(gwas_results, "P", manhattan_plot_path)
+    }
+
+    # A comparison of the results for these different traits sets
+    #   demonstrating an understanding of how the results from the
+    #   three traits relate to each other.
+
+    binary_20_path <- file.path(plink_out_dir, paste0(binary_20_name, ".assoc"))
+    binary_20_results <- wrap_read_table(binary_20_path)
+
+    binary_30_path <- file.path(plink_out_dir, paste0(binary_30_name, ".assoc"))
+    binary_30_results <- wrap_read_table(binary_30_path)
+
 }
 
-# A comparison of the results for these different traits sets
-#   demonstrating an understanding of how the results from the
-#   three traits relate to each other.
+read_covariates <- function() {
+    age_path <- file.path(data_path, "age.txt")
+    gender_path <- file.path(data_path, "gender.txt")
 
-binary_20_path <- file.path(plink_out_dir, paste0(binary_20_name, ".assoc"))
-binary_20_results <- wrap_read_table(binary_20_path)
+    age <- wrap_read_table(age_path, header = FALSE, col.names = c("FID", "IID", "Age"))
+    gender <- wrap_read_table(gender_path, header = FALSE, col.names = c("FID", "IID", "Gender"))
 
-binary_30_path <- file.path(plink_out_dir, paste0(binary_30_name, ".assoc"))
-binary_30_results <- wrap_read_table(binary_30_path)
+    return(c(age, gender))
+}
+
+read_phenotypes <- function() {
+    phenotype_file_prefix <- space_to_underscore(phenotype)
+
+    get_pheno_path <- function(pheno_suffix) {
+        pheno_file_name <- paste0(phenotype_file_prefix, pheno_suffix, pheno_ext)
+        file.path(phenotypes, pheno_file_name)
+    }
+
+    pheno_cont_path <- get_pheno_path("")
+    pheno <- wrap_read_table(pheno_cont_path, col.names = c("FID", "IID", "Glucose"))
+
+    binary1_path <- get_pheno_path("_binary1")
+    binary1 <- wrap_read_table(binary1_path, col.names = c("FID", "IID", "Binary1"))
+    binary2_path <- get_pheno_path("_binary2")
+    binary2 <- wrap_read_table(binary2_path, col.names = c("FID", "IID", "Binary2"))
+}
+
+read_phenotypes()
 
 logger("DONE!")
 
