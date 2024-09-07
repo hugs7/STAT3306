@@ -129,6 +129,11 @@ mkdir_if_not_exist <- function(path) {
 }
 
 file_exists <- function(path) {
+    logger("DEBUG", "Checking if file exists at path ", quotes(path), ".")
+    if (length(path) == 0) {
+        logger("WARN", "Path is empty")
+        return(FALSE)
+    }
     exists <- file.exists(path)
     if (exists) {
         logger("DEBUG", "File exists at ", quotes(path), ".")
@@ -234,6 +239,10 @@ init()
 quality_control <- function(genotype_threshold) {
     logger("Performing Quality Control")
 
+    get_removed_rows <- function(missing_ind, ind_to_remove) {
+        missing_ind[ind_to_remove, c("FID", "IID")]
+    }
+
     excess_missing_genotypes <- function(histogram) {
         logger("Checking missing data")
         missing_name <- "missing"
@@ -252,9 +261,9 @@ quality_control <- function(genotype_threshold) {
         }
 
         ind_to_remove <- which(missing_ind$"F_MISS" > genotype_threshold)
-        file <- missing_ind[ind_to_remove, c("FID", "IID")]
+        file <- get_removed_rows(missing_ind, ind_to_remove)
         missing_ind_file_path <- file.path(plink_out_dir, "remove.missing.samples.txt")
-        wrap_write_table(file, missing_ind_file_path, col.names=FALSE, quote = FALSE)
+        wrap_write_table(file, missing_ind_file_path, col.names = FALSE, quote = FALSE)
         return(missing_ind_file_path)
     }
 
@@ -272,6 +281,13 @@ quality_control <- function(genotype_threshold) {
             wrap_histogram(het$"F", hist_out_path)
             wrap_scatter(0.05, "red", abs(het$"F"))
         }
+
+        het_threshold <- 0.2
+        ind_to_remove <- which(abs(het$"F") > het_threshold)
+        file <- get_removed_rows(het, ind_to_remove)
+        het_ind_file_path <- file.path(plink_out_dir, "remove.het.samples.txt")
+        wrap_write_table(file, het_ind_file_path, col.names = FALSE, quote = FALSE)
+        return(het_ind_file_path)
     }
 
     related_samples <- function() {
@@ -280,6 +296,27 @@ quality_control <- function(genotype_threshold) {
 
     ancestry_outliers <- function() {
 
+    }
+
+    combine_remove_files <- function(...) {
+        logger("Combining Remove Files...")
+
+        file_paths <- list(...)
+
+        combined_ind <- data.frame(FID = numeric(), IID = numeric())
+
+        for (file_path in file_paths) {
+            ind <- wrap_read_table(file_path, FALSE)
+            colnames(ind) <- c("FID", "IID")
+            combined_ind <- rbind(combined_ind, ind)
+        }
+        
+        # Remove Duplicates
+        combined_ind <- unique(combined_ind)
+
+        combined_file_out_path <- file.path(plink_out_dir, "remove.combined.samples.txt")
+        wrap_write_table(combined_ind, combined_file_out_path, col.names = FALSE, quote = FALSE)
+        return(combined_file_out_path)
     }
 
 
@@ -292,7 +329,10 @@ quality_control <- function(genotype_threshold) {
     }
 
     missing_ind_path <- excess_missing_genotypes(FALSE)
-    remove_bad_individuals(missing_ind_path)
+    het_ind_path <- outlying_homozygosity(FALSE)
+
+    combined_ind_path <- combine_remove_files(missing_ind_path, het_ind_path)
+    remove_bad_individuals(combined_ind_path)
 }
 
 
