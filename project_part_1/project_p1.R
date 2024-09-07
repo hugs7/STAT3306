@@ -207,9 +207,10 @@ length(which(!is.na(pheno[,3])))
 
 # === SNP QC (Missing) ===
 
-run_plink("--missing", "missing")
+missing_name <- "missing"
+run_plink("--missing", missing_name)
 
-missing_ind <- wrap_read_table(file.path(plink_out_dir, "missing.imiss"))
+missing_ind <- wrap_read_table(file.path(plink_out_dir, paste0(missing_name, ".imiss")))
 dim(missing_ind)
 head(missing_ind)
 
@@ -219,32 +220,60 @@ wrap_histogram(missing_ind, "F_MISS", hist_out_path)
 sum(missing_ind$"F_MISS" > genotype_threshold)
 
 # Filter our SNPs with missingness about threshold
-run_plink_orig_data(paste("--geno", genotype_threshold, "--make-bed"), "filtered")
+filtered_snps_name <- "filtered"
+run_plink_orig_data(paste("--geno", genotype_threshold, "--make-bed"), filtered_snps_name)
+
+# === Sample QC (excluding checking ancestry) ===
 
 # Filter individuals with high missingness
-filtered_path <- file.path(plink_out_dir, "filtered")
-run_plink(filtered_path, paste("--mind", genotype_threshold, "--make-bed"), "filtered_individuals")
+filtered_path <- file.path(plink_out_dir, filtered_snps_name)
+filtered_indvs_name <- "filtered_individuals"
+run_plink(filtered_path, paste("--mind", genotype_threshold, "--make-bed"), filtered_indvs_name)
 
 # Check for Duplicate SNPs
-filtered_indvs_path <- file.path(plink_out_dir, "filtered_individuals")
-run_plink(filtered_indvs_path, "--list-duplicate-vars", "duplicate_vars")
+filtered_indvs_path <- file.path(plink_out_dir, filtered_indvs_name)
+dup_vars_name <- "duplicate_vars"
+run_plink(filtered_indvs_path, "--chr X --list-duplicate-vars", dup_vars_name)
 
-# Sample QC (excluding checking ancestry)
+# Check sex
+check_sex_name <- "check_sex"
+run_plink(filtered_indvs_path, "--check-sex", check_sex_name)
 
+# === Genome-wide association analysis of the three traits ===
 
+# Quantitative Trait
+quant_trait_res_name <- "quantitative_trait_results"
+run_plink_orig_data("--assoc", quant_trait_res_name)
 
-# • Genome-wide association analysis of the three traits
+# Binary Trait (top 20%)
+binary_20_name <- "binary_trait_20_results"
+run_plink_orig_data("--pheno recorded_pheno.txt --assoc", binary_20_name)
 
+# Binary Trait (top and bottom 30%)
+binary_30_name <- "binary_trait_30_results"
+run_plink_orig_data("--pheno recorded_pheno_30.txt --assoc", binary_30_name)
 
+# === Describe the most associated region of the quantitative trait ===
 
-# • Describe the most associated region of the quantitative trait
+# Manhattan Plot
+quant_traits_res_path <- file.path(plink_out_dir, paste0(quant_trait_res_name, ".assoc"))
+gwas_results <- wrap_read_table(quant_traits_res_path)
+manhattan_plot_path <- file.path(plots_out, "manhattan.png")
+wrap_histogram(gwas_results, "P", manhattan_plot_path)
 
-
-# • A comparison of the results for these different traits sets
+# A comparison of the results for these different traits sets
 #   demonstrating an understanding of how the results from the
 #   three traits relate to each other.
 
-# fam <- read.table(path(prac_folder, "data.fam"))
-# bim <- read.table(path(prac_folder, "data.bim"))
+quant_results <- wrap_read_table(quant_trait_res_path)
 
+binary_20_path <- file.path(plink_out_dir, paste0(binary_20_name, ".assoc"))
+binary_20_results <- wrap_read_table(binary_20_path)
+
+binary_30_path <- file.path(plink_out_dir, paste0(binary_30_name, ".assoc"))
+binary_30_results <- wrap_read_table(binary_30_path)
+
+
+
+logger("DONE!")
 
