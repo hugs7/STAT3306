@@ -60,14 +60,32 @@ pad <- function(width, ...) {
     return(padded)
 }
 
+get_calling_function <- function(ignore_names) {
+    call_stack <- sys.calls()
+
+    # Skip this function
+    for (i in 2:length(call_stack)) {
+        current_call <- call_stack[[i]]
+        func_name <- as.character(current_call[[1]])
+
+        if (!(func_name %in% ignore_names)) {
+            return(func_name)
+        }
+    }
+
+    return("Global Environment")
+}
+
 logger <- function(log_level = "INFO", ...) {
     if (!(log_level %in% allowed_log_levels)) {
         logger(default_log_level, log_level, ...)
         return(invisible(NULL))
     }
-
+    
+    logger_func_name <- deparse(sys.call()[[1]])
+    parent_call <- get_calling_function(c(logger_func_name))
     timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    msg <- paste0("[", timestamp, "]", "  ", pad(7, log_level), ...)
+    msg <- paste0("[", timestamp, "]", "  ", pad(7, log_level), pad(25, parent_call), ...)
     
     colour_func <- level_colours[[log_level]]
     if (is.null(colour_func)) {
