@@ -48,6 +48,9 @@ phenotypes <- file.path(project_data, "Phenotypes")
 plink_out_dir <- file.path("./plink_out")
 plink_datafile_basename <- "test"
 
+# Plots
+plots_out <- file.path("./plots")
+
 # === Functions ===
 
 cat0 <- function(...) {
@@ -117,9 +120,29 @@ mkdir_if_not_exist <- function(path) {
     }
 }
 
+file_exists <- function(path) {
+    exists <- file.exists(path)
+    if (exists) {
+        logger("DEBUG", "File exists at '", path, "'.")
+    } else {
+        logger("DEBUG", "File does not exist at '", path, "'.")
+    }
+    return(exists)
+}
+
+delete_file <- function(path) {
+    if (file_exists(path)) {
+        logger("WARN", "Deleting file at path '", path, "'.")
+        file.remove(path)
+    }
+}
+
+wrap_read_table <- function(path, ...) {
+    read.table(path, header=TRUE, ...)
+}
+
 
 run_plink <- function(plink_args, out_name) {
-    mkdir_if_not_exist(plink_out_dir)
     data_files_pattern <- file.path(data_path, plink_datafile_basename)
     logger("INFO", "Plink Data Files Pattern '", data_files_pattern, "',")
     out_path <- file.path(plink_out_dir, out_name)
@@ -129,6 +152,21 @@ run_plink <- function(plink_args, out_name) {
     logger("Plink results directed to '", out_path, "'.")
 }
 
+wrap_histogram <- function(df, col_name, out_path, width = 600, height = 350) {
+    delete_file(out_path)
+    png(out_path, width, height)
+    hist(df[[col_name]], main = paste("Histogram of", col_name), xlab = col_name)
+    dev.off()
+}
+
+init <- function() {
+    logger("INFO", "Initialising directories...")
+    mkdir_if_not_exist(plots_out)
+    mkdir_if_not_exist(plink_out_dir)
+    logger("INFO", "Initialisation complete!")
+}
+
+init()
 
 # === Main ===
 
@@ -144,9 +182,18 @@ head(pheno)
 
 length(which(!is.na(pheno[,3])))
 
+# === Missing ===
 
 run_plink("--missing", "missing")
 
+missing_ind <- wrap_read_table(file.path(plink_out_dir, "missing.imiss"))
+dim(missing_ind)
+head(missing_ind)
+
+threshold <- 0.05
+hist_out_path <- file.path(plots_out, "fmiss.png")
+wrap_histogram(missing_ind, "F_MISS", hist_out_path)
+sum(missing_ind$"F_MISS" > threshold)
 
 # === From Task Sheet ===
 # Analysis
