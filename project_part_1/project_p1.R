@@ -67,7 +67,7 @@ get_calling_function <- function(ignore_names) {
     call_stack <- sys.calls()
 
     # Skip this function
-    for (i in 2:length(call_stack)) {
+    for (i in (length(call_stack)-1):1) {
         current_call <- call_stack[[i]]
         func_name <- as.character(current_call[[1]])
 
