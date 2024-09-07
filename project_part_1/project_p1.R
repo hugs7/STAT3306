@@ -138,6 +138,11 @@ delete_file <- function(path) {
 }
 
 wrap_read_table <- function(path, ...) {
+    if (!file_exists(path)) {
+        logger("ERROR", "Could not find file to read at '", path, "'.")
+        return(NULL)
+    }
+
     read.table(path, header=TRUE, ...)
 }
 
@@ -258,22 +263,20 @@ run_plink_orig_data("--pheno recorded_pheno_30.txt --assoc", binary_30_name)
 # Manhattan Plot
 quant_traits_res_path <- file.path(plink_out_dir, paste0(quant_trait_res_name, ".assoc"))
 gwas_results <- wrap_read_table(quant_traits_res_path)
-manhattan_plot_path <- file.path(plots_out, "manhattan.png")
-wrap_histogram(gwas_results, "P", manhattan_plot_path)
+if (!is.null(gwas_results)) {
+    manhattan_plot_path <- file.path(plots_out, "manhattan.png")
+    wrap_histogram(gwas_results, "P", manhattan_plot_path)
+}
 
 # A comparison of the results for these different traits sets
 #   demonstrating an understanding of how the results from the
 #   three traits relate to each other.
-
-quant_results <- wrap_read_table(quant_trait_res_path)
 
 binary_20_path <- file.path(plink_out_dir, paste0(binary_20_name, ".assoc"))
 binary_20_results <- wrap_read_table(binary_20_path)
 
 binary_30_path <- file.path(plink_out_dir, paste0(binary_30_name, ".assoc"))
 binary_30_results <- wrap_read_table(binary_30_path)
-
-
 
 logger("DONE!")
 
