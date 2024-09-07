@@ -226,7 +226,8 @@ filtered_path <- file.path(plink_out_dir, "filtered")
 run_plink(filtered_path, paste("--mind", genotype_threshold, "--make-bed"), "filtered_individuals")
 
 # Check for Duplicate SNPs
-#run_plink(paste0("--list-duplicate-vars")
+filtered_indvs_path <- file.path(plink_out_dir, "filtered_individuals")
+run_plink(filtered_indvs_path, "--list-duplicate-vars")
 
 # Sample QC (excluding checking ancestry)
 
