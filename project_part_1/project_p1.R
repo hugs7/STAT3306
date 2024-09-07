@@ -7,3 +7,23 @@
 
 
 phenotype <- "Fasting Glucose"
+
+# Analysis
+# Analyse your data set and write a detailed report about all
+# your analyses. This should include:
+# • SNP QC
+
+
+# • Sample QC (excluding checking ancestry – you can assume this
+#   has been done already)
+
+
+# • Genome-wide association analysis of the three traits
+
+
+# • Describe the most associated region of the quantitative trait
+
+
+# • A comparison of the results for these different traits sets
+#   demonstrating an understanding of how the results from the
+#   three traits relate to each other.
