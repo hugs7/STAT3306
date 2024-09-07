@@ -1,0 +1,28 @@
+<!--
+Report
+Write a report, of approximately 4 pages (excluding Supplementary data), in the
+format of a technical report: Intro, Methods, Results, Discussion and
+Supplementary material.
+
+The Intro should be short, briefly summarising the project.
+
+The Methods section of your report should include a description of the
+preparation of the data, the statistical models used in your analysis and of the
+statistical tests conducted. Provide details and explain every analysis. For
+example, any limitations in the data that affect your ability to perform
+standard QC should be described.
+
+Results should only present important results of your analysis. This is usually
+written in a “stating” fashion, i.e. no judgements, just facts (we found, we
+observed, etc). Your results can be illustrated by important figures (usually 2-3,
+e.g. a Manhattan plot of your analysis). Non-important figures (e.g. a
+figure on missingness percentage) will go into Supplementary material.
+
+Supplementary material: Include the relevant part of your code (please do NOT
+include log files). It should include your plink and R commands so they can be
+checked and reproduced if needed. Combine everything into a single document.
+This is the only part of your report that should include code. Extra figures
+should be included in this part.
+
+Please combine everything into a single pdf and submit through Blackboard
+-->
