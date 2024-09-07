@@ -10,7 +10,7 @@ bim <- read.table(paste0(prac_folder, "data.bim"))
 pheno <- read.table(paste0(prac_folder, "data.pheno"))
 
 
-#count number of individuals
+#count number of individuals 
 dim(fam)
 head(fam)
 
@@ -45,3 +45,5 @@ head(lmiss)
 png("lmiss.png", width=600, height=350)
 hist(lmiss$"F_MISS")
 dev.off()
+
+
