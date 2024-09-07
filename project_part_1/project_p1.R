@@ -7,6 +7,12 @@
 
 
 phenotype <- "Fasting Glucose"
+pheno_ext <- ".phen"
+
+space_to_underscore <- function(str) {
+    gsub(" ", "_", str)
+}
+
 
 # Analysis
 # Analyse your data set and write a detailed report about all
@@ -27,3 +33,16 @@ phenotype <- "Fasting Glucose"
 # • A comparison of the results for these different traits sets
 #   demonstrating an understanding of how the results from the
 #   three traits relate to each other.
+
+data_folder <- file.path("/data/STAT3306")
+project_data <- file.path(data_folder, "Project")
+data_path <- file.path(project_data, "Data")
+phenotypes <- file.path(project_data, "Phenotypes")
+
+
+# fam <- read.table(path(prac_folder, "data.fam"))
+# bim <- read.table(path(prac_folder, "data.bim"))
+
+pheno_path <- file.path(phenotypes, paste0(space_to_underscore(phenotype), pheno_ext))
+cat("Reading phenotype path:", pheno_path)
+pheno <- read.table(pheno_path)
