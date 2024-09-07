@@ -4,3 +4,6 @@
 # Author: Hugo Burton
 # Date: 7th September 2024
 # Due Date: 2pm 04 October 2024
+
+
+phenotype <- "Fasting Glucose"
