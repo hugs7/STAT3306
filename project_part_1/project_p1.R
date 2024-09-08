@@ -324,7 +324,7 @@ init()
 pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"), 
                              "hardy", "het", "mind", "pheno", "covar", 
                              list("dup_vars" = "list-duplicate-vars"), "out", 
-                             "bfile", "chr", "freq", "exclude"), 
+                             "bfile", "chr", "freq", "exclude", "mpheno"), 
                         named_flag)
 
 exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
@@ -430,15 +430,15 @@ quality_control <- function() {
     het_ind_path <- outlying_homozygosity(FALSE)
 
     combined_ind_path <- combine_remove_files(missing_ind_path, het_ind_path)
-    qc_data_path <- remove_bad_individuals(combined_ind_path)
-    return(qc_data_path)
+    data_subset_path <- remove_bad_individuals(combined_ind_path)
+    return(data_subset_path)
 }
 
-sample_qc <- function(qc_data_path) {
+sample_qc <- function(data_subset_path) {
     hw_eq <- function() {
         logger("Computing Hardy-Weinberg Equilibrium")
         hwe_name <- "hwe"
-        hwe_basename <- plink(qc_data_path, pl_fgs$hardy, hwe_name)
+        hwe_basename <- plink(data_subset_path, pl_fgs$hardy, hwe_name)
         
         hwe_path <- add_extension(hwe_basename, exts$hwe)
         hwe <- wrap_read_table(hwe_path)
@@ -448,7 +448,7 @@ sample_qc <- function(qc_data_path) {
     min_allele_freq <- function() {
         logger("Computing Minor Allele Frequencies")
         min_allele_name <- "minor_allele_freq"
-        min_allele_basename <- plink(qc_data_path, pl_fgs$freq, min_allele_name)
+        min_allele_basename <- plink(data_subset_path, pl_fgs$freq, min_allele_name)
 
         min_allele_path <- add_extension(min_allele_basename, exts$frq)
         freq <- wrap_read_table(min_allele_path)
@@ -467,7 +467,7 @@ sample_qc <- function(qc_data_path) {
         logger("INFO", "Excluding SNPs...")
         out_name <- "test_qc"
         plink_args <- paste(pl_fgs$mb, pl_fgs$exclude, remove_snps_path)
-        plink(qc_data_path, plink_args, out_name)
+        plink(data_subset_path, plink_args, out_name)
     }
 
     compare_minor_allele_freqs <- function(freq, plot) {
@@ -495,20 +495,27 @@ sample_qc <- function(qc_data_path) {
     freq <- min_allele_freq()
     
     remove_snps_path <- remove_snps(hwe, freq)
-    exclude_snps(remove_snps_path)
+    qc_data_path <- exclude_snps(remove_snps_path)
 
     compare_minor_allele_freqs(freq, FALSE)
-
-    # Filter individuals with high missingness
-    #plink(filtered_path, paste(pl_fgs$mind, genotype_threshold, pl_fgs$mb), filtered_indvs_name)
+    
+    return(qc_data_path)
 }
 
-gwas <- function() {
+gwas <- function(qc_data_path) {
     phenotype_file_prefix <- space_to_underscore(phenotype)
 
     get_pheno_path <- function(pheno_suffix) {
         pheno_file_name <- paste0(phenotype_file_prefix, pheno_suffix, exts$pheno)
         file.path(phenotypes, pheno_file_name)
+    }
+
+    gwas_pheno <- function() {
+        logger("Performing Pheno on GWAS...")
+        alt_mpheno <- 1
+        plink_args <- paste(pl_fgs$assoc, pl_fgs$pheno, pheno_path, pl_fgs$mpheno, alt_mpheno)
+        out_name <- "gwas_pheno_1"
+        plink(qc_data_path, plink_args, out_name)
     }
 
     trait_analysis <- function(include_covariates) {
@@ -538,7 +545,8 @@ gwas <- function() {
         plink_orig_data(get_plink_args(binary2_path), "binary_trait_30_results")
     }
 
-    trait_analysis(TRUE)
+    #trait_analysis(TRUE)
+    gwas_pheno()
 }
 
 run_analysis <- function() {
@@ -607,8 +615,9 @@ read_phenotypes <- function() {
 
 #run_analysis()
 
-qc_data_path <- quality_control()
-sample_qc(qc_data_path)
+data_subset_path <- quality_control()
+qc_data_path <- sample_qc(data_subset_path)
+gwas(qc_data_path)
 
 logger("DONE!")
 
