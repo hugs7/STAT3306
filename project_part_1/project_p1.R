@@ -239,26 +239,26 @@ remove_indices <- function(missing_indices, thresh_col_name, threshold, out_col_
     return(missing_ind_file_path)
 }
 
-exts$check <- function(out_name, exts$expected, add_if_missing = TRUE) {
-    if (!endsWith(out_name, exts$expected)) {
-        logger("WARN", "Out name ", quotes(out_name), " does not end with ", quotes(exts$expected), ".")
+check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
+    if (!endsWith(out_name, expected_ext)) {
+        logger("WARN", "Out name ", quotes(out_name), " does not end with ", quotes(expected_ext), ".")
         if (add_if_missing) {
-            logger("INFO", "Adding ", quotes(exts$expected), " to file name")   
-            out_name <- paste0(out_name, exts$expected)
+            logger("INFO", "Adding ", quotes(expected_ext), " to file name")   
+            out_name <- paste0(out_name, expected_ext)
         }
     } else {
-        logger("DEBUG", "Out name ", quotes(out_name), " contains extension ", quotes(exts$expected), ".")
+        logger("DEBUG", "Out name ", quotes(out_name), " contains extension ", quotes(expected_ext), ".")
     }
 
     return(out_name)
 }
 
-exts$check_png <- function(out_name, add_if_missing = TRUE) {
-    exts$check(out_name, exts$png, add_if_missing)
+check_png_ext <- function(out_name, add_if_missing = TRUE) {
+    check_ext(out_name, exts$png, add_if_missing)
 }
 
-exts$check_txt <- function(out_name, add_if_missing = TRUE) {
-    exts$check(out_name, exts$txt, add_if_missing)
+check_txt_ext <- function(out_name, add_if_missing = TRUE) {
+    check_ext(out_name, exts$txt, add_if_missing)
 }
 
 log_indvs_to_remove <- function(num_indvs) {
@@ -270,7 +270,7 @@ log_indvs_to_remove <- function(num_indvs) {
 }
 
 wrap_plot <- function(plot_callback, data, out_name, width = 600, height = 350) {
-    out_name <- exts$check_png(out_name, TRUE)
+    out_name <- check_ext_png(out_name, TRUE)
     out_path <- file.path(plots_out, out_name)
     delete_file(out_path)
     png(out_path, width, height)
