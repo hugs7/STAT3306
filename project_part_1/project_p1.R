@@ -171,8 +171,8 @@ file_exists <- function(path) {
 }
 
 check_any_empty <- function(...) {
-    logger("DEBUG", "Checking if empty: ", ...)
     args <- list(...)
+    logger("DEBUG", "Checking if empty: ", quotes(args))
     any(sapply(args, function(x) x == ""))
 }
 
@@ -246,12 +246,14 @@ plink <- function(bfile, plink_args, out_name = NULL) {
 }
 
 add_extension <- function(basename, ...) {
+    args <- list(...)
+    logger("TRACE", "Checking extensions ", quotes(args), ".")
     if (check_any_empty(...)) {
-        logger("ERROR", "Some extensions are empty in ", quotes(...), ".")
+        logger("ERROR", "Some extensions are empty in ", quotes(args), ".")
     }
 
-    logger("TRACE", "Adding extensions: ", quotes(...), " to basename ", quotes(basename), ".")
-    path <- paste0(basename, ...)
+    logger("TRACE", "Adding extensions: ", quotes(args), " to basename ", quotes(basename), ".")
+    path <- paste0(basename, args)
     logger("TRACE", "Constructed plink out path: ", quotes(path), ".")
     return(path)
 }
@@ -357,7 +359,7 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
 
 exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
                            "frq", "txt", "png", "eigenvec", "eigenval",
-                           "qassoc"), 
+                           "qassoc", "linear"), 
                       ext)
 
 # === Main ===
@@ -591,13 +593,13 @@ gwas <- function(qc_data_path) {
         # Check for existing PCA
         out_name <- "pca"
         pca_path <- file.path(plink_out_dir, out_name)   
-        pca_eig_val <- paste0(pca_path, exts$eigenval)
-        pca_eig_vec <- paste0(pca_path, exts$eigenvec)
+        pca_eig_val <- add_extension(pca_path, exts$eigenval)
+        pca_eig_vec <- add_extension(pca_path, exts$eigenvec)
 
         eig_files <- list(pca_eig_val, pca_eig_vec)
-        if (all(sapply(eig_files, file.exists))) {
-            logger("INFO", "PCA already exist. Skipping.")
-            return(pca_path)
+        if (all(sapply(eig_files, file_exists))) {
+            logger("INFO", "PCA already exists. Skipping.")
+            return(pca_eig_vec)
         }
 
         # No PCA. Compute:
@@ -606,29 +608,29 @@ gwas <- function(qc_data_path) {
 
         plink_args <- paste(pl_fgs$pca, num_components)
         plink(qc_data_path, plink_args, out_name)
+        return(pca_eiv_vec)
     }
 
-    add_pc_covariates <- function(pheno_path, pc_eigvec_basename) {
+    add_pc_covariates <- function(pheno_path, pc_eigvec_file) {
         # Check for existing Covariates
         out_name <- "gwas_pheno_1_pc"
         cov_out_path <- file.path(plink_out_dir, out_name)
         pheno_pc_path <- add_extension(cov_out_path, exts$assoc, exts$linear)
-        if (file.exists(pheno_pc_path)) {
+        if (file_exists(pheno_pc_path)) {
             logger("INFO", "Covariates already exist. Skipping.")
-            return (cov_out_path)
+            return (pheno_pc_path)
         }
         
         # No covariates. Compute:
-        pc_eigvec_file <- add_extension(pc_eigvec_basename, exts$eigenvec)
         logger("Adding principal components to covariates...")
         logger("DEBUG", "Loading eigenvec file: ", quotes(pc_eigvec_file), ".")
         check_ext(pc_eigvec_file, exts$eigenvec)
         plink_args <- paste(pl_fgs$linear, pl_fgs$covar, pc_eigvec_file, pl_fgs$pheno, pheno_path, mpheno_args)
         plink(qc_data_path, plink_args, out_name)
+        return(pheno_pc_path)
     }
 
-    check_pc_inflation_factor <- function(pheno_pc_basename) {
-        pheno_pc_path <- add_extension(pheno_pc_basename, exts$assoc, exts$linear)
+    check_pc_inflation_factor <- function(pheno_pc_path) {
         d <- wrap_read_table(pheno_pc_path)
 
         d_sub <- d[which(d$TEST == "ADD"),]
@@ -672,9 +674,9 @@ gwas <- function(qc_data_path) {
     # Main
     pheno_basename <- gwas_pheno()
     check_inflation_factor(pheno_basename)
-    pc_eigvec_basename <- compute_principal_comps(10)
-    gwas_pheno_1_pc_basename <- add_pc_covariates(pheno_path, pc_eigvec_basename)
-    check_pc_inflation_factor(gwas_pheno_1_pc_basename)
+    pc_eigvec_file <- compute_principal_comps(10)
+    pheno_1_pc_path <- add_pc_covariates(pheno_path, pc_eigvec_file)
+    check_pc_inflation_factor(pheno_1_pc_path)
     
     #trait_analysis(TRUE)
 }
