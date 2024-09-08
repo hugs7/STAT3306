@@ -161,6 +161,7 @@ file_exists <- function(path) {
         logger("WARN", "Path is empty")
         return(FALSE)
     }
+
     exists <- file.exists(path)
     if (exists) {
         logger("DEBUG", "File exists at ", quotes(path), ".")
@@ -247,14 +248,14 @@ plink <- function(bfile, plink_args, out_name = NULL) {
 
 add_extension <- function(basename, ...) {
     args <- list(...)
-    logger("TRACE", "Checking extensions ", quotes(args), ".")
+    logger("TRACE", "Checking extensions ", ..., ".")
     if (check_any_empty(...)) {
-        logger("ERROR", "Some extensions are empty in ", quotes(args), ".")
+        logger("ERROR", "Some extensions are empty in ", ..., ".")
     }
 
-    logger("TRACE", "Adding extensions: ", quotes(args), " to basename ", quotes(basename), ".")
-    path <- paste0(basename, args)
-    logger("TRACE", "Constructed plink out path: ", quotes(path), ".")
+    logger("TRACE", "Adding extensions: ", ..., " to basename ", quotes(basename), ".")
+    path <- paste0(basename, ...)
+    logger("TRACE", "Constructed plink out path: ", path, ".")
     return(path)
 }
 
