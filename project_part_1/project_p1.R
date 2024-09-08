@@ -220,6 +220,12 @@ plink <- function(bfile, plink_args, out_name = NULL) {
         plink_cmd <- paste(plink_base_cmd, pl_fgs$out, out_path)
         std_out <- FALSE
     }
+    
+    # Check double space - indicates missing param
+    if (grepl("  ", plink_cmd)) {
+        logger("ERROR", "Possible missing argument in plink commmand")
+        logger("ERROR", "You were trying to run ", quotes(plink_cmd))
+    }
 
     logger("Running: ", quotes(plink_cmd))
 
