@@ -535,7 +535,7 @@ gwas <- function(qc_data_path) {
 
     gwas_plots <- function(d, plot_suffix = "") {
         name_plot <- function(plot_type) {
-            paste0("gwas", plot_type, plot_suffix, ".png")
+            paste0("gwas_", plot_type, "_", plot_suffix, ".png")
         }
 
         man_plot_name <- name_plot("manhattan")
