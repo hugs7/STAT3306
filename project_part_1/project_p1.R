@@ -303,13 +303,13 @@ init <- function() {
 init()
 
 # Plink Flags
-pl_fgs <- create_object(c("remove", "missing", list("mb" = "make-bed"), 
-                          "hardy", "het", "mind", "pheno", "covar", 
-                          list("dup_vars" = "list-duplicate-vars"), "out", 
-                          "bfile", "chr"), 
+pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"), 
+                             "hardy", "het", "mind", "pheno", "covar", 
+                             list("dup_vars" = "list-duplicate-vars"), "out", 
+                             "bfile", "chr"), 
                         named_flag)
 
-file_exts <- create_object(c("phen", "imiss", "lmiss", "het", "assoc", "hwe", "txt"), ext)
+file_exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", "txt"), ext)
 
 # === Main ===
 
