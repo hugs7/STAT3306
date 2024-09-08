@@ -404,7 +404,7 @@ quality_control <- function() {
         logger("Removing bad samples...")
         out_name <- "test_qc"
 
-        plink_flags <- paste(pl_fgs$mb, pl_remove, remove_path)
+        plink_flags <- paste(pl_fgs$mb, pl_fgs$remove, remove_path)
         plink_orig_data(plink_flags, out_name)
         
         out_path <- file.path(plink_out_path, out_name)
