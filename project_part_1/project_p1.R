@@ -274,12 +274,12 @@ log_indvs_to_remove <- function(num_indvs) {
     }
 }
 
-wrap_plot <- function(plot_callback, data, out_name, width = 600, height = 350) {
+wrap_plot <- function(plot_callback, data, out_name, width = 600, height = 350, ...) {
     out_name <- check_png_ext(out_name, TRUE)
     out_path <- file.path(plots_out, out_name)
     delete_file(out_path)
     png(out_path, width, height)
-    plot_callback(data, main = paste("Histogram of", col_name), xlab = col_name)
+    plot_callback(data, ...)
     dev.off()
 }
 
