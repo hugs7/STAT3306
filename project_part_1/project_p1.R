@@ -653,7 +653,7 @@ gwas <- function(qc_data_path) {
     pheno_basename <- gwas_pheno()
     check_inflation_factor(pheno_basename)
     pc_eig_vec_file <- compute_principal_comps(10)
-    gwas_pheno_1_pc_basename <- add_pc_covariates(pheno_path, pc_eigvec_file)
+    gwas_pheno_1_pc_basename <- add_pc_covariates(pheno_path, pc_eig_vec_file)
     check_pc_inflation_factor(gwas_pheno_1_pc_basename)
     
     #trait_analysis(TRUE)
