@@ -502,6 +502,21 @@ read_phenotypes <- function() {
     return(list(pheno, binary1, binary2))
 }
 
+compare_minor_allele_freq <- function() {
+    snp_freq_path <- file.path(data_path, "reference_allele_frequencies.txt")
+    ref <- wrap_read_table(snp_freq_path)
+    dim(ref)
+    head(ref)
+
+    ind <- match(freq$SNP, ref$V1)
+    out <- cbind(freq, ref[ind,])
+    head(out)
+
+    res <- out$MAF - out$V2
+
+    wrap_histogram(res, "minor_allele.png")
+}
+
 #phenotypes <- read_phenotypes()
 #covariates <- read_covariates()
 
