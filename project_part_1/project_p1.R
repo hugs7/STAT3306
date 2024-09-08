@@ -315,7 +315,9 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
                              "bfile", "chr"), 
                         named_flag)
 
-exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", "txt", "png"), ext)
+exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
+                           "frq", "txt", "png"), 
+                      ext)
 
 # === Main ===
 
@@ -423,13 +425,22 @@ quality_control <- function() {
 sample_qc <- function(qc_data_path) {
     hw_eq <- function() {
         hw_eq_name <- "hw_eq"
-        plink_flags <- paste(pl_fgs$hardy)
-        plink(qc_data_path, plink_flags, hw_eq_name)
+        plink(qc_data_path, pl_fgs$hardy, hw_eq_name)
         
         hw_eq_path <- construct_plink_table_path(hw_eq_name, exts$hwe)
         hw <- wrap_read_table(hw_eq_path)
         
         hw_eq_ind_file_path <- remove_indices(hw, c("MAF", "P"), threshold, 2, "remove.SNPs.txt")
+    }
+
+    min_allele_freq <- function() {
+        min_allele_name <- "minor_allele_freq"
+        plink(qc_data_path, pl_fgs$freq, min_allele_name)
+
+        min_allele_path <- construct_plink_table_path(min_allele_name, exts$frq)
+        freq <- wrap_read_table(min_allele_path)
+
+        min_allele_ind_file_path <- remove_indices(freq, c("MAF", "P"), threshold, 2, "remove.SNPs.txt")
     }
 
     # Filter individuals with high missingness
