@@ -309,7 +309,7 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
                              "bfile", "chr"), 
                         named_flag)
 
-exts$files <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", "txt"), ext)
+exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", "txt"), ext)
 
 # === Main ===
 
