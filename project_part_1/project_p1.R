@@ -434,12 +434,12 @@ sample_qc <- function(qc_data_path) {
     # Filter individuals with high missingness
     filtered_path <- file.path(plink_out_dir, "filtered")
     filtered_indvs_name <- "filtered_individuals"
-    plink(filtered_path, paste(pl_fgs$mind, genotype_threshold, pl_make_bed), filtered_indvs_name)
+    plink(filtered_path, paste(pl_fgs$mind, genotype_threshold, pl_fgs$mb), filtered_indvs_name)
 
     logger("Checking Duplicate SNPs")
     filtered_indvs_path <- file.path(plink_out_dir, filtered_indvs_name)
     dup_vars_name <- "duplicate_vars"
-    plink(filtered_indvs_path, paste(pl_fgs$chr, "X", pl_list_dup_vars), dup_vars_name)
+    plink(filtered_indvs_path, paste(pl_fgs$chr, "X", pl_fgs$dup_vars), dup_vars_name)
 }
 
 gwas <- function() {
