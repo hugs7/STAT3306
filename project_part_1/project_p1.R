@@ -407,7 +407,7 @@ quality_control <- function() {
         plink_flags <- paste(pl_fgs$mb, pl_fgs$remove, remove_path)
         plink_orig_data(plink_flags, out_name)
         
-        out_path <- file.path(plink_out_path, out_name)
+        out_path <- file.path(plink_out_dir, out_name)
         return(out_path)
     }
 
