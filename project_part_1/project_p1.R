@@ -240,7 +240,7 @@ save_removed_indices <- function(table, ind_to_remove, out_cols, out_name) {
     return(out_path)
 }
 
-remove_indices_by_threshold <- function(table, thresh_col_name, threshold, out_col, out_name) {
+remove_indices_by_threshold <- function(table, thresh_col_name, threshold, out_cols, out_name) {
     ind_to_remove <- which(table[[thresh_col_name]] > threshold)
     save_removed_indices(table, ind_to_remove, out_cols, out_name)
 }
