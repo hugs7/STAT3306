@@ -239,26 +239,26 @@ remove_indices <- function(missing_indices, thresh_col_name, threshold, out_col_
     return(missing_ind_file_path)
 }
 
-check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
-    if (!endsWith(out_name, expected_ext)) {
-        logger("WARN", "Out name ", quotes(out_name), " does not end with ", quotes(expected_ext), ".")
+file_exts$check <- function(out_name, file_exts$expected, add_if_missing = TRUE) {
+    if (!endsWith(out_name, file_exts$expected)) {
+        logger("WARN", "Out name ", quotes(out_name), " does not end with ", quotes(file_exts$expected), ".")
         if (add_if_missing) {
-            logger("INFO", "Adding ", quotes(expected_ext), " to file name")   
-            out_name <- paste0(out_name, expected_ext)
+            logger("INFO", "Adding ", quotes(file_exts$expected), " to file name")   
+            out_name <- paste0(out_name, file_exts$expected)
         }
     } else {
-        logger("DEBUG", "Out name ", quotes(out_name), " contains extension ", quotes(expected_ext), ".")
+        logger("DEBUG", "Out name ", quotes(out_name), " contains extension ", quotes(file_exts$expected), ".")
     }
 
     return(out_name)
 }
 
-check_png_ext <- function(out_name, add_if_missing = TRUE) {
-    check_ext(out_name, png_ext, add_if_missing)
+file_exts$check_png <- function(out_name, add_if_missing = TRUE) {
+    file_exts$check(out_name, file_exts$png, add_if_missing)
 }
 
-check_txt_ext <- function(out_name, add_if_missing = TRUE) {
-    check_ext(out_name, txt_ext, add_if_missing)
+file_exts$check_txt <- function(out_name, add_if_missing = TRUE) {
+    file_exts$check(out_name, file_exts$txt, add_if_missing)
 }
 
 log_indvs_to_remove <- function(num_indvs) {
@@ -270,7 +270,7 @@ log_indvs_to_remove <- function(num_indvs) {
 }
 
 wrap_plot <- function(plot_callback, data, out_name, width = 600, height = 350) {
-    out_name <- check_png_ext(out_name, TRUE)
+    out_name <- file_exts$check_png(out_name, TRUE)
     out_path <- file.path(plots_out, out_name)
     delete_file(out_path)
     png(out_path, width, height)
@@ -309,7 +309,7 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
                              "bfile", "chr"), 
                         named_flag)
 
-file_exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", "txt"), ext)
+file_exts$files <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", "txt"), ext)
 
 # === Main ===
 
@@ -325,7 +325,7 @@ quality_control <- function() {
         plink_orig_data(pl_fgs$missing, missing_name)
         
         logger("DEBUG", "Reading imiss table...")
-        missing_out_path <- construct_plink_table_path(missing_name, imiss_ext)
+        missing_out_path <- construct_plink_table_path(missing_name, file_exts$imiss)
         missing_ind <- wrap_read_table(missing_out_path)
         dim(missing_ind)
         head(missing_ind)
@@ -348,7 +348,7 @@ quality_control <- function() {
         plink_orig_data(pl_fgs$het, hz_name)
         
         logger("DEBUG", "Reading het table...")
-        het_out_path <- construct_plink_table_path(hz_name, het_ext)
+        het_out_path <- construct_plink_table_path(hz_name, file_exts$het)
         het <- wrap_read_table(het_out_path)
         dim(het)
         head(het)
@@ -420,7 +420,7 @@ sample_qc <- function(qc_data_path) {
         plink_flags <- paste(pl_fgs$hardy)
         plink(qc_data_path, plink_flags, hw_eq_name)
         
-        hw_eq_path <- construct_plink_table_path(hw_eq_name, hwe_ext)
+        hw_eq_path <- construct_plink_table_path(hw_eq_name, file_exts$hwe)
         hw <- wrap_read_table(hw_eq_path)
         
         hw_eq_ind_file_path <- remove_indices(hw, c("MAF", "P"), threshold, 2, "remove.SNPs.txt")
@@ -441,7 +441,7 @@ gwas <- function() {
     phenotype_file_prefix <- space_to_underscore(phenotype)
 
     get_pheno_path <- function(pheno_suffix) {
-        pheno_file_name <- paste0(phenotype_file_prefix, pheno_suffix, pheno_ext)
+        pheno_file_name <- paste0(phenotype_file_prefix, pheno_suffix, file_exts$pheno)
         file.path(phenotypes, pheno_file_name)
     }
 
@@ -489,7 +489,7 @@ run_analysis <- function() {
     # === Describe the most associated region of the quantitative trait ===
 
     # Manhattan Plot
-    quant_traits_res_path <- construct_plink_table_path(quant_trait_res_name, assoc_ext)
+    quant_traits_res_path <- construct_plink_table_path(quant_trait_res_name, file_exts$assoc)
     gwas_results <- wrap_read_table(quant_traits_res_path)
     if (!is.null(gwas_results)) {
         wrap_histogram(gwas_results$"P", "gwas_manhattan.png")
@@ -499,10 +499,10 @@ run_analysis <- function() {
     #   demonstrating an understanding of how the results from the
     #   three traits relate to each other.
 
-    binary_20_path <- construct_plink_table_path(binary_20_name, assoc_ext)
+    binary_20_path <- construct_plink_table_path(binary_20_name, file_exts$assoc)
     binary_20_results <- wrap_read_table(binary_20_path)
 
-    binary_30_path <- construct_plink_table_path(binary_30_name, assoc_ext)
+    binary_30_path <- construct_plink_table_path(binary_30_name, file_exts$assoc)
     binary_30_results <- wrap_read_table(binary_30_path)
 
 }
@@ -521,7 +521,7 @@ read_phenotypes <- function() {
     phenotype_file_prefix <- space_to_underscore(phenotype)
 
     get_pheno_path <- function(pheno_suffix) {
-        pheno_file_name <- paste0(phenotype_file_prefix, pheno_suffix, pheno_ext)
+        pheno_file_name <- paste0(phenotype_file_prefix, pheno_suffix, file_exts$pheno)
         file.path(phenotypes, pheno_file_name)
     }
 
