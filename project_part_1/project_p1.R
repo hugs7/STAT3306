@@ -539,19 +539,31 @@ gwas <- function(qc_data_path) {
         plink(qc_data_path, plink_args, out_name)
     }
 
-    gwas_plots <- function(d, plot_suffix = "") {
+    gwas_plots <- function(d, plots, plot_suffix = "") {
         name_plot <- function(plot_type) {
-            paste0("gwas_", plot_type, "_", plot_suffix, ".png")
+            file_name <- paste0("gwas_", plot_type)
+            if (length(plot_type) > 0) {
+                if (plot_type[[1]] != "_") {
+                   file_name <- paste0(file_name, "_")
+                }
+
+                file_name <- paste0(file_name, plot_suffix)
+            }
+            
+            file_name <- paste0(file_name, ".png")
+            logger("DEBUG", "Plot Name: ", quotes(file_name), ".")
         }
 
-        man_plot_name <- name_plot("manhattan")
-        logger("INFO", "Generating Manhattan Plot ", quotes(man_plot_name), " ...")
-        wrap_plot(manhattan, d, man_plot_name)
+        if (plots) {
+            man_plot_name <- name_plot("manhattan")
+            logger("INFO", "Generating Manhattan Plot ", quotes(man_plot_name), " ...")
+            wrap_plot(manhattan, d, man_plot_name)
 
-        qq_plot_name <- name_plot(qq)
-        logger("INFO", "Generating QQ Plot ", quotes(qq_plot_name), " ...")
-        wrap_plot(qq, d$P, qq_plot_name)
-        
+            qq_plot_name <- name_plot(qq)
+            logger("INFO", "Generating QQ Plot ", quotes(qq_plot_name), " ...")
+            wrap_plot(qq, d$P, qq_plot_name)
+        }
+
         logger("INFO", "Computing Genomic Inflation Factor (", plot_suffix, ") ...")
         lambda_gc <- genomic_inflation_factor(d, 1)
         logger("INFO", "Lambda_{GC} (", plot_suffix, ") = ", lambda_gc)
@@ -561,7 +573,7 @@ gwas <- function(qc_data_path) {
     check_inflation_factor <- function(pheno_basename) { 
         pheno_qassoc_path <- paste0(pheno_basename, exts$qassoc)
         d <- wrap_read_table(pheno_path)
-        gwas_plots(d)
+        gwas_plots(d, FALSE)
     }
 
     compute_principal_comps <- function(num_components) {
@@ -589,7 +601,7 @@ gwas <- function(qc_data_path) {
         d_sub <- d[which(d$TEST == "ADD"),]
         cat0(head(d_sub))
 
-        gwas_plots(d_sub, "_pc")
+        gwas_plots(d_sub, FALSE, "pc")
     }
 
     trait_analysis <- function(include_covariates) {
