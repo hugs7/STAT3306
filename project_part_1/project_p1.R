@@ -322,7 +322,7 @@ init()
 pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"), 
                              "hardy", "het", "mind", "pheno", "covar", 
                              list("dup_vars" = "list-duplicate-vars"), "out", 
-                             "bfile", "chr"), 
+                             "bfile", "chr", "freq"), 
                         named_flag)
 
 exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
