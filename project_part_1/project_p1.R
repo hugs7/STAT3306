@@ -216,7 +216,7 @@ plink <- function(bfile, plink_args, out_name = NULL) {
     } else {
         # Outputs to file
         out_path <- file.path(plink_out_dir, out_name)
-        logger("DEBUG", "Plink out path, ", quotes(out_path), ".")
+        logger("TRACE", "Plink out path: ", quotes(out_path), ".")
         plink_cmd <- paste(plink_base_cmd, pl_fgs$out, out_path)
         std_out <- FALSE
     }
@@ -233,7 +233,7 @@ plink <- function(bfile, plink_args, out_name = NULL) {
 
 construct_plink_table_path <- function(name, ext) {
     path <- file.path(plink_out_dir, paste0(name, ext))
-    logger("DEBUG", "Constructed plink out path: ", quotes(path), ".")
+    logger("TRACE", "Constructed plink out path: ", quotes(path), ".")
     return(path)
 }
 
@@ -475,7 +475,7 @@ sample_qc <- function(qc_data_path) {
     freq <- min_allele_freq()
     
     remove_snps_path <- remove_snps(hwe, freq)
-    remove_snps(remove_snps_path)
+    exclude_snps(remove_snps_path)
 
     # Filter individuals with high missingness
     #plink(filtered_path, paste(pl_fgs$mind, genotype_threshold, pl_fgs$mb), filtered_indvs_name)
