@@ -35,6 +35,7 @@ level_colours <- list(
 # === Globals ===
 
 phenotype <- "Fasting Glucose"
+fam_ind_cols <- c("FID", "IID")
 
 # Thresholds
 genotype_threshold <- 0.05
@@ -342,7 +343,7 @@ quality_control <- function() {
             log_indvs_to_remove(num_indvs_to_remove)
        }
 
-        missing_ind_file_path <- remove_indices(missing_ind, "F_MISS", genotype_threshold, c("FID", "IID"), "remove.missing.samples.txt")
+        missing_ind_file_path <- remove_indices(missing_ind, "F_MISS", genotype_threshold, fam_ind_cols, "remove.missing.samples.txt")
         return(missing_ind_file_path)
     }
 
@@ -366,7 +367,7 @@ quality_control <- function() {
             wrap_scatter(0.05, "red", abs(het$"F"), "fhet_scatter.png")
         }
 
-        het_ind_file_path <- remove_indices(het, "F", het_threshold, c("FID", "IID"), "remove.het.samples.txt")
+        het_ind_file_path <- remove_indices(het, "F", het_threshold, fam_ind_cols, "remove.het.samples.txt")
         return(het_ind_file_path)
     }
 
@@ -387,7 +388,7 @@ quality_control <- function() {
 
         for (file_path in file_paths) {
             ind <- wrap_read_table(file_path, FALSE)
-            colnames(ind) <- c("FID", "IID")
+            colnames(ind) <- fam_ind_cols
             combined_ind <- rbind(combined_ind, ind)
         }
         
@@ -516,8 +517,8 @@ read_covariates <- function() {
     age_path <- file.path(data_path, "age.txt")
     gender_path <- file.path(data_path, "gender.txt")
 
-    age <- wrap_read_table(age_path, header = FALSE, col.names = c("FID", "IID", "Age"))
-    gender <- wrap_read_table(gender_path, header = FALSE, col.names = c("FID", "IID", "Gender"))
+    age <- wrap_read_table(age_path, header = FALSE, col.names = c(fam_ind_cols, "Age"))
+    gender <- wrap_read_table(gender_path, header = FALSE, col.names = c(fam_ind_cols, "Gender"))
 
     return(list(age, gender))
 }
@@ -531,12 +532,12 @@ read_phenotypes <- function() {
     }
 
     pheno_cont_path <- get_pheno_path("")
-    pheno <- wrap_read_table(pheno_cont_path, col.names = c("FID", "IID", "Glucose"))
+    pheno <- wrap_read_table(pheno_cont_path, col.names = c(fam_ind_cols, "Glucose"))
 
     binary1_path <- get_pheno_path("_binary1")
-    binary1 <- wrap_read_table(binary1_path, col.names = c("FID", "IID", "Binary1"))
+    binary1 <- wrap_read_table(binary1_path, col.names = c(fam_ind_cols, "Binary1"))
     binary2_path <- get_pheno_path("_binary2")
-    binary2 <- wrap_read_table(binary2_path, col.names = c("FID", "IID", "Binary2"))
+    binary2 <- wrap_read_table(binary2_path, col.names = c(fam_ind_cols, "Binary2"))
 
     return(list(pheno, binary1, binary2))
 }
