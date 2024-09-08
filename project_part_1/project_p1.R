@@ -35,7 +35,10 @@ level_colours <- list(
 # === Globals ===
 
 phenotype <- "Fasting Glucose"
-pheno_ext <- ".phen"
+
+# Thresholds
+genotype_threshold <- 0.05
+het_threshold <- 0.2
 
 # Data Paths
 data_folder <- file.path("/data/STAT3306")
@@ -46,10 +49,6 @@ phenotypes <- file.path(project_data, "Phenotypes")
 # Plink
 plink_out_dir <- file.path("./plink_out")
 plink_datafile_basename <- "test"
-
-pl_remove_fg <- "--remove"
-pl_missing_fg <- "--missing"
-pl_make_bed_fg <- "--make-bed"
 
 # Plots
 plots_out <- file.path("./plots")
@@ -69,6 +68,14 @@ pad <- function(width, ...) {
 
 quotes <- function(path) {
     paste0("'", path, "'")
+}
+
+flag <- function(fg_name) {
+    paste0("--", fg_name)
+}
+
+ext <- function(ext_name) {
+    paste0(".", ext_name)
 }
 
 get_calling_function <- function(ignore_names) {
@@ -157,7 +164,6 @@ wrap_read_table <- function(path, header = TRUE, ...) {
     }
 
     logger("DEBUG", "Reading table at ", quotes(path), ".")
-
     read.table(path, header = header, ...)
 }
 
@@ -167,6 +173,7 @@ wrap_write_table <- function(data, path, row.names = FALSE, ...) {
         delete_file(path)
     }
 
+    logger("DEBUG", "Writing table at ", quotes(path), ".")
     write.table(data, path, row.names = row.names, sep = "\t", ...)
 }
 
@@ -178,7 +185,7 @@ plink_orig_data <- function(plink_args, out_name = NULL) {
 }
 
 plink <- function(bfile, plink_args, out_name = NULL) { 
-    plink_base_cmd <- paste0("plink --bfile ", bfile, " ", plink_args)
+    plink_base_cmd <- paste("plink", pl_bfile_fg, bfile, plink_args)
 
     if (is.null(out_name)) {
         # Non-outputting plink command. Output to console
@@ -188,7 +195,7 @@ plink <- function(bfile, plink_args, out_name = NULL) {
         # Outputs to file
         out_path <- file.path(plink_out_dir, out_name)
         logger("DEBUG", "Plink out path, ", quotes(out_path), ".")
-        plink_cmd <- paste0(plink_base_cmd, " --out ", out_path)
+        plink_cmd <- paste(plink_base_cmd, pl_out_fg, out_path)
         std_out <- FALSE
     }
 
@@ -202,7 +209,53 @@ plink <- function(bfile, plink_args, out_name = NULL) {
     }
 }
 
-wrap_plot <- function(plot_callback, data, out_path, width = 600, height = 350) {
+construct_plink_table_path <- function(name, ext) {
+    path <- file.path(plink_out_dir, paste0(name, ext))
+    logger("DEBUG", "Constructed plink out path: ", quotes(path), ".")
+    return(path)
+}
+
+remove_indices <- function(missing_indices, thresh_col_name, threshold, out_col_names, out_name) {
+    ind_to_remove <- which(missing_indices[[thresh_col_name]] > threshold)
+    file <- missing_indices[ind_to_remove, out_col_names]
+    missing_ind_file_path <- file.path(plink_out_dir, out_name)
+    wrap_write_table(file, missing_ind_file_path, col.names = FALSE, quote = FALSE)
+    return(missing_ind_file_path)
+}
+
+check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
+    if (!endsWith(out_name, expected_ext)) {
+        logger("WARN", "Out name ", quotes(out_name), " does not end with ", quotes(expected_ext), ".")
+        if (add_if_missing) {
+            logger("INFO", "Adding ", quotes(expected_ext), " to file name")   
+            out_name <- paste0(out_name, expected_ext)
+        }
+    } else {
+        logger("DEBUG", "Out name ", quotes(out_name), " contains extension ", quotes(expected_ext), ".")
+    }
+
+    return(out_name)
+}
+
+check_png_ext <- function(out_name, add_if_missing = TRUE) {
+    check_ext(out_name, png_ext, add_if_missing)
+}
+
+check_txt_ext <- function(out_name, add_if_missing = TRUE) {
+    check_ext(out_name, txt_ext, add_if_missing)
+}
+
+log_indvs_to_remove <- function(num_indvs) {
+    if (num_indvs == 0) {
+        logger("INFO", "No individuals to remove")
+    } else {
+        logger("WARN", "There are ", num_indvs, " individuals to remove")
+    }
+}
+
+wrap_plot <- function(plot_callback, data, out_name, width = 600, height = 350) {
+    out_name <- check_png_ext(out_name, TRUE)
+    out_path <- file.path(plots_out, out_name)
     delete_file(out_path)
     png(out_path, width, height)
     plot_callback(data, main = paste("Histogram of", col_name), xlab = col_name)
