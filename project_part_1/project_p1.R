@@ -70,7 +70,7 @@ quotes <- function(path) {
     paste0("'", path, "'")
 }
 
-flag <- function(fg_name) {
+named_flag <- function(fg_name) {
     paste0("--", fg_name)
 }
 
@@ -79,7 +79,19 @@ ext <- function(ext_name) {
 }
 
 create_object <- function(strings, transform_fn) {
-    setNames(lapply(strings, transform_fn), strings)
+    result <- list()
+
+    for (item in items) {
+        if (is.list(item)) {
+            name <- names(item)[1]
+            value <- item[[1]]
+            result[[name]] <- transform_fn(value)
+        } else {
+            result[[item]] <- transform_fn(item)
+        }
+    }
+
+    result
 }
 
 get_calling_function <- function(ignore_names) {
@@ -291,8 +303,11 @@ init <- function() {
 init()
 
 # Plink Flags
-pl_fgs <- create_object(c("remove", "missing", "make-bed", "hardy", "het", "mind",
-            "pheno", "covar", "list-duplicate-vars", "out", "bfile", "chr"), flag)
+pl_fgs <- create_object(c("remove", "missing", list("mb" = "make-bed"), 
+                          "hardy", "het", "mind", "pheno", "covar", 
+                          list("dup_vars" = "list-duplicate-vars"), "out", 
+                          "bfile", "chr"), 
+                        named_flag)
 
 file_exts <- create_object(c("phen", "imiss", "lmiss", "het", "assoc", "hwe", "txt"), ext)
 
@@ -384,7 +399,7 @@ quality_control <- function() {
         logger("Removing bad samples...")
         out_name <- "test_qc"
 
-        plink_flags <- paste(pl_fgs$make_bed_fg, pl_remove, remove_path)
+        plink_flags <- paste(pl_fgs$mb, pl_remove, remove_path)
         plink_orig_data(plink_flags, out_name)
         
         out_path <- file.path(plink_out_path, out_name)
@@ -414,12 +429,12 @@ sample_qc <- function(qc_data_path) {
     # Filter individuals with high missingness
     filtered_path <- file.path(plink_out_dir, "filtered")
     filtered_indvs_name <- "filtered_individuals"
-    plink(filtered_path, paste(pl_fgs$mind_fg, genotype_threshold, pl_make_bed), filtered_indvs_name)
+    plink(filtered_path, paste(pl_fgs$mind, genotype_threshold, pl_make_bed), filtered_indvs_name)
 
     logger("Checking Duplicate SNPs")
     filtered_indvs_path <- file.path(plink_out_dir, filtered_indvs_name)
     dup_vars_name <- "duplicate_vars"
-    plink(filtered_indvs_path, paste(pl_fgs$chr_fg, "X", pl_list_dup_vars), dup_vars_name)
+    plink(filtered_indvs_path, paste(pl_fgs$chr, "X", pl_list_dup_vars), dup_vars_name)
 }
 
 gwas <- function() {
@@ -434,12 +449,12 @@ gwas <- function() {
         logger("Performing trait analysis with covariates: ", include_covariates)
 
         get_plink_args <- function(pheno_path) {
-            base_args <- paste(pl_fgs$pheno_fg, pheno_path, pl_assoc)
+            base_args <- paste(pl_fgs$pheno, pheno_path, pl_assoc)
             if (include_covariates) {
                 age_path <- file.path(data_path, "age.txt")
                 gender_path <- file.path(data_path, "gender.txt")
                 
-                base_args <- paste(base_args, pl_fgs$covar_fg, age_path, pl_covar, gender_path)
+                base_args <- paste(base_args, pl_fgs$covar, age_path, pl_covar, gender_path)
             }
             return(base_args)
         }
