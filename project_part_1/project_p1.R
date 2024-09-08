@@ -280,66 +280,85 @@ init <- function() {
     mkdir_if_not_exist(plots_out)
     mkdir_if_not_exist(plink_out_dir)
     mkdir_if_not_exist(out_dir)
+
     logger("INFO", "Initialisation complete!")
 }
 
 init()
 
+# Plink Flags
+pl_remove_fg <- flag("remove")
+pl_missing_fg <- flag("missing")
+pl_make_bed_fg <- flag("make-bed")
+pl_hardy_fg <- flag("hardy")
+pl_het_fg <- flag("het")
+pl_mind_fg <- flag("mind")
+pl_pheno_fg <- flag("pheno")
+pl_covar_fg <- flag("covar")
+pl_list_dup_vars_fg <- flag("list-duplicate-vars")
+pl_out_fg <- flag("out")
+pl_bfile_fg <- flag("bfile")
+pl_chr_fg <- flag("chr")
+
+# Extensions
+pheno_ext <- ext("phen")
+imiss_ext <- ext("imiss")
+het_ext <- ext("het")
+assoc_ext <- ext("assoc")
+hwe_ext <- ext("hwe")
+txt_ext <- ext("txt")
+
 # === Main ===
 
 # ====== Analysis ======
 
-quality_control <- function(genotype_threshold) {
+quality_control <- function() {
     logger("Performing Quality Control")
 
-    get_removed_rows <- function(missing_ind, ind_to_remove) {
-        missing_ind[ind_to_remove, c("FID", "IID")]
-    }
-
     excess_missing_genotypes <- function(histogram) {
-        logger("Checking missing data")
+        logger("Checking for missing genotypes")
+
         missing_name <- "missing"
         plink_orig_data(pl_missing_fg, missing_name)
         
         logger("DEBUG", "Reading imiss table...")
-        missing_out_path <- file.path(plink_out_dir, paste0(missing_name, ".imiss"))
+        missing_out_path <- construct_plink_table_path(missing_name, imiss_ext)
         missing_ind <- wrap_read_table(missing_out_path)
         dim(missing_ind)
         head(missing_ind)
         
         if (histogram) {
-            hist_out_path <- file.path(plots_out, "fmiss.png")
-            wrap_histogram(missing_ind$"F_MISS", hist_out_path)
-            sum(missing_ind$"F_MISS" > genotype_threshold)
-        }
+            logger("INFO", "Plotting F_MISS histogram")
+            wrap_histogram(missing_ind$"F_MISS", "fmiss.png")
+            num_indvs_to_remove <- sum(missing_ind$"F_MISS" > genotype_threshold)
+            log_indvs_to_remove(num_indvs_to_remove)
+       }
 
-        ind_to_remove <- which(missing_ind$"F_MISS" > genotype_threshold)
-        file <- get_removed_rows(missing_ind, ind_to_remove)
-        missing_ind_file_path <- file.path(plink_out_dir, "remove.missing.samples.txt")
-        wrap_write_table(file, missing_ind_file_path, col.names = FALSE, quote = FALSE)
+        missing_ind_file_path <- remove_indices(missing_ind, "F_MISS", genotype_threshold, c("FID", "IID"), "remove.missing.samples.txt")
         return(missing_ind_file_path)
     }
 
     outlying_homozygosity <- function(plot) {
         logger("Checking for outlying homozygosity values")
+
         hz_name <- "hz"
-        plink_orig_data("--het", hz_name)
+        plink_orig_data(pl_het_fg, hz_name)
         
-        het <- wrap_read_table(file.path(plink_out_dir, paste0(hz_name, ".het")))
+        logger("DEBUG", "Reading het table...")
+        het_out_path <- construct_plink_table_path(hz_name, het_ext)
+        het <- wrap_read_table(het_out_path)
         dim(het)
         head(het)
 
         if (plot) {
-            hist_out_path <- file.path(plots_out, "fhet.png")
-            wrap_histogram(het$"F", hist_out_path)
-            wrap_scatter(0.05, "red", abs(het$"F"))
+            logger("INFO", "Plotting het histogram")
+            wrap_histogram(het$"F", "fhet_hist.png")
+
+            logger("INFO", "Plotting het scatterplot")
+            wrap_scatter(0.05, "red", abs(het$"F"), "fhet_scatter.png")
         }
 
-        het_threshold <- 0.2
-        ind_to_remove <- which(abs(het$"F") > het_threshold)
-        file <- get_removed_rows(het, ind_to_remove)
-        het_ind_file_path <- file.path(plink_out_dir, "remove.het.samples.txt")
-        wrap_write_table(file, het_ind_file_path, col.names = FALSE, quote = FALSE)
+        het_ind_file_path <- remove_indices(het, "F", het_threshold, c("FID", "IID"), "remove.het.samples.txt")
         return(het_ind_file_path)
     }
 
@@ -379,27 +398,40 @@ quality_control <- function(genotype_threshold) {
 
         plink_flags <- paste(pl_make_bed_fg, pl_remove_fg, remove_path)
         plink_orig_data(plink_flags, out_name)
+        
+        out_path <- file.path(plink_out_path, out_name)
+        return(out_path)
     }
 
-    missing_ind_path <- excess_missing_genotypes(FALSE)
+    missing_ind_path <- excess_missing_genotypes(TRUE)
     het_ind_path <- outlying_homozygosity(FALSE)
 
     combined_ind_path <- combine_remove_files(missing_ind_path, het_ind_path)
-    remove_bad_individuals(combined_ind_path)
+    qc_data_path <- remove_bad_individuals(combined_ind_path)
+    return(qc_data_path)
 }
 
+sample_qc <- function(qc_data_path) {
+    hw_eq <- function() {
+        hw_eq_name <- "hw_eq"
+        plink_flags <- paste(pl_hardy_fg)
+        plink(qc_data_path, plink_flags, hw_eq_name)
+        
+        hw_eq_path <- construct_plink_table_path(hw_eq_name, hwe_ext)
+        hw <- wrap_read_table(hw_eq_path)
+        
+        hw_eq_ind_file_path <- remove_indices(hw, c("MAF" "P"), threshold, 2, "remove.SNPs.txt")
+    }
 
-sample_qc <- function(genotype_threshold) {
     # Filter individuals with high missingness
     filtered_path <- file.path(plink_out_dir, "filtered")
     filtered_indvs_name <- "filtered_individuals"
-    plink(filtered_path, paste("--mind", genotype_threshold, "--make-bed"), filtered_indvs_name)
+    plink(filtered_path, paste(pl_mind_fg, genotype_threshold, pl_make_bed_fg), filtered_indvs_name)
 
-    # Check for Duplicate SNPs
     logger("Checking Duplicate SNPs")
     filtered_indvs_path <- file.path(plink_out_dir, filtered_indvs_name)
     dup_vars_name <- "duplicate_vars"
-    plink(filtered_indvs_path, "--chr X --list-duplicate-vars", dup_vars_name)
+    plink(filtered_indvs_path, paste(pl_chr_fg, "X", pl_list_dup_vars_fg), dup_vars_name)
 }
 
 gwas <- function() {
@@ -414,12 +446,12 @@ gwas <- function() {
         logger("Performing trait analysis with covariates: ", include_covariates)
 
         get_plink_args <- function(pheno_path) {
-            base_args <- paste("--pheno", pheno_path, "--assoc")
+            base_args <- paste(pl_pheno_fg, pheno_path, pl_assoc_fg)
             if (include_covariates) {
                 age_path <- file.path(data_path, "age.txt")
                 gender_path <- file.path(data_path, "gender.txt")
                 
-                base_args <- paste(base_args, "--covar", age_path, "--covar", gender_path)
+                base_args <- paste(base_args, pl_covar_fg, age_path, pl_covar_fg, gender_path)
             }
             return(base_args)
         }
@@ -454,21 +486,20 @@ run_analysis <- function() {
     # === Describe the most associated region of the quantitative trait ===
 
     # Manhattan Plot
-    quant_traits_res_path <- file.path(plink_out_dir, paste0(quant_trait_res_name, ".assoc"))
+    quant_traits_res_path <- construct_plink_table_path(quant_trait_res_name, assoc_ext)
     gwas_results <- wrap_read_table(quant_traits_res_path)
     if (!is.null(gwas_results)) {
-        manhattan_plot_path <- file.path(plots_out, "manhattan.png")
-        wrap_histogram(gwas_results$"P", manhattan_plot_path)
+        wrap_histogram(gwas_results$"P", "gwas_manhattan.png")
     }
 
     # A comparison of the results for these different traits sets
     #   demonstrating an understanding of how the results from the
     #   three traits relate to each other.
 
-    binary_20_path <- file.path(plink_out_dir, paste0(binary_20_name, ".assoc"))
+    binary_20_path <- construct_plink_table_path(binary_20_name, assoc_ext)
     binary_20_results <- wrap_read_table(binary_20_path)
 
-    binary_30_path <- file.path(plink_out_dir, paste0(binary_30_name, ".assoc"))
+    binary_30_path <- construct_plink_table_path(binary_30_name, assoc_ext)
     binary_30_results <- wrap_read_table(binary_30_path)
 
 }
@@ -522,7 +553,8 @@ compare_minor_allele_freq <- function() {
 
 #run_analysis()
 
-quality_control(0.05)
+qc_data_path <- quality_control()
+sample_qc(qc_data_path)
 
 logger("DONE!")
 
