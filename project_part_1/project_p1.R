@@ -471,11 +471,34 @@ sample_qc <- function(qc_data_path) {
         plink(qc_data_path, plink_args, out_name)
     }
 
+    compare_minor_allele_freqs <- function(freq, plot) {
+        logger("Comparing Minor Allele Frequencies...")
+        snp_ref_path <- file.path(data_path, "reference_allele_frequencies.txt")
+        ref <- wrap_read_table(snp_ref_path)
+        dim(ref)
+        head(ref)
+
+        ind <- match(freq$SNP, ref$V1)
+        out <- cbind(freq, ref[ind,])
+        head(out)
+
+        if (plot) {
+            logger("Plotting allele frequency comparison with reference...")
+            wrap_plot(plot, out$MAF ~ out$V2, "min_allele_freq_comparison.png")
+        }
+
+        res <- out$MAF - out$V2
+        cat0(head(res))
+        #wrap_histogram(res, "minor_allele.png")
+    }
+
     hwe <- hw_eq()
     freq <- min_allele_freq()
     
     remove_snps_path <- remove_snps(hwe, freq)
     exclude_snps(remove_snps_path)
+
+    compare_minor_allele_freqs(freq, FALSE)
 
     # Filter individuals with high missingness
     #plink(filtered_path, paste(pl_fgs$mind, genotype_threshold, pl_fgs$mb), filtered_indvs_name)
@@ -578,21 +601,6 @@ read_phenotypes <- function() {
     binary2 <- wrap_read_table(binary2_path, col.names = c(fam_ind_cols, "Binary2"))
 
     return(list(pheno, binary1, binary2))
-}
-
-compare_minor_allele_freq <- function() {
-    snp_freq_path <- file.path(data_path, "reference_allele_frequencies.txt")
-    ref <- wrap_read_table(snp_freq_path)
-    dim(ref)
-    head(ref)
-
-    ind <- match(freq$SNP, ref$V1)
-    out <- cbind(freq, ref[ind,])
-    head(out)
-
-    res <- out$MAF - out$V2
-
-    wrap_histogram(res, "minor_allele.png")
 }
 
 #phenotypes <- read_phenotypes()
