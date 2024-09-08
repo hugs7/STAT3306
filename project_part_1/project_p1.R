@@ -346,7 +346,8 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
                         named_flag)
 
 exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
-                           "frq", "txt", "png", "eigenvec", "qassoc"), 
+                           "frq", "txt", "png", "eigenvec", "eigenval",
+                           "qassoc"), 
                       ext)
 
 # === Main ===
@@ -577,11 +578,23 @@ gwas <- function(qc_data_path) {
     }
 
     compute_principal_comps <- function(num_components) {
+        # Check for existing PCA
+        out_name <- "pca"
+        pca_path <- file.path(plink_out_dir, out_name)   
+        pca_eig_val <- paste0(pca_path, exts$eigenval)
+        pca_eig_vec <- paste0(pca_path, exts$eigenvec)
+
+        eig_files <- list(pca_eig_val, pca_eig_vec)
+        if (all(sapply(eig_files, file.exists))) {
+            logger("INFO", "PCA already exist. Skipping.")
+            return(NULL)
+        }
+
+        # No PCA. Compute:
         logger("Performing Principal Component Analysis on Data QC with ", num_components, 
                " components...")
 
         plink_args <- paste(pl_fgs$pca, num_components)
-        out_name <- "pca"
         plink(qc_data_path, plink_args, out_name)
     }
 
