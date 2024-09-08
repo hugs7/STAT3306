@@ -229,10 +229,12 @@ plink <- function(bfile, plink_args, out_name = NULL) {
         shell_call(plink_cmd)
         logger("Plink results directed to ", quotes(out_path), ".")
     }
+
+    return(out_path)
 }
 
-construct_plink_table_path <- function(name, ext) {
-    path <- file.path(plink_out_dir, paste0(name, ext))
+add_extension <- function(basename, ext) {
+    path <- paste0(basename, ext))
     logger("TRACE", "Constructed plink out path: ", quotes(path), ".")
     return(path)
 }
@@ -340,10 +342,10 @@ quality_control <- function() {
         logger("Checking for missing genotypes")
 
         missing_name <- "missing"
-        plink_orig_data(pl_fgs$missing, missing_name)
+        missing_basename, plink_orig_data(pl_fgs$missing, missing_name)
         
         logger("DEBUG", "Reading imiss table...")
-        missing_out_path <- construct_plink_table_path(missing_name, exts$imiss)
+        missing_out_path <- add_extension(missing_basename, exts$imiss)
         missing <- wrap_read_table(missing_out_path)
         dim(missing)
         head(missing)
@@ -363,10 +365,10 @@ quality_control <- function() {
         logger("Checking for outlying homozygosity values")
 
         hz_name <- "hz"
-        plink_orig_data(pl_fgs$het, hz_name)
+        het_basename <- plink_orig_data(pl_fgs$het, hz_name)
         
         logger("DEBUG", "Reading het table...")
-        het_out_path <- construct_plink_table_path(hz_name, exts$het)
+        het_out_path <- add_extension(het_basename, exts$het)
         het <- wrap_read_table(het_out_path)
         dim(het)
         head(het)
@@ -434,26 +436,23 @@ quality_control <- function() {
 
 sample_qc <- function(qc_data_path) {
     hw_eq <- function() {
-        hw_eq_name <- "hw_eq"
-        plink(qc_data_path, pl_fgs$hardy, hw_eq_name)
+        logger("Computing Hardy-Weinberg Equilibrium")
+        hwe_name <- "hwe"
+        hwe_basename <- plink(qc_data_path, pl_fgs$hardy, hwe_name)
         
-        hwe_path <- construct_plink_table_path(hw_eq_name, exts$hwe)
+        hwe_path <- add_extension(hwe_basename, exts$hwe)
         hwe <- wrap_read_table(hwe_path)
         return(hwe) 
-
-        #hwe_ind_file_path <- remove_indices_by_threshold(hwe, "P", "<", hwe_threshold, , "remove.SNPs.txt")
-        #return(hwe_ind_file_path)
     }
 
     min_allele_freq <- function() {
+        logger("Computing Minor Allele Frequencies")
         min_allele_name <- "minor_allele_freq"
-        plink(qc_data_path, pl_fgs$freq, min_allele_name)
+        min_allele_basename <- plink(qc_data_path, pl_fgs$freq, min_allele_name)
 
-        min_allele_path <- construct_plink_table_path(min_allele_name, exts$frq)
+        min_allele_path <- add_extension(min_allele_basename, exts$frq)
         freq <- wrap_read_table(min_allele_path)
         return(freq)
-
-        #min_allele_ind_file_path <- remove_indices_by_threshold(freq, c("MAF", "P"), threshold, 2, "remove.SNPs.txt")
     }
 
     remove_snps <- function(hwe, freq) {
