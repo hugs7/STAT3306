@@ -23,9 +23,10 @@ invisible(lapply(required_packages, require, character.only = TRUE))
 # === Logging Config ===
 
 default_log_level <- "INFO"
-allowed_log_levels <- c("DEBUG", "INFO", "WARN", "ERROR")
-app_log_level <- "DEBUG"
+allowed_log_levels <- c("TRACE", "DEBUG", "INFO", "WARN", "ERROR")
+app_log_level <- "TRACE"
 level_colours <- list(
+    TRACE = crayon::gray,
     DEBUG = crayon::cyan,
     INFO = crayon::green,
     WARN = crayon::yellow,
@@ -155,7 +156,7 @@ mkdir_if_not_exist <- function(path) {
 }
 
 file_exists <- function(path) {
-    logger("DEBUG", "Checking if file exists at path ", quotes(path), ".")
+    logger("TRACE", "Checking if file exists at path ", quotes(path), ".")
     if (length(path) == 0) {
         logger("WARN", "Path is empty")
         return(FALSE)
@@ -199,13 +200,14 @@ wrap_write_table <- function(data, path, row.names = FALSE, ...) {
 
 plink_orig_data <- function(plink_args, out_name = NULL) {
     data_files_pattern <- file.path(data_path, plink_datafile_basename)
-    logger("DEBUG", "Plink Data Files Pattern ", quotes(data_files_pattern), ".")
+    logger("TRACE", "Plink Data Files Pattern ", quotes(data_files_pattern), ".")
 
     plink(data_files_pattern, plink_args, out_name)
 }
 
 plink <- function(bfile, plink_args, out_name = NULL) { 
     plink_base_cmd <- paste("plink", pl_fgs$bfile, bfile, plink_args)
+    logger("TRACE", "Plink base command ", quotes(plink_base_cmd), ".")
 
     if (is.null(out_name)) {
         # Non-outputting plink command. Output to console
@@ -257,7 +259,7 @@ check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
     if (!endsWith(out_name, expected_ext)) {
         logger("WARN", "Out name ", quotes(out_name), " does not end with ", quotes(expected_ext), ".")
         if (add_if_missing) {
-            logger("INFO", "Adding ", quotes(expected_ext), " to file name")   
+            logger("DEBUG", "Adding ", quotes(expected_ext), " to file name")   
             out_name <- paste0(out_name, expected_ext)
         }
     } else {
@@ -413,7 +415,7 @@ quality_control <- function() {
 
     remove_bad_individuals <- function(remove_path) {
         logger("Removing bad samples...")
-        out_name <- "test_qc"
+        out_name <- "test_subset"
 
         plink_flags <- paste(pl_fgs$mb, pl_fgs$remove, remove_path)
         plink_orig_data(plink_flags, out_name)
@@ -455,6 +457,7 @@ sample_qc <- function(qc_data_path) {
     }
 
     remove_snps <- function(hwe, freq) {
+        logger("INFO", "Computing SNPs to remove...")
         ind_to_remove <- unique(c(which(freq$MAF < freq_threshold), which(hwe$P < hwe_threshold)))
         snp_id_col <- 2
         remove_snps_path <- save_removed_indices(freq, ind_to_remove, snp_id_col, "remove.SNPs.txt")
@@ -462,10 +465,10 @@ sample_qc <- function(qc_data_path) {
     }
 
     exclude_snps <- function(remove_snps_path) {
-        data_subset_path <- 
+        logger("INFO", "Excluding SNPs...")
         out_name <- "test_qc"
         plink_args <- paste(pl_fgs$mb, pl_fgs$exclude, remove_snps_path)
-        plink(data_subset_path, plink_args, out_name)
+        plink(qc_data_path, plink_args, out_name)
     }
 
     hwe <- hw_eq()
@@ -475,9 +478,7 @@ sample_qc <- function(qc_data_path) {
     remove_snps(remove_snps_path)
 
     # Filter individuals with high missingness
-    filtered_path <- file.path(plink_out_dir, "filtered")
-    filtered_indvs_name <- "filtered_individuals"
-    plink(filtered_path, paste(pl_fgs$mind, genotype_threshold, pl_fgs$mb), filtered_indvs_name)
+    #plink(filtered_path, paste(pl_fgs$mind, genotype_threshold, pl_fgs$mb), filtered_indvs_name)
 }
 
 gwas <- function() {
