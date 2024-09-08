@@ -608,12 +608,22 @@ gwas <- function(qc_data_path) {
         plink(qc_data_path, plink_args, out_name)
     }
 
-    add_pc_covariates <- function(pheno_path, pc_eigvec_file) {
+    add_pc_covariates <- function(pheno_path, pc_eigvec_basename) {
+        # Check for existing Covariates
+        out_name <- "gwas_pheno_1_pc"
+        cov_out_path <- file.path(plink_out_dir, out_name)
+        pheno_pc_path <- add_extension(cov_out_path, exts$assoc, exts$linear)
+        if (file.exists(pheno_pc_path)) {
+            logger("INFO", "Covariates already exist. Skipping.")
+            return (cov_out_path)
+        }
+        
+        # No covariates. Compute:
+        pc_eigvec_file <- add_extension(pc_eigvec_basename, exts$eigenvec)
         logger("Adding principal components to covariates...")
         logger("DEBUG", "Loading eigenvec file: ", quotes(pc_eigvec_file), ".")
         check_ext(pc_eigvec_file, exts$eigenvec)
         plink_args <- paste(pl_fgs$linear, pl_fgs$covar, pc_eigvec_file, pl_fgs$pheno, pheno_path, mpheno_args)
-        out_name <- "gwas_pheno_1_pc"
         plink(qc_data_path, plink_args, out_name)
     }
 
