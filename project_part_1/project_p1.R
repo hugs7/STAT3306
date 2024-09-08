@@ -423,7 +423,7 @@ sample_qc <- function(qc_data_path) {
         hw_eq_path <- construct_plink_table_path(hw_eq_name, hwe_ext)
         hw <- wrap_read_table(hw_eq_path)
         
-        hw_eq_ind_file_path <- remove_indices(hw, c("MAF" "P"), threshold, 2, "remove.SNPs.txt")
+        hw_eq_ind_file_path <- remove_indices(hw, c("MAF", "P"), threshold, 2, "remove.SNPs.txt")
     }
 
     # Filter individuals with high missingness
