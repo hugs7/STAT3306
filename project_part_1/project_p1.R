@@ -48,11 +48,11 @@ data_path <- file.path(project_data, "Data")
 phenotypes <- file.path(project_data, "Phenotypes")
 
 # Plink
-plink_out_dir <- file.path("./plink_out")
 plink_datafile_basename <- "test"
 
-# Plots
-plots_out <- file.path("./plots")
+# Out Paths
+plots_out_dir <- file.path("./plots")
+plink_out_dir <- file.path("./plink_out")
 out_dir <- file.path("./out")
 
 # === Functions ===
@@ -185,6 +185,7 @@ wrap_read_table <- function(path, header = TRUE, ...) {
 }
 
 wrap_write_table <- function(data, path, row.names = FALSE, ...) {
+    path <- check_txt_ext(path, exts$txt)
     if (file_exists(path)) {
         logger("WARN", "Overwriting file at path ", quotes(path), ".")
         delete_file(path)
@@ -232,12 +233,16 @@ construct_plink_table_path <- function(name, ext) {
     return(path)
 }
 
-remove_indices <- function(missing_indices, thresh_col_name, threshold, out_col_names, out_name) {
-    ind_to_remove <- which(missing_indices[[thresh_col_name]] > threshold)
-    file <- missing_indices[ind_to_remove, out_col_names]
-    missing_ind_file_path <- file.path(plink_out_dir, out_name)
-    wrap_write_table(file, missing_ind_file_path, col.names = FALSE, quote = FALSE)
-    return(missing_ind_file_path)
+save_removed_indices <- function(table, ind_to_remove, out_cols, out_name) {
+    file <- table[ind_to_remove, out_cols]
+    out_path <- file.path(out_dir, out_name)
+    wrap_write_table(file, out_path, col.names = FALSE, quote = FALSE)
+    return(out_path)
+}
+
+remove_indices_by_threshold <- function(table, thresh_col_name, threshold, out_col, out_name) {
+    ind_to_remove <- which(table[[thresh_col_name]] > threshold)
+    save_removed_indices(table, ind_to_remove, out_cols, out_name)
 }
 
 check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
@@ -245,6 +250,7 @@ check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
         logger("ERROR", "Expected extension is blank")
         return(NULL)
     }
+
     logger("DEBUG", "Checking ", quotes(out_name), " for extension ", quotes(expected_ext), ".")
     if (!endsWith(out_name, expected_ext)) {
         logger("WARN", "Out name ", quotes(out_name), " does not end with ", quotes(expected_ext), ".")
@@ -277,7 +283,7 @@ log_indvs_to_remove <- function(num_indvs) {
 
 wrap_plot <- function(plot_callback, data, out_name, width = 600, height = 350, ...) {
     out_name <- check_png_ext(out_name, TRUE)
-    out_path <- file.path(plots_out, out_name)
+    out_path <- file.path(plots_out_dir, out_name)
     delete_file(out_path)
     png(out_path, width, height)
     plot_callback(data, ...)
@@ -299,7 +305,7 @@ wrap_scatter <- function(abline_h, abline_col, ...) {
 
 init <- function() {
     logger("INFO", "Initialising directories...")
-    mkdir_if_not_exist(plots_out)
+    mkdir_if_not_exist(plots_out_dir)
     mkdir_if_not_exist(plink_out_dir)
     mkdir_if_not_exist(out_dir)
 
@@ -334,19 +340,19 @@ quality_control <- function() {
         
         logger("DEBUG", "Reading imiss table...")
         missing_out_path <- construct_plink_table_path(missing_name, exts$imiss)
-        missing_ind <- wrap_read_table(missing_out_path)
-        dim(missing_ind)
-        head(missing_ind)
+        missing <- wrap_read_table(missing_out_path)
+        dim(missing)
+        head(missing)
         
         if (histogram) {
             logger("INFO", "Plotting F_MISS histogram")
-            wrap_histogram(missing_ind$"F_MISS", "fmiss.png")
-            num_indvs_to_remove <- sum(missing_ind$"F_MISS" > genotype_threshold)
+            wrap_histogram(missing$"F_MISS", "fmiss.png")
+            num_indvs_to_remove <- sum(missing$"F_MISS" > genotype_threshold)
             log_indvs_to_remove(num_indvs_to_remove)
-       }
-
-        missing_ind_file_path <- remove_indices(missing_ind, "F_MISS", genotype_threshold, fam_ind_cols, "remove.missing.samples.txt")
-        return(missing_ind_file_path)
+        }
+        
+        missing_file_path <- remove_indices_by_threshold(missing, "F_MISS", genotype_threshold, fam_ind_cols, "remove.missing.samples.txt")
+        return(missing_file_path)
     }
 
     outlying_homozygosity <- function(plot) {
@@ -369,7 +375,7 @@ quality_control <- function() {
             wrap_scatter(0.05, "red", abs(het$"F"), "fhet_scatter.png")
         }
 
-        het_ind_file_path <- remove_indices(het, "F", het_threshold, fam_ind_cols, "remove.het.samples.txt")
+        het_ind_file_path <- remove_indices_by_threshold(het, "F", het_threshold, fam_ind_cols, "remove.het.samples.txt")
         return(het_ind_file_path)
     }
 
@@ -397,7 +403,7 @@ quality_control <- function() {
         # Remove Duplicates
         combined_ind <- unique(combined_ind)
 
-        combined_file_out_path <- file.path(plink_out_dir, "remove.combined.samples.txt")
+        combined_file_out_path <- file.path(out_dir, "remove.combined.samples.txt")
         wrap_write_table(combined_ind, combined_file_out_path, col.names = FALSE, quote = FALSE)
         return(combined_file_out_path)
     }
