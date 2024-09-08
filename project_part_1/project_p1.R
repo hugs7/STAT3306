@@ -597,7 +597,7 @@ gwas <- function(qc_data_path) {
         eig_files <- list(pca_eig_val, pca_eig_vec)
         if (all(sapply(eig_files, file.exists))) {
             logger("INFO", "PCA already exist. Skipping.")
-            return(NULL)
+            return(pca_path)
         }
 
         # No PCA. Compute:
