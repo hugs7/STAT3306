@@ -40,6 +40,8 @@ fam_ind_cols <- c("FID", "IID")
 # Thresholds
 genotype_threshold <- 0.05
 het_threshold <- 0.2
+hwe_threshold <- 0.001
+freq_threshold <- 0.01
 
 # Data Paths
 data_folder <- file.path("/data/STAT3306")
@@ -433,10 +435,12 @@ sample_qc <- function(qc_data_path) {
         hw_eq_name <- "hw_eq"
         plink(qc_data_path, pl_fgs$hardy, hw_eq_name)
         
-        hw_eq_path <- construct_plink_table_path(hw_eq_name, exts$hwe)
-        hw <- wrap_read_table(hw_eq_path)
-        
-        hw_eq_ind_file_path <- remove_indices(hw, c("MAF", "P"), threshold, 2, "remove.SNPs.txt")
+        hwe_path <- construct_plink_table_path(hw_eq_name, exts$hwe)
+        hwe <- wrap_read_table(hwe_path)
+        return(hwe) 
+
+        #hwe_ind_file_path <- remove_indices_by_threshold(hwe, "P", "<", hwe_threshold, , "remove.SNPs.txt")
+        #return(hwe_ind_file_path)
     }
 
     min_allele_freq <- function() {
@@ -445,19 +449,35 @@ sample_qc <- function(qc_data_path) {
 
         min_allele_path <- construct_plink_table_path(min_allele_name, exts$frq)
         freq <- wrap_read_table(min_allele_path)
+        return(freq)
 
-        min_allele_ind_file_path <- remove_indices(freq, c("MAF", "P"), threshold, 2, "remove.SNPs.txt")
+        #min_allele_ind_file_path <- remove_indices_by_threshold(freq, c("MAF", "P"), threshold, 2, "remove.SNPs.txt")
     }
+
+    remove_snps <- function(hwe, freq) {
+        ind_to_remove <- unique(c(which(freq$MAF < freq_threshold), which(hwe$P < hwe_threshold)))
+        snp_id_col <- 2
+        remove_snps_path <- save_removed_indices(freq, ind_to_remove, snp_id_col, "remove.SNPs.txt")
+        return(remove_snps_path)
+    }
+
+    exclude_snps <- function(remove_snps_path) {
+        data_subset_path <- 
+        out_name <- "test_qc"
+        plink_args <- paste(pl_fgs$mb, pl_fgs$exclude, remove_snps_path)
+        plink(data_subset_path, plink_args, out_name)
+    }
+
+    hwe <- hw_eq()
+    freq <- min_allele_freq()
+    
+    remove_snps_path <- remove_snps(hwe, freq)
+    remove_snps(remove_snps_path)
 
     # Filter individuals with high missingness
     filtered_path <- file.path(plink_out_dir, "filtered")
     filtered_indvs_name <- "filtered_individuals"
     plink(filtered_path, paste(pl_fgs$mind, genotype_threshold, pl_fgs$mb), filtered_indvs_name)
-
-    logger("Checking Duplicate SNPs")
-    filtered_indvs_path <- file.path(plink_out_dir, filtered_indvs_name)
-    dup_vars_name <- "duplicate_vars"
-    plink(filtered_indvs_path, paste(pl_fgs$chr, "X", pl_fgs$dup_vars), dup_vars_name)
 }
 
 gwas <- function() {
