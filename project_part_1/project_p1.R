@@ -1,5 +1,5 @@
 # Course: STAT3306: Statistical Analysis of Genetic Data
-# Taken: Semeste 2, 2024
+# Taken: Semester 2, 2024
 # Project Part 1
 # Author: Hugo Burton
 # Date: 7th September 2024
@@ -233,8 +233,9 @@ plink <- function(bfile, plink_args, out_name = NULL) {
     return(out_path)
 }
 
-add_extension <- function(basename, ext) {
-    path <- paste0(basename, ext))
+add_extension <- function(basename, ...) {
+    logger("TRACE", "Adding extensions: ", quotes(...), " to basename ", quotes(basename), ".")
+    path <- paste0(basename, ...)
     logger("TRACE", "Constructed plink out path: ", quotes(path), ".")
     return(path)
 }
@@ -309,6 +310,16 @@ wrap_scatter <- function(abline_h, abline_col, ...) {
     wrap_plot(plot_with_abline, ...)
 }
 
+genomic_inflation_factor <- function(d, df = 1) {
+    logger("DEBUG", "Computing genomic inflation factor with ", df, " degree of freedom...")
+    
+    median_val <- median(d$P)
+    logger("TRACE", "Median Value: ", median_val)
+    
+    chisq_med <- qchisq(0.5, 1)
+    qchisq(1 - median_val, df) / chisq_med
+}
+
 init <- function() {
     logger("INFO", "Initialising directories...")
     mkdir_if_not_exist(plots_out_dir)
@@ -324,11 +335,12 @@ init()
 pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"), 
                              "hardy", "het", "mind", "pheno", "covar", 
                              list("dup_vars" = "list-duplicate-vars"), "out", 
-                             "bfile", "chr", "freq", "exclude", "mpheno"), 
+                             "bfile", "chr", "freq", "exclude", "mpheno",
+                             "pca", "linear"), 
                         named_flag)
 
 exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
-                           "frq", "txt", "png"), 
+                           "frq", "txt", "png", "eigenvec", "qassoc"), 
                       ext)
 
 # === Main ===
@@ -342,7 +354,7 @@ quality_control <- function() {
         logger("Checking for missing genotypes")
 
         missing_name <- "missing"
-        missing_basename, plink_orig_data(pl_fgs$missing, missing_name)
+        missing_basename <- plink_orig_data(pl_fgs$missing, missing_name)
         
         logger("DEBUG", "Reading imiss table...")
         missing_out_path <- add_extension(missing_basename, exts$imiss)
@@ -503,19 +515,75 @@ sample_qc <- function(data_subset_path) {
 }
 
 gwas <- function(qc_data_path) {
-    phenotype_file_prefix <- space_to_underscore(phenotype)
+    logger("INFO", "Performing GWAS...")
 
     get_pheno_path <- function(pheno_suffix) {
-        pheno_file_name <- paste0(phenotype_file_prefix, pheno_suffix, exts$pheno)
+        logger("DEBUG", "Retrieving pheno path for suffix ", quotes(pheno_suffix), ".")
+        phenotype_file_prefix <- space_to_underscore(phenotype)
+        pheno_file_name <- paste0(phenotype_file_prefix, pheno_suffix, exts$phen)
         file.path(phenotypes, pheno_file_name)
     }
 
     gwas_pheno <- function() {
         logger("Performing Pheno on GWAS...")
+        
         alt_mpheno <- 1
-        plink_args <- paste(pl_fgs$assoc, pl_fgs$pheno, pheno_path, pl_fgs$mpheno, alt_mpheno)
+        plink_args <- paste(pl_fgs$assoc, pl_fgs$pheno, pheno_path, mpheno_args)
         out_name <- "gwas_pheno_1"
         plink(qc_data_path, plink_args, out_name)
+    }
+
+    gwas_plots <- function(d, plot_suffix = "") {
+        name_plot <- function(plot_type) {
+            paste0("gwas", plot_type, plot_suffix, ".png")
+        }
+
+        man_plot_name <- name_plot("manhattan")
+        logger("INFO", "Generating Manhattan Plot ", quotes(man_plot_name), " ...")
+        wrap_plot(manhattan, d, man_plot_name)
+
+        qq_plot_name <- name_plot(qq)
+        logger("INFO", "Generating QQ Plot ", quotes(qq_plot_name), " ...")
+        wrap_plot(qq, d$P, qq_plot_name)
+        
+        logger("INFO", "Computing Genomic Inflation Factor (", plot_suffix, ") ...")
+        lambda_gc <- genomic_inflation_factor(d, 1)
+        logger("INFO", "Lambda_{GC} (", plot_suffix, ") = ", lambda_gc)
+        return(lambda_gc)
+    }
+
+    check_inflation_factor <- function(pheno_basename) { 
+        pheno_qassoc_path <- paste0(pheno_basename, exts$qassoc)
+        d <- wrap_read_table(pheno_path)
+        gwas_plots(d)
+    }
+
+    compute_principal_comps <- function(num_components) {
+        logger("Performing Principal Component Analysis on Data QC with ", num_components, 
+               " components...")
+
+        plink_args <- paste(pl_fgs$pca, num_components)
+        out_name <- "pca"
+        plink(qc_data_path, plink_args, out_name)
+    }
+
+    add_pc_covariates <- function(pheno_path, pc_eigvec_file) {
+        logger("Adding principal components to covariates...")
+        logger("DEBUG", "Loading eigenvec file: ", quotes(pc_eigvec_file), ".")
+        check_ext(pc_eigvec_file, exts$eigenvec)
+        plink_args <- paste(pl_fgs$linear, pl_fgs$covar, pc_eigvec_file, pl_fgs$pheno, pheno_path, mpheno_args)
+        out_name <- "gwas_pheno_1_pc"
+        plink(qc_data_path, plink_args, out_name)
+    }
+
+    check_pc_inflation_factor <- function(pheno_pc_basename) {
+        pheno_pc_path <- add_extension(pheno_pc_basename, exts$assoc, exts$linear)
+        d <- wrap_read_table(pheno_pc_path)
+
+        d_sub <- d[which(d$TEST == "ADD"),]
+        cat0(head(d_sub))
+
+        gwas_plots(d_sub, "_pc")
     }
 
     trait_analysis <- function(include_covariates) {
@@ -544,9 +612,20 @@ gwas <- function(qc_data_path) {
         binary2_path <- get_pheno_path("_binary2")
         plink_orig_data(get_plink_args(binary2_path), "binary_trait_30_results")
     }
-
+    
+    # Some scoped variables
+    pheno_path <- get_pheno_path("")
+    alt_mpheno <- 1
+    mpheno_args <- paste(pl_fgs$mpheno, alt_mpheno)
+    
+    # Main
+    pheno_basename <- gwas_pheno()
+    check_inflation_factor(pheno_basename)
+    pc_eig_vec_file <- compute_principal_comps(10)
+    gwas_pheno_1_pc_basename <- add_pc_covariates(pheno_path, pc_eigvec_file)
+    check_pc_inflation_factor(gwas_pheno_1_pc_basename)
+    
     #trait_analysis(TRUE)
-    gwas_pheno()
 }
 
 run_analysis <- function() {
@@ -595,7 +674,7 @@ read_phenotypes <- function() {
     phenotype_file_prefix <- space_to_underscore(phenotype)
 
     get_pheno_path <- function(pheno_suffix) {
-        pheno_file_name <- paste0(phenotype_file_prefix, pheno_suffix, exts$pheno)
+        pheno_file_name <- paste0(phenotype_file_prefix, pheno_suffix, exts$phen)
         file.path(phenotypes, pheno_file_name)
     }
 
