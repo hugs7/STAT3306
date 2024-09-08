@@ -26,11 +26,11 @@ default_log_level <- "INFO"
 allowed_log_levels <- c("TRACE", "DEBUG", "INFO", "WARN", "ERROR")
 app_log_level <- "TRACE"
 level_colours <- list(
-    TRACE = crayon::gray,
-    DEBUG = crayon::cyan,
-    INFO = crayon::green,
+    TRACE = crayon::silver,
+    DEBUG = crayon::magenta,
+    INFO = crayon::cyan,
     WARN = crayon::yellow,
-    ERROR = crayon::red
+    ERROR = crayon::bgRed
 )
 
 # === Globals ===
