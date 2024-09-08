@@ -240,6 +240,11 @@ remove_indices <- function(missing_indices, thresh_col_name, threshold, out_col_
 }
 
 check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
+    if (length(expected_ext) == 0) {
+        logger("ERROR", "Expected extension is blank")
+        return(NULL)
+    }
+    logger("DEBUG", "Checking ", quotes(out_name), " for extension ", quotes(expected_ext), ".")
     if (!endsWith(out_name, expected_ext)) {
         logger("WARN", "Out name ", quotes(out_name), " does not end with ", quotes(expected_ext), ".")
         if (add_if_missing) {
@@ -270,7 +275,7 @@ log_indvs_to_remove <- function(num_indvs) {
 }
 
 wrap_plot <- function(plot_callback, data, out_name, width = 600, height = 350) {
-    out_name <- check_ext_png(out_name, TRUE)
+    out_name <- check_png_ext(out_name, TRUE)
     out_path <- file.path(plots_out, out_name)
     delete_file(out_path)
     png(out_path, width, height)
@@ -309,7 +314,7 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
                              "bfile", "chr"), 
                         named_flag)
 
-exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", "txt"), ext)
+exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", "txt", "png"), ext)
 
 # === Main ===
 
