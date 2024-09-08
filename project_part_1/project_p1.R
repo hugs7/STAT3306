@@ -78,7 +78,7 @@ ext <- function(ext_name) {
     paste0(".", ext_name)
 }
 
-create_object <- function(strings, transform_fn) {
+create_object <- function(items, transform_fn) {
     result <- list()
 
     for (item in items) {
