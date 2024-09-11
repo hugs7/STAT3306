@@ -231,7 +231,7 @@ plink <- function(bfile, plink_args, out_name = NULL) {
         std_out <- TRUE
     } else {
         # Outputs to file
-        plink_out_path <- file.path(plink_out_dir, out_name)
+        plink_out_path <- construct_plink_out_path(out_name)
         logger("TRACE", "Plink out path: ", quotes(plink_out_path), ".")
         plink_cmd <- paste(plink_base_cmd, pl_fgs$out, plink_out_path)
         std_out <- FALSE
@@ -267,6 +267,17 @@ add_extension <- function(basename, ...) {
     logger("TRACE", "Constructed plink out path: ", path, ".")
     return(path)
 }
+
+construct_plink_out_path <- function(...) {
+    #' Constructs a file path in the plink out directory given a basename
+    #' @param ... {string}: The name of the file (potentially split) without
+    #'                      the plink out directory prefixed.
+    #' @return path {string}: The relative path to the file.
+
+    basename <- paste0(...)
+    file.path(plink_out_dir, basename)
+}
+
 
 construct_out_path <- function(basename) {
     #' Constructs a file path in the out directory given a basename
@@ -472,7 +483,7 @@ quality_control <- function() {
         logger("Checking for related samples...")
         
         related_name <- "related_samples"
-        expected_related_path <- file.path(plink_out_dir, basename_with_extension(related_name))
+        expected_related_path <- construct_plink_out_path(basename_with_extension(related_name))
         logger("DEBUG", "Checking for cached result at path ", quotes(expected_related_path), "...")
         if (file_exists(expected_related_path)) {
             logger("INFO", "Found cached related samples result")
@@ -529,7 +540,7 @@ quality_control <- function() {
         plink_flags <- paste(pl_fgs$mb, pl_fgs$remove, remove_path)
         plink_orig_data(plink_flags, out_name)
         
-        out_path <- file.path(plink_out_dir, out_name)
+        out_path <- construct_plink_out_path(out_name)
         return(out_path)
     }
 
@@ -685,7 +696,7 @@ gwas <- function(qc_data_path) {
     compute_principal_comps <- function(num_components) {
         # Check for existing PCA
         out_name <- "pca"
-        pca_path <- file.path(plink_out_dir, out_name)   
+        pca_path <- construct_plink_out_path(out_name)   
         pca_eig_val <- add_extension(pca_path, exts$eigenval)
         pca_eig_vec <- add_extension(pca_path, exts$eigenvec)
 
@@ -707,7 +718,7 @@ gwas <- function(qc_data_path) {
     add_pc_covariates <- function(pheno_path, pc_eigvec_file) {
         # Check for existing Covariates
         out_name <- "gwas_pheno_1_pc"
-        cov_out_path <- file.path(plink_out_dir, out_name)
+        cov_out_path <- construct_plink_out_path(out_name)
         pheno_pc_path <- add_extension(cov_out_path, exts$assoc, exts$linear)
         if (file_exists(pheno_pc_path)) {
             logger("INFO", "Covariates already exist. Skipping.")
