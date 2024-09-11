@@ -355,7 +355,8 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
                              "hardy", "het", "mind", "pheno", "covar", 
                              list("dup_vars" = "list-duplicate-vars"), "out", 
                              "bfile", "chr", "freq", "exclude", "mpheno",
-                             "pca", "linear", "assoc"), 
+                             "pca", "linear", "assoc", "clump-p1", "clump-p2", 
+                             "clump-r2", "clump-kb"), 
                         named_flag)
 
 exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
@@ -640,6 +641,18 @@ gwas <- function(qc_data_path) {
         gwas_plots(d_sub, FALSE, "pc")
     }
 
+    clumping <- function(pheno_pc_path) {
+        logger("Clumping GWAS Results...")
+        out_name <- "gwas_pheno_1_clump"
+        clump_p1_val <- 0.5
+        clump_p2_val <- 0.5
+        clump_r2_val <- 0.2
+        clump_kb_val <- 500
+        plink_args <- paste(pl_fgs$clump, pheno_pc_path, pl_fgs$clump-p1, clump_p1_val, pl_fgs$clump-p2,
+        clump_p2_val, pl_fgs$clump-r2, clump_r2_val, pl_fgs$clump-kb, clump_kb_val)
+        plink(qc_data_path, plink_args, out_name)
+    }
+
     trait_analysis <- function(include_covariates) {
         logger("Performing trait analysis with covariates: ", include_covariates)
 
@@ -678,6 +691,7 @@ gwas <- function(qc_data_path) {
     pc_eigvec_file <- compute_principal_comps(10)
     pheno_1_pc_path <- add_pc_covariates(pheno_path, pc_eigvec_file)
     check_pc_inflation_factor(pheno_1_pc_path)
+    clumping(pheno_1_pc_path)
     
     #trait_analysis(TRUE)
 }
