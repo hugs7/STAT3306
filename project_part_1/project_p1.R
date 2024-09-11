@@ -433,9 +433,9 @@ quality_control <- function() {
         #' Finds individuals with outlying homozygosity values to remove from the dataset
         #' @param plot {boolean}: if true, will plot a histogram of the frequency of hz freqs and a scatterplot
         #'                        of their distribution across the geneome.
-        #' @return het_ind_file_path {string}: The file path to the file contianing the individuals to remove.
+        #' @return het_ind_file_path {string}: The file path to the file containing the individuals to remove.
 
-        logger("Checking for outlying homozygosity values")
+        logger("Checking for outlying homozygosity values...")
 
         hz_name <- "hz"
         het_basename <- plink_orig_data(pl_fgs$het, hz_name)
