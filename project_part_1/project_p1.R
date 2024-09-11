@@ -590,7 +590,7 @@ sample_qc <- function(data_subset_path) {
         hwe <- wrap_read_table(hwe_path)
         
         if (histogram) {
-            wrap_histogram(hwe, "hwe_deviations.png")
+            wrap_histogram(hwe$P, "hwe_deviations.png")
         }
 
         return(hwe) 
@@ -609,7 +609,7 @@ sample_qc <- function(data_subset_path) {
         freq <- wrap_read_table(min_allele_path)
 
         if (histogram) {
-            wrap_histogram(freq, "maf_distribution.png")
+            wrap_histogram(freq$MAF, "maf_distribution.png")
         }
 
         return(freq)
@@ -636,12 +636,12 @@ sample_qc <- function(data_subset_path) {
         plink(data_subset_path, plink_args, out_name)
     }
 
-    compare_minor_allele_freqs <- function(freq, do_plot) {
+    compare_minor_allele_freqs <- function(freq, do_hist, do_plot) {
         logger("Comparing Minor Allele Frequencies...")
         snp_ref_path <- file.path(data_path, "reference_allele_frequencies.txt")
         ref <- wrap_read_table(snp_ref_path, header = FALSE)
-        dim(ref)
-        head(ref)
+        print(dim(ref))
+        print(head(ref))
 
         ind <- match(freq$SNP, ref$V1)
         out <- cbind(freq, ref[ind,])
@@ -653,16 +653,20 @@ sample_qc <- function(data_subset_path) {
         logger("Inverting Allele Frequncies with respect to allele ", flip_allele, ".")
         out_cpy$MAF[out$A1 == flip_allele] <- 1 - out$MAF[out$A1 == flip_allele]
 
+        if (do_hist) {
+            logger("Plotting histogram of Minor Allele Frequency (MAF)")
+            res <- out$MAF - out$V2
+            print(head(res))
+            allele_freq_threshold <- 0.1
+            keep <- c(which(abs(res) <= allele_freq_threshold))
+            wrap_histogram(res, "minor_allele.png")
+        }
+
         if (do_plot) {
             logger("Plotting allele frequency comparison with reference...")
             wrap_plot(plot, out_inv$MAF ~ out_inv$V2, "min_allele_freq_comparison.png")
         }
 
-        res <- out$MAF - out$V2
-        cat0(head(res))
-        allele_freq_threshold <- 0.1
-        keep <- c(which(abs(res) <= allele_freq_threshold))
-        wrap_histogram(res, "minor_allele.png")
     }
     
     lmiss <- missing_snps(TRUE)
@@ -672,7 +676,7 @@ sample_qc <- function(data_subset_path) {
     remove_snps_path <- remove_snps(lmiss, hwe, freq)
     qc_data_path <- exclude_snps(remove_snps_path)
 
-    compare_minor_allele_freqs(freq, TRUE)
+    compare_minor_allele_freqs(freq, FALSE, TRUE)
     
     return(qc_data_path)
 }
