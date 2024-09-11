@@ -413,10 +413,19 @@ quality_control <- function() {
     logger("Performing Quality Control")
 
     individual_missing_genotypes <- function(histogram) {
+        #' Finds individuals with excess missing genotypes to remove from the dataset
+        #' @param histogram {boolean}: if true, will plot a histogram of the frequency of missingness
+        #' @return missing_file_path {string}: The file path to the file containing the individuals to remove.
+
         excess_missing_genotypes(NULL, exts$imiss, fam_ind_cols, histogram)
     }
 
     outlying_homozygosity <- function(plot) {
+        #' Finds individuals with outlying homozygosity values to remove from the dataset
+        #' @param plot {boolean}: if true, will plot a histogram of the frequency of hz freqs and a scatterplot
+        #'                        of their distribution across the geneome.
+        #' @return het_ind_file_path {string}: The file path to the file contianing the individuals to remove.
+
         logger("Checking for outlying homozygosity values")
 
         hz_name <- "hz"
@@ -450,6 +459,11 @@ quality_control <- function() {
     }
 
     combine_remove_files <- function(...) {
+        #' Combines the individuasl to remove into a single txt file
+        #' @param ... {character}: File paths to individual files containing IDs of individuals to remove.
+        #'                         These files are expected to have at least two columns: FID and IID.
+        #' @return {string}: File path to the combined output file with individuals to remove.
+
         logger("Combining Remove Files...")
 
         file_paths <- list(...)
@@ -472,6 +486,10 @@ quality_control <- function() {
 
 
     remove_bad_individuals <- function(remove_path) {
+        #' Removes individuals from the dataset who are specified in the provided file.
+        #' @param remove_path {string}: File path to file containing individuals to remove from the dataset.
+        #' @return out_path {string}: File path to subset of original dataset with specified individuals removed.
+
         logger("Removing bad samples...")
         out_name <- "test_subset"
 
