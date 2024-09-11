@@ -44,6 +44,7 @@ het_threshold <- 0.2
 related_threshold <- 0.025  # Plink Default
 hwe_threshold <- 0.001
 freq_threshold <- 0.01
+maf_threshold <- 0.1
 
 # Data Paths
 data_folder <- file.path("/data/STAT3306")
@@ -653,9 +654,11 @@ sample_qc <- function(data_subset_path) {
         logger("Inverting Allele Frequncies with respect to allele ", flip_allele, ".")
         out_cpy$MAF[out$A1 == flip_allele] <- 1 - out$MAF[out$A1 == flip_allele]
 
+        # Must be calculated regardless of plots
+        res <- out$MAF - out$V2
+
         if (do_hist) {
             logger("Plotting histogram of Minor Allele Frequency (MAF)")
-            res <- out$MAF - out$V2
             print(head(res))
             allele_freq_threshold <- 0.1
             keep <- c(which(abs(res) <= allele_freq_threshold))
@@ -665,8 +668,31 @@ sample_qc <- function(data_subset_path) {
         if (do_plot) {
             logger("Plotting allele frequency comparison with reference...")
             wrap_plot(plot, out_cpy$MAF ~ out_cpy$V2, "min_allele_freq_comparison.png")
+
+            logger("Removing alleles which deviate significantly from reference...")
+            accept_snps <- which(abs(res) <= maf_threshold)
+            out_accept <- out_cpy[accept_snps,]
+            wrap_plot(plot, out_accept$MAF ~ out_accept$V2, "corrected_min_allele_freq_comparison.png")
         }
 
+        remove_snps_indx <- which(abs(res) > maf_threshold)
+        remove_snps <- freq[remove_snps_indx, "SNP"]
+        remove_out_path <- construct_out_path("maf_reference_removed.txt")
+        wrap_write_table(remove_snps, remove_out_path)
+        return(remove_out_path)
+    }
+
+    exclude_insig_maf <- function(qc_data_path, remove_out_path) {
+        #' Creates a subset of the data which excludes insignificant alleles by their MAF
+        #' @param qc_data_path {string}: Path to dataset to exclude from
+        #' @param remove_out_path {string}: Path to file detailing which alleles to remove
+        #' @return qc_data_maf_path {string}: Path to new subset of data
+
+        logger("Excluding insignificant alleles by MAF...")
+
+        out_name <-"test_qc_insif_maf"
+        plink_args <- paste(pl_fgs$mb, pl_fgs$exclude, remove_out_path)
+        plink(qc_data_path, plink_args, out_name)
     }
     
     lmiss <- missing_snps(TRUE)
@@ -676,9 +702,10 @@ sample_qc <- function(data_subset_path) {
     remove_snps_path <- remove_snps(lmiss, hwe, freq)
     qc_data_path <- exclude_snps(remove_snps_path)
 
-    compare_minor_allele_freqs(freq, FALSE, TRUE)
+    remove_out_path <- compare_minor_allele_freqs(freq, TRUE, TRUE)
+    qc_data_maf_path <- exclude_insig_maf(qc_data_path, remove_out_path)
     
-    return(qc_data_path)
+    return(qc_data_maf_path)
 }
 
 gwas <- function(qc_data_path) {
