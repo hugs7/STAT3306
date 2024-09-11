@@ -41,6 +41,7 @@ fam_ind_cols <- c("FID", "IID")
 # Thresholds
 genotype_threshold <- 0.05
 het_threshold <- 0.2
+related_threshold <- 0.025  # Plink Default
 hwe_threshold <- 0.001
 freq_threshold <- 0.01
 
@@ -405,12 +406,12 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
                              "bfile", "chr", "freq", "exclude", "mpheno",
                              "pca", "linear", "assoc", "clump", list("cp1" = "clump-p1"), 
                              list("cp2" = "clump-p2"), list("cr2" = "clump-r2"), 
-                             list("ckb" = "clump-kb")), 
+                             list("ckb" = "clump-kb"), list("rel_cutoff" = "rel-cutoff")), 
                         named_flag)
 
 exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
                            "frq", "txt", "png", "eigenvec", "eigenval",
-                           "qassoc", "linear", "clumped"), 
+                           "qassoc", "linear", "clumped", "rel", "id"), 
                       ext)
 
 # === Main ===
@@ -458,8 +459,32 @@ quality_control <- function() {
         return(het_ind_file_path)
     }
 
-    related_samples <- function() {
+    related_samples <- function(threshold = related_threshold) {
+        #' Finds individuals from each pair of samples with observed genomic relatedness above a given threshold.
+        #' NP-Hard problem so will used cached result if exists.
+        #' @param threshold {float}: The threshold to exclude related samples by.
+        #' @return related_file_path {string}: File path to a file containing individuals to remove.
+
+        basename_with_extension <- function(basename) [
+            add_extension(basename, exts$rel, exts$id)
+        }
+
+        logger("Checking for related samples...")
         
+        related_name <- "related_samples"
+        expected_related_path <- file.path(plink_out_dir, basename_with_extension(related_name))
+        logger("DEBUG", "Checking for cached result at path ", quotes(expected_related_path), "...")
+        if (file_exists(expected_related_path)) {
+            logger("INFO", "Found cached related samples result")
+            return(expected_related_path)
+        }
+
+        logger("INFO", "Cached related samples not found. Computing...")
+
+        # Note this file is individuals to KEEP (not remove)
+        related_basename <- plink_orig_data(pl_fgs$rel_cutoff, related_name)
+        related_path <- basename_with_extension(related_basename)
+        return(related_path)
     }
 
     ancestry_outliers <- function() {
@@ -510,6 +535,7 @@ quality_control <- function() {
 
     missing_ind_path <- individual_missing_genotypes(TRUE)
     het_ind_path <- outlying_homozygosity(FALSE)
+    related_path <- related_samples()
 
     combined_ind_path <- combine_remove_files(missing_ind_path, het_ind_path)
     data_subset_path <- remove_bad_individuals(combined_ind_path)
