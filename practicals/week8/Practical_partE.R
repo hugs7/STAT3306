@@ -12,8 +12,9 @@ lambda    <- 10      #value for lambda
 ###################################################
 ### code chunk number 2: code
 ###################################################
-X <- matrix(scan("Data/PartE/xvec_day4.inp"), ncol = nmarkers, byrow = TRUE)
-y <- matrix(scan("Data/PartE/yvec_day4.inp"), byrow = TRUE)
+data <- file.path("./data")
+X <- matrix(scan(file.path(data, "xvec_day4.inp")), ncol = nmarkers, byrow = TRUE)
+y <- matrix(scan(file.path(data, "yvec_day4.inp")), byrow = TRUE)
 
 
 ###################################################
@@ -43,18 +44,17 @@ rhs = rbind(t(ones) %*% y, t(X) %*% y)
 ###################################################
 ### code chunk number 6: code (eval = FALSE)
 ###################################################
-## solution_vec <- solve(coeff, rhs)
-
+solution_vec <- solve(coeff, rhs)
+solution_vec
 
 ###################################################
 ### code chunk number 7: code (eval = FALSE)
 ###################################################
-## Xprog <- matrix(scan("/Data/PartE/xvec_prog.inp"), ncol = nmarkers, byrow = TRUE)
-## GEBV = Xprog %*% solution_vec[-1]
-## 
-## 
-## yprog <- matrix(scan("Data/PartE/yvec_prog.inp"), ncol = 1, byrow = TRUE)
-## cor(GEBV, yprog)
+Xprog <- matrix(scan(file.path(data, "xvec_prog.inp")), ncol = nmarkers, byrow = TRUE)
+GEBV = Xprog %*% solution_vec[-1]
+
+yprog <- matrix(scan(file.path(data, "yvec_prog.inp")), ncol = 1, byrow = TRUE)
+cor(GEBV, yprog)
 
 
 ###################################################
@@ -164,6 +164,6 @@ rhs = rbind(t(ones) %*% y, t(X) %*% y)
 ### code chunk number 19: PartD - BLUP.Rnw:243-245
 ###################################################
 # the end of that chapter. Command not to be run by students
-Stangle('Sweave/PartD - BLUP.Rnw', encoding = 'utf8', output = "Additional Files For Students/Rcode/PartD - BLUP.R")
+# Stangle('Sweave/PartD - BLUP.Rnw', encoding = 'utf8', output = "Additional Files For Students/Rcode/PartD - BLUP.R")
 
 
