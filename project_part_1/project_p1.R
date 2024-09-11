@@ -650,6 +650,7 @@ sample_qc <- function(data_subset_path) {
         # Take inverse of allele frequencies which are given with respect to allele 2.
         out_cpy <- out
         flip_allele <- 2
+        logger("Inverting Allele Frequncies with respect to allele ", flip_allele, ".")
         out_cpy$MAF[out$A1 == flip_allele] <- 1 - out$MAF[out$A1 == flip_allele]
 
         if (do_plot) {
