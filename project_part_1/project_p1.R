@@ -581,23 +581,37 @@ sample_qc <- function(data_subset_path) {
         return(lmiss)
     }
 
-    hw_eq <- function() {
+    hw_eq <- function(histogram) {
         logger("Computing Hardy-Weinberg Equilibrium")
         hwe_name <- "hwe"
         hwe_basename <- plink(data_subset_path, pl_fgs$hardy, hwe_name)
-        
+       
         hwe_path <- add_extension(hwe_basename, exts$hwe)
         hwe <- wrap_read_table(hwe_path)
+        
+        if (histogram) {
+            wrap_histogram(hwe, "hwe_deviations.png")
+        }
+
         return(hwe) 
     }
 
-    min_allele_freq <- function() {
+    min_allele_freq <- function(histogram) {
+        #' Indentify SNPs with low minor allele frequency
+        #' @param histogram {boolean}: if true, frequency of MAF is plotted visually.
+        #' @return dataframe of low minor allele frequencies
+
         logger("Computing Minor Allele Frequencies")
         min_allele_name <- "minor_allele_freq"
         min_allele_basename <- plink(data_subset_path, pl_fgs$freq, min_allele_name)
 
         min_allele_path <- add_extension(min_allele_basename, exts$frq)
         freq <- wrap_read_table(min_allele_path)
+
+        if (histogram) {
+            wrap_histogram(freq, "maf_distribution.png")
+        }
+
         return(freq)
     }
 
@@ -647,8 +661,8 @@ sample_qc <- function(data_subset_path) {
     }
     
     lmiss <- missing_snps(TRUE)
-    hwe <- hw_eq()
-    freq <- min_allele_freq()
+    hwe <- hw_eq(TRUE)
+    freq <- min_allele_freq(TRUE)
     
     remove_snps_path <- remove_snps(lmiss, hwe, freq)
     qc_data_path <- exclude_snps(remove_snps_path)
