@@ -230,9 +230,9 @@ plink <- function(bfile, plink_args, out_name = NULL) {
         std_out <- TRUE
     } else {
         # Outputs to file
-        out_path <- file.path(plink_out_dir, out_name)
-        logger("TRACE", "Plink out path: ", quotes(out_path), ".")
-        plink_cmd <- paste(plink_base_cmd, pl_fgs$out, out_path)
+        plink_out_path <- file.path(plink_out_dir, out_name)
+        logger("TRACE", "Plink out path: ", quotes(plink_out_path), ".")
+        plink_cmd <- paste(plink_base_cmd, pl_fgs$out, plink_out_path)
         std_out <- FALSE
     }
     
@@ -248,10 +248,10 @@ plink <- function(bfile, plink_args, out_name = NULL) {
         system(plink_cmd)
     } else {
         shell_call(plink_cmd)
-        logger("Plink results directed to ", quotes(out_path), ".")
+        logger("Plink results directed to ", quotes(plink_out_path), ".")
     }
 
-    return(out_path)
+    return(plink_out_path)
 }
 
 add_extension <- function(basename, ...) {
@@ -267,14 +267,22 @@ add_extension <- function(basename, ...) {
     return(path)
 }
 
+construct_out_path <- function(basename) {
+    #' Constructs a file path in the out directory given a basename
+    #' @param basename {string}: The name of the file without the out directory prefixed.
+    #' @return path {string}: The relative path to the file.
+
+    file.path(out_dir, basename)
+}
+
 save_removed_indices <- function(table, ind_to_remove, out_cols, out_name) {
     logger("INFO", "Saving removed indices to ", quotes(out_name), ".")
     logger("DEBUG", "Selected columns: ", quotes(out_cols), ".")
 
     file <- table[ind_to_remove, out_cols]
-    out_path <- file.path(out_dir, out_name)
-    wrap_write_table(file, out_path, col.names = FALSE, quote = FALSE)
-    return(out_path)
+    ind_out_path <- construct_out_path(out_name)
+    wrap_write_table(file, ind_out_path, col.names = FALSE, quote = FALSE)
+    return(ind_out_path)
 }
 
 remove_indices_by_threshold <- function(table, thresh_col_name, threshold, out_cols, out_name) {
@@ -479,7 +487,7 @@ quality_control <- function() {
         # Remove Duplicates
         combined_ind <- unique(combined_ind)
 
-        combined_file_out_path <- file.path(out_dir, "remove.combined.samples.txt")
+        combined_file_out_path <- construct_out_path("remove.combined.samples.txt")
         wrap_write_table(combined_ind, combined_file_out_path, col.names = FALSE, quote = FALSE)
         return(combined_file_out_path)
     }
@@ -721,7 +729,7 @@ gwas <- function(qc_data_path) {
         logger("DEBUG", "End of clump output")
         
         # Write to file
-        out_path <- file.path(out_dir, "clumps.txt")
+        out_path <- construct_out_path("clumps.txt")
         wrap_write_table(clump_out, out_path)
     }
 
