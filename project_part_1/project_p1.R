@@ -646,11 +646,15 @@ sample_qc <- function(data_subset_path) {
         ind <- match(freq$SNP, ref$V1)
         out <- cbind(freq, ref[ind,])
         print(head(out))
-        # Valentine says need to do 1 - MAF here otherwise will get X (cross)
-        # See lcys as
+        
+        # Take inverse of allele frequencies which are given with respect to allele 2.
+        out_cpy <- out
+        flip_allele <- 2
+        out_cpy$MAF[out$A1 == flip_allele] <- 1 - out$MAF[out$A1 == flip_allele]
+
         if (do_plot) {
             logger("Plotting allele frequency comparison with reference...")
-            wrap_plot(plot, out$MAF ~ out$V2, "min_allele_freq_comparison.png")
+            wrap_plot(plot, out_inv$MAF ~ out_inv$V2, "min_allele_freq_comparison.png")
         }
 
         res <- out$MAF - out$V2
