@@ -73,90 +73,90 @@ p = colMeans(Xall)/2
 # sump
 sump <- 0
 for(j in 1:nmarkers)
-     sump <- sump + 2*p[j]*(1-p[j])
+    sump <- sump + 2*p[j]*(1-p[j])
 
 
 ###################################################
 ### code chunk number 10: code (eval = FALSE)
 ###################################################
-## W = matrix(0, nrow = nanims, ncol = nmarkers)
-## for(i in 1:nanims){
-##   for(j in 1:nmarkers){
-##         W[i,j] = Xall[i,j] - 2*p[j]
-##   }
-## }
-## 
-## #note: both code can be merged to limit the number of loops (on j)
+W = matrix(0, nrow = nanims, ncol = nmarkers)
+for(i in 1:nanims){
+  for(j in 1:nmarkers){
+        W[i,j] = Xall[i,j] - 2*p[j]
+   }
+}
+
+#note: both code can be merged to limit the number of loops (on j)
 
 
 ###################################################
 ### code chunk number 11: code (eval = FALSE)
 ###################################################
-## G = W%*%t(W)/sump
-## # The next line adds a small amount to the diagonal of G, 
-## # otherwise G is not invertable in this small example!
-## G <- G + diag(nanims)*0.01    
-## Ginv <- solve(G)
+G = W%*%t(W)/sump
+# The next line adds a small amount to the diagonal of G, 
+# otherwise G is not invertable in this small example!
+G <- G + diag(nanims)*0.01    
+Ginv <- solve(G)
 
 
 ###################################################
 ### code chunk number 12: code (eval = FALSE)
 ###################################################
-## Z1 <-diag(nrecords)
-## Z2 <-matrix(0, 325, 31)
-## Z <- cbind(Z1, Z2)
+Z1 <-diag(nrecords)
+Z2 <-matrix(0, 325, 31)
+Z <- cbind(Z1, Z2)
 
 
 ###################################################
 ### code chunk number 13: code (eval = FALSE)
 ###################################################
-## # coeff
-## coeff <- array(0, c(nanims + 1, nanims + 1))
-## coeff[1:1, 1:1] <- t(ones) %*% ones
-## coeff[1:1, 2:(nanims+1)] <- t(ones) %*% Z
-## coeff[2: 2:(nanims+1), 1] <- t(Z) %*% ones
-## coeff[2:(nanims+1), 2:(nanims+1)] <- t(Z) %*% Z + Ginv
-## 
-## rhs = rbind(t(ones) %*% y, t(Z) %*% y)
+# coeff
+coeff <- array(0, c(nanims + 1, nanims + 1))
+coeff[1:1, 1:1] <- t(ones) %*% ones
+coeff[1:1, 2:(nanims+1)] <- t(ones) %*% Z
+coeff[2: 2:(nanims+1), 1] <- t(Z) %*% ones
+coeff[2:(nanims+1), 2:(nanims+1)] <- t(Z) %*% Z + Ginv
+
+rhs = rbind(t(ones) %*% y, t(Z) %*% y)
 
 
 ###################################################
 ### code chunk number 14: code (eval = FALSE)
 ###################################################
-## gblup <- solve(coeff, rhs)
+gblup <- solve(coeff, rhs)
 
 
 ###################################################
 ### code chunk number 15: code (eval = FALSE)
 ###################################################
-## # the genomic prediction for the 31 selection candidates is
-## yprog_pred = gblup[-c(1:326)]
+# the genomic prediction for the 31 selection candidates is
+yprog_pred = gblup[-c(1:326)]
 
 
 ###################################################
 ### code chunk number 16: code (eval = FALSE)
 ###################################################
-## # the accuracy is
-## cor(yprog, yprog_pred)
+# the accuracy is
+cor(yprog, yprog_pred)
 
 
 ###################################################
 ### code chunk number 17: code (eval = FALSE)
 ###################################################
-## plot(GEBV,yprog_pred, xlab = "GEBV", ylab = "SNP-BLUP")
-## lm(yprog_pred ~ GEBV)
-## abline(lm(yprog_pred ~ GEBV))
+plot(GEBV,yprog_pred, xlab = "GEBV", ylab = "SNP-BLUP")
+lm(yprog_pred ~ GEBV)
+abline(lm(yprog_pred ~ GEBV))
 
 
 ###################################################
 ### code chunk number 18: code (eval = FALSE)
 ###################################################
-## Wprog = W[-c(1:325),] #only W for the progeny
-## blup_W = Wprog %*% solution_vec[-1]
-## 
-## plot(GEBV, blup_W, xlab = "GEBV", ylab = "SNP-BLUP with W")
-## 
-## lm(blup_W ~ GEBV)
+Wprog = W[-c(1:325),] #only W for the progeny
+blup_W = Wprog %*% solution_vec[-1]
+
+plot(GEBV, blup_W, xlab = "GEBV", ylab = "SNP-BLUP with W")
+
+lm(blup_W ~ GEBV)
 
 
 ###################################################
