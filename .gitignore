@@ -55,3 +55,7 @@ rsconnect/
 **/results
 *.log
 */plink_out
+
+# VIM Swap Files
+*.swp
+
