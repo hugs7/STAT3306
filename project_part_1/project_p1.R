@@ -432,7 +432,7 @@ exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe",
 quality_control <- function() {
     logger("Performing Quality Control")
 
-    individual_missing_genotypes <- function(histogram) {
+    find_individual_missing_genotypes <- function(histogram) {
         #' Finds individuals with excess missing genotypes to remove from the dataset
         #' @param histogram {boolean}: if true, will plot a histogram of the frequency of missingness
         #' @return missing_file_path {string}: The file path to the file containing the individuals to remove.
@@ -440,7 +440,7 @@ quality_control <- function() {
         excess_missing_genotypes(NULL, exts$imiss, fam_ind_cols, histogram)
     }
 
-    outlying_homozygosity <- function(plot) {
+    find_outlying_homozygosity <- function(plot) {
         #' Finds individuals with outlying homozygosity values to remove from the dataset
         #' @param plot {boolean}: if true, will plot a histogram of the frequency of hz freqs and a scatterplot
         #'                        of their distribution across the geneome.
@@ -470,7 +470,7 @@ quality_control <- function() {
         return(het_ind_file_path)
     }
 
-    related_samples <- function(threshold = related_threshold) {
+    find_related_samples <- function(threshold = related_threshold) {
         #' Finds individuals from each pair of samples with observed genomic relatedness above a given threshold.
         #' NP-Hard problem so will used cached result if exists.
         #' @param threshold {float}: The threshold to exclude related samples by.
@@ -498,7 +498,7 @@ quality_control <- function() {
         return(related_path)
     }
 
-    ancestry_outliers <- function() {
+    find_ancestry_outliers <- function() {
         # We can ignore as per task sheet
     }
 
@@ -535,7 +535,7 @@ quality_control <- function() {
         #' @return out_path {string}: File path to subset of original dataset with specified individuals removed.
 
         logger("Removing bad samples...")
-        out_name <- "test_subset"
+        out_name <- "test_indv_subset"
 
         plink_flags <- paste(pl_fgs$mb, pl_fgs$remove, remove_path)
         plink_orig_data(plink_flags, out_name)
@@ -544,13 +544,33 @@ quality_control <- function() {
         return(out_path)
     }
 
-    missing_ind_path <- individual_missing_genotypes(TRUE)
-    het_ind_path <- outlying_homozygosity(FALSE)
-    related_path <- related_samples()
+    keep_related_samples <- function(related_path, data_subset_path) {
+        #' Keeps only related samples from the data subset who are listed in the related file
+        #' @param related_path {string}: Path to file containing list of individuals to keep.
+        #' @param data_subset_path {string}: Path to subset of data with some individuals already removed.
+        #' @return out_path {string}: Path to a further subset of the data
+
+        logger("Retaining unrelated samples...")
+
+        plink_args <- paste(pl_fgs$keep, related_path, pl_fgs$mb)
+        out_name <- "test_indv_related"
+        plink(data_subset_path, plink_args, out_name)
+
+        out_path <- construct_plink_out_path(out_name)
+        return(out_path)
+    }
+
+    missing_ind_path <- find_individual_missing_genotypes(TRUE)
+    het_ind_path <- find_outlying_homozygosity(FALSE)
 
     combined_ind_path <- combine_remove_files(missing_ind_path, het_ind_path)
     data_subset_path <- remove_bad_individuals(combined_ind_path)
-    return(data_subset_path)
+
+    # Keep only individuals specified here
+    related_path <- find_related_samples()
+    data_related_subset_path <- keep_related_samples(related_path, data_subset_path)
+
+    return(data_related_subset_path)
 }
 
 sample_qc <- function(data_subset_path) {
