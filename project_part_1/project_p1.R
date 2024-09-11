@@ -476,7 +476,7 @@ quality_control <- function() {
         #' @param threshold {float}: The threshold to exclude related samples by.
         #' @return related_file_path {string}: File path to a file containing individuals to remove.
 
-        basename_with_extension <- function(basename) [
+        basename_with_extension <- function(basename) {
             add_extension(basename, exts$rel, exts$id)
         }
 
