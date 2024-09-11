@@ -639,7 +639,7 @@ sample_qc <- function(data_subset_path) {
     compare_minor_allele_freqs <- function(freq, do_plot) {
         logger("Comparing Minor Allele Frequencies...")
         snp_ref_path <- file.path(data_path, "reference_allele_frequencies.txt")
-        ref <- wrap_read_table(snp_ref_path)
+        ref <- wrap_read_table(snp_ref_path, header = FALSE)
         dim(ref)
         head(ref)
 
