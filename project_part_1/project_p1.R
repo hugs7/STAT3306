@@ -268,6 +268,9 @@ add_extension <- function(basename, ...) {
 }
 
 save_removed_indices <- function(table, ind_to_remove, out_cols, out_name) {
+    logger("INFO", "Saving removed indices to ", quotes(out_name), ".")
+    logger("DEBUG", "Selected columns: ", quotes(out_cols), ".")
+
     file <- table[ind_to_remove, out_cols]
     out_path <- file.path(out_dir, out_name)
     wrap_write_table(file, out_path, col.names = FALSE, quote = FALSE)
@@ -275,6 +278,8 @@ save_removed_indices <- function(table, ind_to_remove, out_cols, out_name) {
 }
 
 remove_indices_by_threshold <- function(table, thresh_col_name, threshold, out_cols, out_name) {
+    logger("DEBUG", "Removing indices by threshold (", threshold, ") in table from col name: ",
+           quotes(thresh_col_name), ".")
     ind_to_remove <- which(table[[thresh_col_name]] > threshold)
     save_removed_indices(table, ind_to_remove, out_cols, out_name)
 }
@@ -347,12 +352,11 @@ genomic_inflation_factor <- function(d, df = 1) {
     qchisq(1 - median_val, df) / chisq_med
 }
 
-excess_missing_genotypes <- function(data_path, extension, histogram) {
+excess_missing_genotypes <- function(data_path, extension, out_cols, histogram) {
     logger("Checking for missing genotypes (", extension, ")...")
 
     missing_name <- "missing"
-    plink_flags <- pl_fgs$missing
-    missing_basename <- plink(data_path, plink_fgs, missing_name)
+    missing_basename <- plink(data_path, pl_fgs$missing, missing_name)
     
     logger("DEBUG", "Reading ", extension, " table...")
     missing_out_path <- add_extension(missing_basename, extension)
@@ -367,9 +371,9 @@ excess_missing_genotypes <- function(data_path, extension, histogram) {
         log_indvs_to_remove(num_indvs_to_remove)
     }
     
-    out_name <- paste0("remove.missing.", extension, ".samples.txt")
+    out_name <- paste0("remove.missing", extension, ".samples.txt")
     missing_file_path <- remove_indices_by_threshold(missing, "F_MISS", genotype_threshold, 
-                                                     fam_ind_cols, out_name)
+                                                     out_cols, out_name)
     return(missing_file_path)
 }
 
@@ -409,7 +413,7 @@ quality_control <- function() {
     logger("Performing Quality Control")
 
     individual_missing_genotypes <- function(histogram) {
-        excess_missing_genotypes(NULL, exts$imiss, histogram)
+        excess_missing_genotypes(NULL, exts$imiss, fam_ind_cols, histogram)
     }
 
     outlying_homozygosity <- function(plot) {
@@ -488,7 +492,7 @@ quality_control <- function() {
 
 sample_qc <- function(data_subset_path) {
     missing_snps <- function(histogram) {
-        excess_missing_genotypes(data_subset_path, exts$lmiss, histogram)
+        excess_missing_genotypes(data_subset_path, exts$lmiss, 2, histogram)
     }
 
     hw_eq <- function() {
@@ -550,7 +554,7 @@ sample_qc <- function(data_subset_path) {
         res <- out$MAF - out$V2
         cat0(head(res))
         allele_freq_threshold <- 0.1
-        keep <- c(which(abs(res) <= allele_freq_threshold)
+        keep <- c(which(abs(res) <= allele_freq_threshold))
         wrap_plotwrap_histogram(res, "minor_allele.png")
     }
     
@@ -561,7 +565,7 @@ sample_qc <- function(data_subset_path) {
     remove_snps_path <- remove_snps(lmiss, hwe, freq)
     qc_data_path <- exclude_snps(remove_snps_path)
 
-    compare_minor_allele_freqs(freq, FALSE)
+    compare_minor_allele_freqs(freq, TRUE)
     
     return(qc_data_path)
 }
