@@ -492,7 +492,9 @@ quality_control <- function() {
 
 sample_qc <- function(data_subset_path) {
     missing_snps <- function(histogram) {
-        excess_missing_genotypes(data_subset_path, exts$lmiss, 2, histogram)
+        missing_file_path <- excess_missing_genotypes(data_subset_path, exts$lmiss, 2, histogram)
+        lmiss <- wrap_read_table(missing_file_path)
+        return(lmiss)
     }
 
     hw_eq <- function() {
@@ -517,8 +519,9 @@ sample_qc <- function(data_subset_path) {
 
     remove_snps <- function(lmiss, hwe, freq) {
         logger("INFO", "Computing SNPs to remove...")
+        
         ind_to_remove <- unique(c(
-                                    which(lmiss$"F_MISS" > genotype_threshold,
+                                    which(lmiss$F_MISS > genotype_threshold,
                                     freq$MAF < freq_threshold), 
                                     which(hwe$P < hwe_threshold)
                                  )
@@ -544,8 +547,9 @@ sample_qc <- function(data_subset_path) {
 
         ind <- match(freq$SNP, ref$V1)
         out <- cbind(freq, ref[ind,])
-        head(out)
-
+        print(head(out))
+        # Valentine says need to do 1 - MAF here otherwise will get X (cross)
+        # See lcys as
         if (do_plot) {
             logger("Plotting allele frequency comparison with reference...")
             wrap_plot(plot, out$MAF ~ out$V2, "min_allele_freq_comparison.png")
@@ -555,7 +559,7 @@ sample_qc <- function(data_subset_path) {
         cat0(head(res))
         allele_freq_threshold <- 0.1
         keep <- c(which(abs(res) <= allele_freq_threshold))
-        wrap_plotwrap_histogram(res, "minor_allele.png")
+        wrap_histogram(res, "minor_allele.png")
     }
     
     lmiss <- missing_snps(TRUE)
