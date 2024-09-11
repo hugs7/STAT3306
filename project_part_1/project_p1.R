@@ -362,7 +362,7 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
 
 exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
                            "frq", "txt", "png", "eigenvec", "eigenval",
-                           "qassoc", "linear"), 
+                           "qassoc", "linear", "clumped"), 
                       ext)
 
 # === Main ===
@@ -654,6 +654,18 @@ gwas <- function(qc_data_path) {
         plink(qc_data_path, plink_args, out_name)
     }
 
+    read_clumps <- function(clump_basename) {
+        clump_path <- add_extension(clump_basename, exts$clumped)
+        clump <- wrap_read_table(clump_path)
+
+        # Exclude column PC2
+        logger("Printing Clump Output")
+        clump_out <- clump[, 1:11]
+        print(head(clump_out))
+        logger("DEBUG", "End of clump output")
+        return(NULL)
+    }
+
     trait_analysis <- function(include_covariates) {
         logger("Performing trait analysis with covariates: ", include_covariates)
 
@@ -692,7 +704,9 @@ gwas <- function(qc_data_path) {
     pc_eigvec_file <- compute_principal_comps(10)
     pheno_1_pc_path <- add_pc_covariates(pheno_path, pc_eigvec_file)
     check_pc_inflation_factor(pheno_1_pc_path)
-    clumping(pheno_1_pc_path)
+    clump_path <- clumping(pheno_1_pc_path)
+    read_clumps(clump_path)
+
     
     #trait_analysis(TRUE)
 }
