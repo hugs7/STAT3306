@@ -417,7 +417,8 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
                              "bfile", "chr", "freq", "exclude", "mpheno",
                              "pca", "linear", "assoc", "clump", list("cp1" = "clump-p1"), 
                              list("cp2" = "clump-p2"), list("cr2" = "clump-r2"), 
-                             list("ckb" = "clump-kb"), list("rel_cutoff" = "rel-cutoff")), 
+                             list("ckb" = "clump-kb"), list("rel_cutoff" = "rel-cutoff"),
+                             "keep"), 
                         named_flag)
 
 exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
@@ -561,7 +562,7 @@ quality_control <- function() {
     }
 
     missing_ind_path <- find_individual_missing_genotypes(TRUE)
-    het_ind_path <- find_outlying_homozygosity(FALSE)
+    het_ind_path <- find_outlying_homozygosity(FALSE) # Graph to fix
 
     combined_ind_path <- combine_remove_files(missing_ind_path, het_ind_path)
     data_subset_path <- remove_bad_individuals(combined_ind_path)
