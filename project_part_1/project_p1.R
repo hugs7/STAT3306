@@ -535,7 +535,7 @@ sample_qc <- function(data_subset_path) {
         plink(data_subset_path, plink_args, out_name)
     }
 
-    compare_minor_allele_freqs <- function(freq, plot) {
+    compare_minor_allele_freqs <- function(freq, do_plot) {
         logger("Comparing Minor Allele Frequencies...")
         snp_ref_path <- file.path(data_path, "reference_allele_frequencies.txt")
         ref <- wrap_read_table(snp_ref_path)
@@ -546,7 +546,7 @@ sample_qc <- function(data_subset_path) {
         out <- cbind(freq, ref[ind,])
         head(out)
 
-        if (plot) {
+        if (do_plot) {
             logger("Plotting allele frequency comparison with reference...")
             wrap_plot(plot, out$MAF ~ out$V2, "min_allele_freq_comparison.png")
         }
