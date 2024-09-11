@@ -60,21 +60,20 @@ cor(GEBV, yprog)
 ###################################################
 ### code chunk number 8: code (eval = FALSE)
 ###################################################
-## Xall <- rbind(X, Xprog)
-## nanims = nrow(Xall)
+Xall <- rbind(X, Xprog)
+nanims = nrow(Xall)
 
 
 ###################################################
 ### code chunk number 9: code (eval = FALSE)
 ###################################################
-## 
-## # p_j for all SNPS
-## p = colMeans(Xall)/2
-## 
-## # sump
-## sump <- 0
-## for(j in 1:nmarkers)
-##     sump <- sump + 2*p[j]*(1-p[j])
+# p_j for all SNPS
+p = colMeans(Xall)/2
+ 
+# sump
+sump <- 0
+for(j in 1:nmarkers)
+     sump <- sump + 2*p[j]*(1-p[j])
 
 
 ###################################################
