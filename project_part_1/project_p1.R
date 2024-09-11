@@ -663,7 +663,10 @@ gwas <- function(qc_data_path) {
         clump_out <- clump[, 1:11]
         print(head(clump_out))
         logger("DEBUG", "End of clump output")
-        return(NULL)
+        
+        # Write to file
+        out_path <- file.path(out_dir, "clumps.txt")
+        wrap_write_table(clump_out, out_path)
     }
 
     trait_analysis <- function(include_covariates) {
