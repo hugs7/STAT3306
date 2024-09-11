@@ -213,6 +213,14 @@ plink_orig_data <- function(plink_args, out_name = NULL) {
 }
 
 plink <- function(bfile, plink_args, out_name = NULL) { 
+    # Check if bfile is null
+    if (is.null(bfile)) {
+        logger("DEBUG", "Using original data")
+        return(plink_orig_data(plink_args, out_name))
+    } else {
+        logger("DEBUG", "Using data file: ", quotes(bfile), ".")
+    }
+    
     plink_base_cmd <- paste("plink", pl_fgs$bfile, bfile, plink_args)
     logger("TRACE", "Plink base command ", quotes(plink_base_cmd), ".")
 
