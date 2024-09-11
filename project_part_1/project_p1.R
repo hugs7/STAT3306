@@ -664,7 +664,7 @@ sample_qc <- function(data_subset_path) {
 
         if (do_plot) {
             logger("Plotting allele frequency comparison with reference...")
-            wrap_plot(plot, out_inv$MAF ~ out_inv$V2, "min_allele_freq_comparison.png")
+            wrap_plot(plot, out_cpy$MAF ~ out_cpy$V2, "min_allele_freq_comparison.png")
         }
 
     }
