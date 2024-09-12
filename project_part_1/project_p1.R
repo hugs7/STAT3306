@@ -643,9 +643,6 @@ quality_control <- function() {
 
         plink_flags <- paste(pl_fgs$mb, pl_fgs$remove, remove_path)
         plink_orig_data(plink_flags, out_name)
-        
-        out_path <- construct_plink_out_path(out_name)
-        return(out_path)
     }
 
     keep_related_samples <- function(related_path, data_subset_path) {
@@ -659,9 +656,6 @@ quality_control <- function() {
         plink_args <- paste(pl_fgs$keep, related_path, pl_fgs$mb)
         out_name <- "test_indv_related"
         plink(data_subset_path, plink_args, out_name)
-
-        out_path <- construct_plink_out_path(out_name)
-        return(out_path)
     }
 
     missing_ind_path <- find_individual_missing_genotypes(TRUE)
