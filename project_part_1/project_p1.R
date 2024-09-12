@@ -168,6 +168,17 @@ logger <- function(log_level = "INFO", ...) {
     invisible(NULL)
 }
 
+log_df <- function(df, name, log_level = "INFO") {
+    #' Logs the dimension and head of a dataframe at the specified log level,
+    #' @param df {data.frame}: The data frame to preview,
+    #' @param name {string}: The name of the data frame.
+    #' @param log_level {string}: The level to log at. Defaults to INFO.
+    #' @return {NULL}
+
+    logger(log_level, "Dim ", name, ": ", dim(df), "\n")
+    print(head(df))
+}
+
 space_to_underscore <- function(str) {
     gsub(" ", "_", str)
 }
