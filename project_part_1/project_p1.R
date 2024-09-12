@@ -770,17 +770,21 @@ gwas <- function(qc_data_path) {
 
     get_pheno_analysis_full_path <- function(pheno_basename, phenotype_suffix, pc) {
         logger("DEBUG", "Calculating path for pheno analysis full path")
-
-        if (pc) {
-            logger("TRACE", "Principal components enabled")
-            if (phenotype_suffix == "") {
+        
+        if (phenotype_suffix == "") {
+            if (pc) {
+                logger("TRACE", "Principal components enabled.")
+                ext_to_add <- paste0(exts$assoc, exts$linear)
+            } else {
+                logger("TRACE", "Principal components disabled.")
                 ext_to_add <- exts$qassoc
+            }
+        } else {
+            if (pc) {
+                ext_to_add <- paste0(exts$assoc, exts$logistic)
             } else {
                 ext_to_add <- exts$assoc
             }
-        } else {
-            logger("TRACE", "Principal components disabled. Using logistic.")
-            ext_to_add <- paste0(exts$assoc, exts$logistic)
         }
     
         pheno_path <- add_extension(pheno_basename, ext_to_add)
