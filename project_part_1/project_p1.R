@@ -933,33 +933,6 @@ gwas <- function(qc_data_path) {
             compute_lambda(d, suffix, pca)
         }
     }
-
-    #trait_analysis <- function(include_covariates) {
-    #    logger("Performing trait analysis with covariates: ", include_covariates)
-#
-#        get_plink_args <- function(pheno_path) {
-#            base_args <- paste(pl_fgs$pheno, pheno_path, pl_assoc)
-#            if (include_covariates) {
-#                age_path <- file.path(data_path, "age.txt")
-#                gender_path <- file.path(data_path, "gender.txt")
-#                
-#                base_args <- paste(base_args, pl_fgs$covar, age_path, pl_covar, gender_path)
-#            }
-#            return(base_args)
-#        }
-#
-#        # Quantitative Trait Analysis
-#        pheno_cont_path <- get_pheno_path("")
-#        plink_orig_data(get_plink_args(pheno_cont_path), "quant_trait_results")
-#
-#        # Binary Trait (top 20%) Analysis
-#        binary1_path <- get_pheno_path("_binary1")
-#        plink_orig_data(get_plink_args(binary1_path), "binary_trait_20_results")
-#
-#        # Binary Trait (top and bottom 30%) analysis
-#        binary2_path <- get_pheno_path("_binary2")
-#        plink_orig_data(get_plink_args(binary2_path), "binary_trait_30_results")
-#    }
 }
 
 run_analysis <- function() {
