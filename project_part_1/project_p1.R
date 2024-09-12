@@ -302,11 +302,19 @@ plink <- function(bfile, plink_args, out_name = NULL) {
         logger("ERROR", "You were trying to run ", quotes(plink_cmd))
     }
 
-    logger("Running: ", quotes(plink_cmd))
 
     if (std_out) {
+        logger("Running: ", quotes(plink_cmd))
         system(plink_cmd)
     } else {
+        # Search for partial match
+        logger("DEBUG", "Checking for existing match: ", quotes(plink_out_path), ".")
+        if (file_exists(plink_out_path, TRUE) && !overwrite_plink_out) {
+            logger("Matching file(s) already exists at: ", quotes(plink_out_path), ".")
+            return(plink_out_path)
+        }
+
+        logger("Running: ", quotes(plink_cmd))
         shell_call(plink_cmd)
         logger("Plink results directed to ", quotes(plink_out_path), ".")
     }
