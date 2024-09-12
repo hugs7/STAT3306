@@ -820,7 +820,9 @@ gwas <- function(qc_data_path) {
     
     get_mpheno_args <- function(suffix) {
         args <- paste(pl_fgs$mpheno, alt_mpheno)
-        if ("binary" %in% suffix) {
+        if (grepl("binary", suffix)) {
+            logger("DEBUG", quotes("binary"), " found in suffix ", quotes(suffix))
+            logger("INFO", "Adding missing-phenotype flag")
             args <- paste(pl_fgs$miss_pheno, alt_mpheno)
         }
         
