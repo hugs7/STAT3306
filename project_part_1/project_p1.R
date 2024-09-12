@@ -866,13 +866,13 @@ gwas <- function(qc_data_path) {
         }
 
         logger("DEBUG", "Reading pheno analysis ", quotes(plot_suffix), " ",
-                        pc, "...")
+                        "Principal components = ", pc, "...")
         d <- wrap_read_table(pheno_analysis_path)
         log_df(d, "D before na omit")
         
         logger("INFO", "Removing n/a p-vals...")
-        d <- na.omit(d)
-        
+        d <- d[!is.na(d$P), ]
+
         log_df(d, "D after na omit")
 
         logger("DEBUG", "Plotting ...")
