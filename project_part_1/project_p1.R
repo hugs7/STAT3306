@@ -795,12 +795,7 @@ gwas <- function(qc_data_path) {
     gwas_plots <- function(pheno_analysis_path, plot_suffix = "", pc) {
         name_plot <- function(plot_type) {
             logger("DEBUG", "Naming plot type: ", quotes(plot_type), ".")
-            file_name <- paste0("gwas_", plot_type)
-            if (plot_type[[1]] != "_") {
-               file_name <- paste0(file_name, "_")
-            }
-            
-            file_name <- paste0(file_name, plot_type, plot_suffix)
+            file_name <- paste0("gwas_", plot_type, plot_suffix)
             file_name <- add_extension(file_name, exts$png)
             logger("DEBUG", "GWAS Plot Name: ", quotes(file_name), ".")
             return(file_name)
