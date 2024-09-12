@@ -522,7 +522,7 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
                              "pca", "linear", "assoc", "clump", list("cp1" = "clump-p1"), 
                              list("cp2" = "clump-p2"), list("cr2" = "clump-r2"), 
                              list("ckb" = "clump-kb"), list("rel_cutoff" = "rel-cutoff"),
-                             "keep"), 
+                             "keep", list("miss_pheno" = "missing-phenotype")), 
                         named_flag)
 
 exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
@@ -638,12 +638,9 @@ quality_control <- function() {
         
         # Remove Duplicates
         combined_ind <- unique(combined_ind)
-
-        combined_file_out_path <- construct_out_path("remove.combined.samples.txt")
         wrap_write_table(combined_ind, combined_file_out_path, col.names = FALSE, quote = FALSE)
         return(combined_file_out_path)
     }
-
 
     remove_bad_individuals <- function(remove_path) {
         #' Removes individuals from the dataset who are specified in the provided file.
@@ -819,8 +816,16 @@ gwas <- function(qc_data_path) {
 
     # Some scoped variables
     alt_mpheno <- 1
-    mpheno_args <- paste(pl_fgs$mpheno, alt_mpheno)
     num_pc <- 10
+    
+    get_mpheno_args <- function(suffix) {
+        args <- paste(pl_fgs$mpheno, alt_mpheno)
+        if ("binary" %in% suffix) {
+            args <- paste(pl_fgs$miss_pheno, alt_mpheno)
+        }
+        
+        return(args)
+    }
 
     get_pheno_path <- function(pheno_suffix) {
         logger("DEBUG", "Retrieving pheno path for suffix ", quotes(pheno_suffix), ".")
@@ -829,7 +834,7 @@ gwas <- function(qc_data_path) {
         file.path(phenotypes, pheno_file_name)
     }
 
-    gwas_pheno <- function(pheno_path, pheno_suffix) {
+    gwas_pheno <- function(pheno_path, pheno_suffix, mpheno_args) {
         #' Performs association analysis based on the phenotype
         #' defined in the specified file.
         #' @param pheno_suffix {string}: Suffix of phenotype.
@@ -930,7 +935,7 @@ gwas <- function(qc_data_path) {
         return(pca_eiv_vec)
     }
 
-    add_pc_covariates <- function(pheno_pc_path, suffix, pc_eigvec_file) {
+    add_pc_covariates <- function(pheno_pc_path, suffix, pc_eigvec_file, mpheno_args) {
         # Check for existing covariates
         out_name <- paste0("gwas_pheno", suffix, "_pc")
         cov_out_path <- construct_plink_out_path(out_name)
@@ -992,11 +997,12 @@ gwas <- function(qc_data_path) {
         for (suffix in phenotype_suffixes) {
             logger("INFO", "Inspecting phenotype ", quotes(suffix), ".")
             pheno_path <- get_pheno_path(suffix)
+            mpheno_args <- get_mpheno_args(suffix)
            
             if (pca) {
-                pheno_basename <- add_pc_covariates(pheno_path, suffix, pc_eigvec_file)
+                pheno_basename <- add_pc_covariates(pheno_path, suffix, pc_eigvec_file, mpheno_args)
             } else {
-                pheno_basename <- gwas_pheno(pheno_path, suffix)
+                pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args)
             }
 
             pheno_full_path <- get_pheno_analysis_full_path(pheno_basename, suffix, pca)
