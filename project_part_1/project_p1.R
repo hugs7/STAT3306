@@ -1032,7 +1032,7 @@ gwas <- function(qc_data_path) {
             pheno_full_path <- get_pheno_analysis_full_path(pheno_basename, suffix, pca)
 
             if (pca) {
-                clump_path <- clumping(pheno_basename)
+                clump_path <- clumping(pheno_full_path)
                 read_clumps(clump_path, suffix)
             }
 
