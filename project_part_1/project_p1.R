@@ -751,12 +751,11 @@ sample_qc <- function(data_subset_path) {
 
         # Must be calculated regardless of plots
         res <- out$MAF - out$V2
+        log_df(res, "Residual minor allele frequencies")
 
         if (do_hist) {
             logger("Plotting histogram of Minor Allele Frequency (MAF)")
-            print(head(res))
-            allele_freq_threshold <- 0.1
-            keep <- c(which(abs(res) <= allele_freq_threshold))
+            keep <- c(which(abs(res) <= maf_threshold))
             wrap_histogram(res, "minor_allele.png")
         }
 
