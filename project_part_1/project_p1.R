@@ -80,6 +80,10 @@ quotes <- function(path) {
     paste0("'", path, "'")
 }
 
+list_to_str <- function(lst) {
+    paste(lst, collapse = ", ")
+}
+
 named_flag <- function(fg_name) {
     paste0("--", fg_name)
 }
@@ -104,7 +108,7 @@ wrap_dim <- function(df) {
     #' @return the outcome based on the condition prior to the `?`.
                               
     xs <- as.list(substitute(x))
-    logger("TRACE", "? Eval xs: ", quotes(xs), ".\n")
+    logger("TRACE", "? Eval xs: ", quotes(x), ".")
 
     # Get context of caller
     env <- parent.frame()
@@ -241,7 +245,7 @@ file_exists <- function(path, partial_match = FALSE) {
 
 check_any_empty <- function(...) {
     args <- list(...)
-    logger("DEBUG", "Checking if empty: ", quotes(args))
+    logger("DEBUG", "Checking if empty: ", quotes(list_to_str(args)))
     any(sapply(args, function(x) x == ""))
 }
 
