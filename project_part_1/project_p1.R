@@ -823,7 +823,7 @@ gwas <- function(qc_data_path) {
         if (grepl("binary", suffix)) {
             logger("DEBUG", quotes("binary"), " found in suffix ", quotes(suffix))
             logger("INFO", "Adding missing-phenotype flag")
-            args <- paste(pl_fgs$miss_pheno_neg_9)
+            args <- paste(args, pl_fgs$miss_pheno_neg_9)
         }
         
         return(args)
