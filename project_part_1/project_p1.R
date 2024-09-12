@@ -329,6 +329,14 @@ construct_out_path <- function(basename) {
     file.path(out_dir, basename)
 }
 
+construct_plot_path <- function(basename) {
+    #' Constructs a file path in the plots directory given a basename
+    #' @param basename {string}: The name of the file without the plots directory prefixed.
+    #' @return path {string}: The relative path to the file.
+
+    file.path(plots_dir, basename)
+}
+
 save_removed_indices <- function(table, ind_to_remove, out_cols, out_name) {
     logger("INFO", "Saving removed indices to ", quotes(out_name), ".")
     logger("DEBUG", "Selected columns: ", quotes(out_cols), ".")
