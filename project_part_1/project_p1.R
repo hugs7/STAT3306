@@ -569,8 +569,14 @@ quality_control <- function() {
             wrap_scatter(0.05, "red", abs(het$"F"), "fhet_scatter.png")
         }
 
-        het_ind_file_path <- remove_indices_by_threshold(het, "F", het_threshold, 
-                                                         fam_ind_cols, "remove.het.samples.txt")
+        het_samples_name <- add_extension("remove.het.samples", exts$txt)
+        het_ind_file_path <- construct_out_path(het_samples_name)
+        if (file_exists(het_ind_file_path)) {
+            logger("Het indices saved at: ", quotes(het_ind_file_path))
+        } else {
+            het_ind_file_path <- remove_indices_by_threshold(het, "F", het_threshold, 
+                                                             fam_ind_cols, het_samples_name)
+        }
         return(het_ind_file_path)
     }
 
@@ -611,6 +617,12 @@ quality_control <- function() {
         #' @param ... {character}: File paths to individual files containing IDs of individuals to remove.
         #'                         These files are expected to have at least two columns: FID and IID.
         #' @return {string}: File path to the combined output file with individuals to remove.
+        
+        combined_file_out_path <- construct_out_path("remove.combined.samples.txt")
+        if (file_exists(combined_file_out_path)) {
+            logger("INFO", "Combined samples exists at: ", quotes(combined_file_out_path), ".")
+            return(combined_file_out_path)
+        }
 
         logger("Combining Remove Files...")
 
