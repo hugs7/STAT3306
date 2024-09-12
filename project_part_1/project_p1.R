@@ -215,7 +215,20 @@ mkdir_if_not_exist <- function(path) {
     }
 }
 
-file_exists <- function(path, partial_match = FALSE) {
+list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
+    #' Wrapper for list.files to set full.names default to TRUE.
+    #' @param dir_name {string}: The directory to search in.
+    #' @param pattern {string}: Optionally match files with a RegEx pattern.
+    #' @param full.names {boolean}: If true, the directory path is prepended 
+    #'                              to the file names
+    #' @param ... {any}: Any extra arguemnts for list.files()
+    #' @return {charvec}: Character vector containing filenames/filepaths 
+    #'                    matching criteria.
+
+    list.files(path = dir_name, pattern = pattern, full.names = full.names, ...)
+}
+
+file_exists <- function(path, partial_match = FALSE, exclude_patterns = list()) {
     logger("TRACE", "Checking if file exists at path ", quotes(path), ".")
     if (length(path) == 0) {
         logger("WARN", "Path is empty")
@@ -227,7 +240,16 @@ file_exists <- function(path, partial_match = FALSE) {
         dir_name <- dirname(path)
         file_pattern <- basename(path)
 
-        matching_files <- list.files(path = dir_name, pattern = paste0("^", file_pattern), full.names = TRUE)
+        matching_files <- list_files(dir_name, paste0("^", file_pattern))
+
+        # Exclude files matching with any of exclude_patterns
+        if (length(exclude_patterns) > 0) {
+            logger("DEBUG", "Excluding files matching patterns: ", list_to_str(exclude_patterns), ".")
+            for (exclude_pattern in exclude_patterns) {
+                exclude_files <- list_files(dir_name, exclude_pattern)
+                matching_files <- setdiff(matching_files, exclude_files)
+            }
+        }
 
         exists <- (length(matching_files) > 0)
     } else {
@@ -321,7 +343,7 @@ plink <- function(bfile, plink_args, out_name = NULL) {
     } else {
         # Search for partial match
         logger("DEBUG", "Checking for existing match: ", quotes(plink_out_path), ".")
-        if (file_exists(plink_out_path, TRUE) && !overwrite_plink_out) {
+        if (file_exists(plink_out_path, TRUE, list("*.log")) && !overwrite_plink_out) {
             logger("Matching file(s) already exists at: ", quotes(plink_out_path), ".")
             return(plink_out_path)
         }
