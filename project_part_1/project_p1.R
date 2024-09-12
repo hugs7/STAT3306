@@ -954,7 +954,6 @@ gwas <- function(qc_data_path) {
         plink_args <- paste(suffix == "" ? pl_fgs$linear : pl_fgs$logistic, pl_fgs$covar, 
                             pc_eigvec_file, pl_fgs$pheno, pheno_pc_path, mpheno_args)
         plink(qc_data_path, plink_args, out_name)
-        return(pheno_pc_path)
     }
 
     clumping <- function(pheno_pc_path) {
@@ -1010,7 +1009,7 @@ gwas <- function(qc_data_path) {
             pheno_full_path <- get_pheno_analysis_full_path(pheno_basename, suffix, pca)
 
             if (pca) {
-                clump_path <- clumping(pheno_pc_path)
+                clump_path <- clumping(pheno_basename)
                 read_clumps(clump_path, suffix)
             }
 
