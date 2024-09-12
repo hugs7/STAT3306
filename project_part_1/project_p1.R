@@ -203,14 +203,26 @@ mkdir_if_not_exist <- function(path) {
     }
 }
 
-file_exists <- function(path) {
+file_exists <- function(path, partial_match = FALSE) {
     logger("TRACE", "Checking if file exists at path ", quotes(path), ".")
     if (length(path) == 0) {
         logger("WARN", "Path is empty")
         return(FALSE)
     }
 
-    exists <- file.exists(path)
+    if (partial_match) {
+        logger("DEBUG", "Searching partial match")
+        dir_name <- dirname(path)
+        file_pattern <- basename(path)
+
+        matching_files <- list.files(path = dir_name, pattern = paste0("^", file_pattern), full.names = TRUE)
+
+        exists <- (length(matching_files) > 0)
+    } else {
+        logger("DEBUG", "Searching exact match")
+        exists <- file.exists(path)
+    }
+
     if (exists) {
         logger("DEBUG", "File exists at ", quotes(path), ".")
     } else {
