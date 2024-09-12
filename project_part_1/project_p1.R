@@ -874,7 +874,8 @@ gwas <- function(qc_data_path) {
     }
 
     get_pheno_analysis_full_path <- function(pheno_basename, phenotype_suffix, pc) {
-        logger("DEBUG", "Calculating path for pheno analysis full path")
+        logger("DEBUG", "Calculating path for pheno analysis full path from basename ", 
+                        quotes(pheno_basename), ".")
         
         if (phenotype_suffix == "") {
             if (pc) {
