@@ -454,7 +454,7 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
 
 exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
                            "frq", "txt", "png", "eigenvec", "eigenval",
-                           "qassoc", "linear", "clumped", "rel", "id"), 
+                           "qassoc", "linear", "clumped", "rel", "id", "logistic"), 
                       ext)
 
 # === Main ===
@@ -741,6 +741,11 @@ sample_qc <- function(data_subset_path) {
 gwas <- function(qc_data_path) {
     logger("INFO", "Performing GWAS...")
 
+    # Some scoped variables
+    alt_mpheno <- 1
+    mpheno_args <- paste(pl_fgs$mpheno, alt_mpheno)
+    num_pc <- 10
+
     get_pheno_path <- function(pheno_suffix) {
         logger("DEBUG", "Retrieving pheno path for suffix ", quotes(pheno_suffix), ".")
         phenotype_file_prefix <- space_to_underscore(phenotype)
@@ -748,16 +753,42 @@ gwas <- function(qc_data_path) {
         file.path(phenotypes, pheno_file_name)
     }
 
-    gwas_pheno <- function() {
-        logger("Performing Pheno on GWAS...")
+    gwas_pheno <- function(pheno_path, pheno_suffix) {
+        #' Performs association analysis based on the phenotype
+        #' defined in the specified file.
+        #' @param pheno_suffix {string}: Suffix of phenotype.
+        #' @param pc {boolean}: Flag for if we are performing assocation analysis 
+        #'                      with principal components.
+        #' @return {string}: Path to phenotype association analysis output.
+
+        logger("Performing Pheno Association Analysis on GWAS...")
         
-        alt_mpheno <- 1
         plink_args <- paste(pl_fgs$assoc, pl_fgs$pheno, pheno_path, mpheno_args)
-        out_name <- "gwas_pheno_1"
+        out_name <- paste0("gwas_pheno", pheno_suffix)
         plink(qc_data_path, plink_args, out_name)
     }
 
-    gwas_plots <- function(d, plots, plot_suffix = "") {
+    get_pheno_analysis_full_path <- function(pheno_basename, phenotype_suffix, pc) {
+        logger("DEBUG", "Calculating path for pheno analysis full path")
+
+        if (pc) {
+            logger("TRACE", "Principal components enabled")
+            if (phenotype_suffix == "") {
+                ext_to_add <- exts$qassoc
+            } else {
+                ext_to_add <- exts$assoc
+            }
+        } else {
+            logger("TRACE", "Principal components disabled. Using logistic.")
+            ext_to_add <- paste0(exts$assoc, exts$logistic)
+        }
+    
+        pheno_path <- add_extension(pheno_basename, ext_to_add)
+        logger("DEBUG", "Full pheno path: ", quotes(pheno_path), ".")
+        return(pheno_path)
+    }
+ 
+    gwas_plots <- function(pheno_analysis_path, plot_suffix = "", pc) {
         name_plot <- function(plot_type) {
             file_name <- paste0("gwas_", plot_type)
             if (length(plot_type) > 0) {
@@ -768,32 +799,30 @@ gwas <- function(qc_data_path) {
                 file_name <- paste0(file_name, plot_suffix)
             }
             
-            file_name <- paste0(file_name, ".png")
-            logger("DEBUG", "Plot Name: ", quotes(file_name), ".")
+            file_name <- add_extension(file_name, exts$png)
+            logger("DEBUG", "GWAS Plot Name: ", quotes(file_name), ".")
         }
 
-        if (plots) {
-            man_plot_name <- name_plot("manhattan")
-            logger("INFO", "Generating Manhattan Plot ", quotes(man_plot_name), " ...")
-            wrap_plot(manhattan, d, man_plot_name)
+        d <- wrap_read_table(pheno_analysis_path)
 
-            qq_plot_name <- name_plot(qq)
-            logger("INFO", "Generating QQ Plot ", quotes(qq_plot_name), " ...")
-            wrap_plot(qq, d$P, qq_plot_name)
-        }
+        man_plot_name <- name_plot("manhattan")
+        logger("INFO", "Generating Manhattan Plot ", quotes(man_plot_name), " ...")
+        wrap_plot(manhattan, d, man_plot_name)
 
-        logger("INFO", "Computing Genomic Inflation Factor (", plot_suffix, ") ...")
+        qq_plot_name <- name_plot(qq)
+        logger("INFO", "Generating QQ Plot ", quotes(qq_plot_name), " ...")
+        wrap_plot(qq, d$P, qq_plot_name)
+    }
+
+    compute_lambda <- function(suffix, pc) {
+        logger("INFO", "Computing Genomic Inflation Factor (", suffix, ") with PC: ", 
+                       pc ? "enabled" : "disabled", "...")
+
         lambda_gc <- genomic_inflation_factor(d, 1)
-        logger("INFO", "Lambda_{GC} (", plot_suffix, ") = ", lambda_gc)
+        logger("INFO", "Lambda_{GC} (", suffix, ") = ", lambda_gc)
         return(lambda_gc)
     }
-
-    check_inflation_factor <- function(pheno_basename) { 
-        pheno_qassoc_path <- paste0(pheno_basename, exts$qassoc)
-        d <- wrap_read_table(pheno_path)
-        gwas_plots(d, FALSE)
-    }
-
+    
     compute_principal_comps <- function(num_components) {
         # Check for existing PCA
         out_name <- "pca"
@@ -816,11 +845,11 @@ gwas <- function(qc_data_path) {
         return(pca_eiv_vec)
     }
 
-    add_pc_covariates <- function(pheno_path, pc_eigvec_file) {
-        # Check for existing Covariates
-        out_name <- "gwas_pheno_1_pc"
+    add_pc_covariates <- function(pheno_pc_path, suffix, pc_eigvec_file) {
+        # Check for existing covariates
+        out_name <- paste0("gwas_pheno", suffix, "_pc")
         cov_out_path <- construct_plink_out_path(out_name)
-        pheno_pc_path <- add_extension(cov_out_path, exts$assoc, exts$linear)
+        
         if (file_exists(pheno_pc_path)) {
             logger("INFO", "Covariates already exist. Skipping.")
             return (pheno_pc_path)
@@ -830,18 +859,10 @@ gwas <- function(qc_data_path) {
         logger("Adding principal components to covariates...")
         logger("DEBUG", "Loading eigenvec file: ", quotes(pc_eigvec_file), ".")
         check_ext(pc_eigvec_file, exts$eigenvec)
-        plink_args <- paste(pl_fgs$linear, pl_fgs$covar, pc_eigvec_file, pl_fgs$pheno, pheno_path, mpheno_args)
+        plink_args <- paste(suffix == "" ? pl_fgs$linear : pl_fgs$logistic, pl_fgs$covar, 
+                            pc_eigvec_file, pl_fgs$pheno, pheno_pc_path, mpheno_args)
         plink(qc_data_path, plink_args, out_name)
         return(pheno_pc_path)
-    }
-
-    check_pc_inflation_factor <- function(pheno_pc_path) {
-        d <- wrap_read_table(pheno_pc_path)
-
-        d_sub <- d[which(d$TEST == "ADD"),]
-        cat0(head(d_sub))
-
-        gwas_plots(d_sub, FALSE, "pc")
     }
 
     clumping <- function(pheno_pc_path) {
@@ -856,7 +877,7 @@ gwas <- function(qc_data_path) {
         plink(qc_data_path, plink_args, out_name)
     }
 
-    read_clumps <- function(clump_basename) {
+    read_clumps <- function(clump_basename, suffix) {
         clump_path <- add_extension(clump_basename, exts$clumped)
         clump <- wrap_read_table(clump_path)
 
@@ -867,53 +888,71 @@ gwas <- function(qc_data_path) {
         logger("DEBUG", "End of clump output")
         
         # Write to file
-        out_path <- construct_out_path("clumps.txt")
+        out_path <- construct_out_path(add_extension(paste0("clumps", suffix), exts$txt))
         wrap_write_table(clump_out, out_path)
     }
-
-    trait_analysis <- function(include_covariates) {
-        logger("Performing trait analysis with covariates: ", include_covariates)
-
-        get_plink_args <- function(pheno_path) {
-            base_args <- paste(pl_fgs$pheno, pheno_path, pl_assoc)
-            if (include_covariates) {
-                age_path <- file.path(data_path, "age.txt")
-                gender_path <- file.path(data_path, "gender.txt")
-                
-                base_args <- paste(base_args, pl_fgs$covar, age_path, pl_covar, gender_path)
-            }
-            return(base_args)
-        }
-
-        # Quantitative Trait Analysis
-        pheno_cont_path <- get_pheno_path("")
-        plink_orig_data(get_plink_args(pheno_cont_path), "quant_trait_results")
-
-        # Binary Trait (top 20%) Analysis
-        binary1_path <- get_pheno_path("_binary1")
-        plink_orig_data(get_plink_args(binary1_path), "binary_trait_20_results")
-
-        # Binary Trait (top and bottom 30%) analysis
-        binary2_path <- get_pheno_path("_binary2")
-        plink_orig_data(get_plink_args(binary2_path), "binary_trait_30_results")
-    }
-    
-    # Some scoped variables
-    pheno_path <- get_pheno_path("")
-    alt_mpheno <- 1
-    mpheno_args <- paste(pl_fgs$mpheno, alt_mpheno)
-    
+ 
     # Main
-    pheno_basename <- gwas_pheno()
-    check_inflation_factor(pheno_basename)
-    pc_eigvec_file <- compute_principal_comps(10)
-    pheno_1_pc_path <- add_pc_covariates(pheno_path, pc_eigvec_file)
-    check_pc_inflation_factor(pheno_1_pc_path)
-    clump_path <- clumping(pheno_1_pc_path)
-    read_clumps(clump_path)
-
+    phenotype_suffixes <- list("", "_binary1", "_binary2")
     
-    #trait_analysis(TRUE)
+    for (pca in list(FALSE, TRUE)) {
+        on <- pca == TRUE ? "enabled" : "disabled" 
+        logger("INFO", "Performing GWAS with Principal Components ", on, ".")
+
+        if (pca) {
+            # Compute principal components once
+            pc_eigvec_file <- compute_principal_comps(num_pc)
+        }
+        
+        # Perform analysis for each of the phenotypes
+        for (suffix in phenotype_suffixes) {
+            logger("INFO", "Inspecting phenotype ", quotes(suffix), ".")
+            pheno_path <- get_pheno_path(suffix)
+           
+            if (pca) {
+                pheno_basename <- add_pc_covariates(pheno_path, suffix, pc_eigvec_file)
+            } else {
+                pheno_basename <- gwas_pheno(pheno_path, suffix)
+            }
+
+            pheno_full_path <- get_pheno_analysis_full_path(pheno_basename, suffix, pca)
+
+            if (pca) {
+                clump_path <- clumping(pheno_pc_path)
+                read_clumps(clump_path, suffix)
+            }
+
+            gwas_plots(pheno_full_path, suffix, pca)
+            compute_lambda(suffix, pca)
+        }
+    }
+
+    #trait_analysis <- function(include_covariates) {
+    #    logger("Performing trait analysis with covariates: ", include_covariates)
+#
+#        get_plink_args <- function(pheno_path) {
+#            base_args <- paste(pl_fgs$pheno, pheno_path, pl_assoc)
+#            if (include_covariates) {
+#                age_path <- file.path(data_path, "age.txt")
+#                gender_path <- file.path(data_path, "gender.txt")
+#                
+#                base_args <- paste(base_args, pl_fgs$covar, age_path, pl_covar, gender_path)
+#            }
+#            return(base_args)
+#        }
+#
+#        # Quantitative Trait Analysis
+#        pheno_cont_path <- get_pheno_path("")
+#        plink_orig_data(get_plink_args(pheno_cont_path), "quant_trait_results")
+#
+#        # Binary Trait (top 20%) Analysis
+#        binary1_path <- get_pheno_path("_binary1")
+#        plink_orig_data(get_plink_args(binary1_path), "binary_trait_20_results")
+#
+#        # Binary Trait (top and bottom 30%) analysis
+#        binary2_path <- get_pheno_path("_binary2")
+#        plink_orig_data(get_plink_args(binary2_path), "binary_trait_30_results")
+#    }
 }
 
 run_analysis <- function() {
