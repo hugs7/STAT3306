@@ -958,7 +958,7 @@ gwas <- function(qc_data_path) {
 
         plink_args <- paste(pl_fgs$pca, num_components)
         plink(qc_data_path, plink_args, out_name)
-        return(pca_eiv_vec)
+        return(pca_eig_vec)
     }
 
     add_pc_covariates <- function(pheno_pc_path, suffix, pc_eigvec_file, mpheno_args) {
