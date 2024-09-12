@@ -965,9 +965,9 @@ gwas <- function(qc_data_path) {
         out_name <- paste0("gwas_pheno", suffix, "_pc")
         cov_out_path <- construct_plink_out_path(out_name)
         
-        if (file_exists(pheno_pc_path)) {
+        if (file_exists(cov_out_path)) {
             logger("INFO", "Covariates already exist. Skipping.")
-            return (pheno_pc_path)
+            return (cov_out_path)
         }
         
         # No covariates. Compute:
