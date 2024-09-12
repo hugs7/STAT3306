@@ -771,7 +771,7 @@ sample_qc <- function(data_subset_path) {
 
         remove_snps_indx <- which(abs(res) > maf_threshold)
         remove_snps <- freq[remove_snps_indx, "SNP"]
-        remove_out_path <- construct_out_path("maf_reference_removed.txt")
+        remove_out_path <- construct_out_path(add_extension("maf.referenced.removed", exts$txt))
         wrap_write_table(remove_snps, remove_out_path)
         return(remove_out_path)
     }
