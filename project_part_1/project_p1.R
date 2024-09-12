@@ -92,12 +92,13 @@ ext <- function(ext_name) {
     #' @return the outcome based on the condition prior to the `?`.
                               
     xs <- as.list(substitute(x))
-    logger("TRACE", "? Eval xs: ", quotes(xs), ".")
+    logger("TRACE", "? Eval xs: ", quotes(xs), ".\n")
 
     # Get context of caller
     env <- parent.frame()
 
     if (xs[[1]] == as.name("<-")) {
+        logger("TRACE", "Assignment detected")
         x <- eval(xs[[3]], envir = env)
     }
 
