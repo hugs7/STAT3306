@@ -992,7 +992,7 @@ gwas <- function(qc_data_path) {
         plink(qc_data_path, plink_args, out_name)
     }
 
-    read_clumps <- function(clump_basename, suffix) {
+    read_clumps <- function(clump_basename, suffix, pc) {
         clump_path <- add_extension(clump_basename, exts$clumped)
         clump <- wrap_read_table(clump_path)
 
@@ -1002,7 +1002,7 @@ gwas <- function(qc_data_path) {
         log_df(clump_out, paste0("Clump output", suffix))
         
         # Write to file
-        out_path <- construct_out_path(add_extension(paste0("clumps", suffix), exts$txt))
+        out_path <- construct_out_path(add_extension(paste0("clumps", suffix, pc ? "_pc" : ""), exts$txt))
         wrap_write_table(clump_out, out_path)
     }
  
@@ -1034,7 +1034,7 @@ gwas <- function(qc_data_path) {
 
             if (pca) {
                 clump_path <- clumping(pheno_full_path)
-                read_clumps(clump_path, suffix)
+                read_clumps(clump_path, suffix, pca)
             }
 
             d <- gwas_plots(pheno_full_path, suffix, pca)
