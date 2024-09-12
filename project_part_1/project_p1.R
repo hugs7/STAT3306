@@ -801,8 +801,15 @@ gwas <- function(qc_data_path) {
             return(file_name)
         }
 
+        logger("DEBUG", "Reading pheno analysis...")
         d <- wrap_read_table(pheno_analysis_path)
+        logger("INFO", "Dimension of d before omit: ", dim(d))
+        logger("INFO", "Removing n/a p-vals...")
+        d <- na.omit(d)
+        
+        logger("INFO", "Dimension of d after omit: ", dim(d))
 
+        logger("DEBUG", "Plotting ...")
         man_plot_name <- name_plot("manhattan")
         logger("INFO", "Generating Manhattan Plot ", quotes(man_plot_name), " ...")
         wrap_plot(manhattan, d, man_plot_name)
