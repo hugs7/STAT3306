@@ -467,27 +467,37 @@ genomic_inflation_factor <- function(d, df = 1) {
     qchisq(1 - median_val, df) / chisq_med
 }
 
-excess_missing_genotypes <- function(data_path, extension, out_cols, histogram) {
-    logger("Checking for missing genotypes (", extension, ")...")
+excess_missing_genotypes <- function(data_path, extension, out_cols, histogram, suffix) {
+    if (length(suffix) == 0) {
+        logger("ERROR", "Suffix for missing plot name cannot be empty.")
+    }
 
-    missing_name <- "missing"
+    # Check for existing missing file
+    missing_name <- paste0("missing_", suffix)
+    logger("Checking for missing genotypes (", extension, ")...")
     missing_basename <- plink(data_path, pl_fgs$missing, missing_name)
-    
-    logger("DEBUG", "Reading ", extension, " table...")
     missing_out_path <- add_extension(missing_basename, extension)
+
+    logger("DEBUG", "Reading ", extension, " table...")
     missing <- wrap_read_table(missing_out_path)
     log_df(missing, "missing")
     
     if (histogram) {
-        logger("INFO", "Plotting F_MISS histogram")
-        wrap_histogram(missing$"F_MISS", paste0("fmiss", extension, exts$png))
+        hist_basename <- add_extension("fmiss", extension, exts$png)
+        wrap_histogram(missing$"F_MISS", hist_basename)
         num_indvs_to_remove <- sum(missing$"F_MISS" > genotype_threshold)
         log_indvs_to_remove(num_indvs_to_remove)
     }
     
-    out_name <- paste0("remove.missing", extension, ".samples.txt")
-    missing_file_path <- remove_indices_by_threshold(missing, "F_MISS", genotype_threshold, 
-                                                     out_cols, out_name)
+    out_name <- add_extension("remove.missing", extension, ".samples", exts$txt)
+    missing_file_path <- construct_out_path(out_name)
+    if (file_exists(missing_file_path)) {
+        logger("Missing genotypes already saved at ", quotes(missing_file_path), ".")
+    } else {
+        missing_file_path <- remove_indices_by_threshold(missing, "F_MISS", genotype_threshold, 
+                                                         out_cols, out_name)
+    }
+
     return(missing_file_path)
 }
 
@@ -532,7 +542,7 @@ quality_control <- function() {
         #' @param histogram {boolean}: if true, will plot a histogram of the frequency of missingness
         #' @return missing_file_path {string}: The file path to the file containing the individuals to remove.
 
-        excess_missing_genotypes(NULL, exts$imiss, fam_ind_cols, histogram)
+        excess_missing_genotypes(NULL, exts$imiss, fam_ind_cols, histogram, "individual")
     }
 
     find_outlying_homozygosity <- function(plot) {
@@ -669,7 +679,7 @@ quality_control <- function() {
 
 sample_qc <- function(data_subset_path) {
     missing_snps <- function(histogram) {
-        missing_file_path <- excess_missing_genotypes(data_subset_path, exts$lmiss, 2, histogram)
+        missing_file_path <- excess_missing_genotypes(data_subset_path, exts$lmiss, 2, histogram, "SNPs")
         lmiss <- wrap_read_table(missing_file_path)
         return(lmiss)
     }
