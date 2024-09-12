@@ -343,7 +343,7 @@ plink <- function(bfile, plink_args, out_name = NULL) {
     } else {
         # Search for partial match
         logger("DEBUG", "Checking for existing match: ", quotes(plink_out_path), ".")
-        if (file_exists(plink_out_path, TRUE, list("*.log")) && !overwrite_plink_out) {
+        if (file_exists(plink_out_path, TRUE, list("*.log$")) && !overwrite_plink_out) {
             logger("Matching file(s) already exists at: ", quotes(plink_out_path), ".")
             return(plink_out_path)
         }
