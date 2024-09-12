@@ -817,9 +817,11 @@ gwas <- function(qc_data_path) {
         qq_plot_name <- name_plot("qq")
         logger("INFO", "Generating QQ Plot ", quotes(qq_plot_name), " ...")
         wrap_plot(qq, d$P, qq_plot_name)
+
+        return(d)
     }
 
-    compute_lambda <- function(suffix, pc) {
+    compute_lambda <- function(d, suffix, pc) {
         logger("INFO", "Computing Genomic Inflation Factor (", suffix, ") with PC: ", 
                        pc ? "enabled" : "disabled", "...")
 
@@ -927,8 +929,8 @@ gwas <- function(qc_data_path) {
                 read_clumps(clump_path, suffix)
             }
 
-            gwas_plots(pheno_full_path, suffix, pca)
-            compute_lambda(suffix, pca)
+            d <- gwas_plots(pheno_full_path, suffix, pca)
+            compute_lambda(d, suffix, pca)
         }
     }
 
