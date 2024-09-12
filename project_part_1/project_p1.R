@@ -88,6 +88,14 @@ ext <- function(ext_name) {
     paste0(".", ext_name)
 }
 
+wrap_dim <- function(df) {
+    #' Gets the dimension of a data frame in a string format.
+    #' @param df {data.frame}: Data frame to get the dimension of.
+    #' @return {string}: Dimension of data frame in string representation.
+
+    paste(dim(df), collapse = " x ")
+}
+
 `?` <- function(x, y) {
     #' A little naughty. We can make R use ? as a ternary operator
     #' just like C! It even works with assignment <- !
@@ -180,7 +188,7 @@ log_df <- function(df, name, log_level = "INFO") {
     #' @param log_level {string}: The level to log at. Defaults to INFO.
     #' @return {NULL}
 
-    logger(log_level, "Dim ", name, ": ", dim(df), "\n")
+    logger(log_level, "Dim ", name, ": ", wrap_dim(df))
     print(head(df))
 }
 
