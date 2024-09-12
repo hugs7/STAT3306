@@ -432,8 +432,7 @@ excess_missing_genotypes <- function(data_path, extension, out_cols, histogram) 
     logger("DEBUG", "Reading ", extension, " table...")
     missing_out_path <- add_extension(missing_basename, extension)
     missing <- wrap_read_table(missing_out_path)
-    dim(missing)
-    head(missing)
+    log_df(missing, "missing")
     
     if (histogram) {
         logger("INFO", "Plotting F_MISS histogram")
@@ -502,12 +501,11 @@ quality_control <- function() {
 
         hz_name <- "hz"
         het_basename <- plink_orig_data(pl_fgs$het, hz_name)
-        
-        logger("DEBUG", "Reading het table...")
         het_out_path <- add_extension(het_basename, exts$het)
+
+        logger("DEBUG", "Reading het table...")
         het <- wrap_read_table(het_out_path)
-        dim(het)
-        head(het)
+        log_df(het, "het")
 
         if (plot) {
             logger("INFO", "Plotting het histogram")
@@ -691,12 +689,11 @@ sample_qc <- function(data_subset_path) {
         logger("Comparing Minor Allele Frequencies...")
         snp_ref_path <- file.path(data_path, "reference_allele_frequencies.txt")
         ref <- wrap_read_table(snp_ref_path, header = FALSE)
-        print(dim(ref))
-        print(head(ref))
-
+        log_df(ref, "Reference allele requencies")
+        
         ind <- match(freq$SNP, ref$V1)
         out <- cbind(freq, ref[ind,])
-        print(head(out))
+        log_df(out, "MAFs with Reference")
         
         # Take inverse of allele frequencies which are given with respect to allele 2.
         out_cpy <- out
@@ -821,13 +818,15 @@ gwas <- function(qc_data_path) {
             return(file_name)
         }
 
-        logger("DEBUG", "Reading pheno analysis...")
+        logger("DEBUG", "Reading pheno analysis ", quotes(plot_suffix), " ",
+                        pc, "...")
         d <- wrap_read_table(pheno_analysis_path)
-        logger("INFO", "Dimension of d before omit: ", dim(d))
+        log_df(d, "D before na omit")
+        
         logger("INFO", "Removing n/a p-vals...")
         d <- na.omit(d)
         
-        logger("INFO", "Dimension of d after omit: ", dim(d))
+        log_df(d, "D after na omit")
 
         logger("DEBUG", "Plotting ...")
         man_plot_name <- name_plot("manhattan")
@@ -911,8 +910,7 @@ gwas <- function(qc_data_path) {
         # Exclude column PC2
         logger("Printing Clump Output")
         clump_out <- clump[, 1:11]
-        print(head(clump_out))
-        logger("DEBUG", "End of clump output")
+        log_df(clump_out, paste0("Clump output", suffix))
         
         # Write to file
         out_path <- construct_out_path(add_extension(paste0("clumps", suffix), exts$txt))
