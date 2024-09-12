@@ -522,7 +522,7 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
                              "pca", "linear", "assoc", "clump", list("cp1" = "clump-p1"), 
                              list("cp2" = "clump-p2"), list("cr2" = "clump-r2"), 
                              list("ckb" = "clump-kb"), list("rel_cutoff" = "rel-cutoff"),
-                             "keep", list("miss_pheno" = "missing-phenotype")), 
+                             "keep", list("miss_pheno_neg_9" = "1")), 
                         named_flag)
 
 exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
@@ -823,7 +823,7 @@ gwas <- function(qc_data_path) {
         if (grepl("binary", suffix)) {
             logger("DEBUG", quotes("binary"), " found in suffix ", quotes(suffix))
             logger("INFO", "Adding missing-phenotype flag")
-            args <- paste(pl_fgs$miss_pheno, alt_mpheno)
+            args <- paste(pl_fgs$miss_pheno_neg_9)
         }
         
         return(args)
