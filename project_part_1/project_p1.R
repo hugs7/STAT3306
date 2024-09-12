@@ -794,17 +794,16 @@ gwas <- function(qc_data_path) {
  
     gwas_plots <- function(pheno_analysis_path, plot_suffix = "", pc) {
         name_plot <- function(plot_type) {
+            logger("DEBUG", "Naming plot type: ", quotes(plot_type), ".")
             file_name <- paste0("gwas_", plot_type)
-            if (length(plot_type) > 0) {
-                if (plot_type[[1]] != "_") {
-                   file_name <- paste0(file_name, "_")
-                }
-
-                file_name <- paste0(file_name, plot_suffix)
+            if (plot_type[[1]] != "_") {
+               file_name <- paste0(file_name, "_")
             }
             
+            file_name <- paste0(file_name, plot_type, plot_suffix)
             file_name <- add_extension(file_name, exts$png)
             logger("DEBUG", "GWAS Plot Name: ", quotes(file_name), ".")
+            return(file_name)
         }
 
         d <- wrap_read_table(pheno_analysis_path)
@@ -813,7 +812,7 @@ gwas <- function(qc_data_path) {
         logger("INFO", "Generating Manhattan Plot ", quotes(man_plot_name), " ...")
         wrap_plot(manhattan, d, man_plot_name)
 
-        qq_plot_name <- name_plot(qq)
+        qq_plot_name <- name_plot("qq")
         logger("INFO", "Generating QQ Plot ", quotes(qq_plot_name), " ...")
         wrap_plot(qq, d$P, qq_plot_name)
     }
