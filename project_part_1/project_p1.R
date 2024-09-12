@@ -60,6 +60,10 @@ plots_out_dir <- file.path("./plots")
 plink_out_dir <- file.path("./plink_out")
 out_dir <- file.path("./out")
 
+# Overrides
+overwrite_ext_plots <- FALSE
+overwrite_plink_out <- FALSE
+
 # === Functions ===
 
 cat0 <- function(...) {
@@ -394,10 +398,18 @@ log_indvs_to_remove <- function(num_indvs) {
 wrap_plot <- function(plot_callback, data, out_name, width = 600, height = 350, ...) {
     out_name <- check_png_ext(out_name, TRUE)
     out_path <- file.path(plots_out_dir, out_name)
-    delete_file(out_path)
-    png(out_path, width, height)
-    plot_callback(data, ...)
-    dev.off()
+    
+    if (file_exists(out_path) && !overwrite_ext_plots) {
+        logger("INFO", "Plot already saved at: ", quotes(out_path), ".")
+        logger("INFO", "Skipping plot")
+    } else {
+        logger("DEBUG", "Plotting at: ", quotes(out_path), " ...")
+        png(out_path, width, height)
+        plot_callback(data, ...)
+        dev.off()
+    }
+
+    return(out_path)
 }
 
 wrap_histogram <- function(...) {
