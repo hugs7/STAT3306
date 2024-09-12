@@ -84,6 +84,36 @@ ext <- function(ext_name) {
     paste0(".", ext_name)
 }
 
+`?` <- function(x, y) {
+    #' A little naughty. We can make R use ? as a ternary operator
+    #' just like C! It even works with assignment <- !
+    #' @param x {any}: the condition (before the ?).
+    #' @param y {any}: both outcomes (separated by :).
+    #' @return the outcome based on the condition prior to the `?`.
+                              
+    xs <- as.list(substitute(x))
+    logger("TRACE", "? Eval xs: ", quotes(xs), ".")
+
+    # Get context of caller
+    env <- parent.frame()
+
+    if (xs[[1]] == as.name("<-")) {
+        x <- eval(xs[[3]], envir = env)
+    }
+
+    # Parse and eval ternary outcome in parent env
+    outcomes <- sapply(strsplit(deparse(substitute(y)), ":"), function(e) parse(text = e))
+    r <- eval(outcomes[[2 - as.logical(x)]], envir = env)
+
+    # Handle assignment
+    if (xs[[1]] == as.name("<-")) {
+        xs[[3]] <- r
+        eval.parent(as.call(xs))
+    } else {
+        r
+    }
+}
+
 create_object <- function(items, transform_fn) {
     result <- list()
 
