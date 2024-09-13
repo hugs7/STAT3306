@@ -161,7 +161,7 @@ create_object <- function(items, transform_fn) {
         }
     }
 
-    result
+    return(result)
 }
 
 get_calling_function <- function(ignore_names) {
