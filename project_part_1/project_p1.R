@@ -580,8 +580,8 @@ remove_indices_by_threshold <- function(table, thresh_col, threshold, out_cols, 
     #' @param out_name {string}: File name to save to.
     #' @return ind_out_path {string}: Path to saved file.
 
-    logger("DEBUG", "Removing indices by threshold (", threshold, ") in table from col name: ",
-           quotes(thresh_col_name), ".")
+    logger("DEBUG", "Removing indices by threshold (", threshold, ") in table from col: ",
+           quotes(thresh_col), ".")
     ind_to_remove <- which(table[[thresh_col]] > threshold)
     save_removed_indices(table, ind_to_remove, out_cols, out_name)
 }
