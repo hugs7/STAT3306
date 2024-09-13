@@ -116,7 +116,7 @@ list_to_str <- function(lst, collapse = ", ") {
     #'                           Defaults to ', '.
     #' @return {string}: String representation of list.
 
-    paste(lst, collapse)
+    paste(lst, collapse = collapse)
 }
 
 named_flag <- function(fg_name) {
