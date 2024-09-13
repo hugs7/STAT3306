@@ -1180,8 +1180,11 @@ gwas <- function(qc_data_path) {
             return("Quantitative trait")
         }
 
-        binary_pattern <- "^([A-Za-z]+)(\\d+)$"
+        logger("DEBUG", "Mapping suffix: ", quotes(suffix), " to trait name...")
+
+        binary_pattern <- "^_?([A-Za-z]+)(\\d+)$"
         trait_name <- gsub(binary_pattern, "\\1 \\2", suffix)
+        logger("INFO", "Trait name: ", quotes(trait_name), ".")
     
         return(trait_name)
     }
