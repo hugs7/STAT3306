@@ -60,6 +60,9 @@ plots_out_dir <- file.path("./plots")
 plink_out_dir <- file.path("./plink_out")
 out_dir <- file.path("./out")
 
+plot_w <- 1400
+plot_h <- 800
+
 # Overrides
 overwrite_ext_plots <- FALSE
 overwrite_plink_out <- FALSE
@@ -449,7 +452,7 @@ log_indvs_to_remove <- function(num_indvs) {
     }
 }
 
-wrap_plot <- function(plot_callback, data, out_name, width = 600, height = 350, ...) {
+wrap_plot <- function(plot_callback, data, out_name, width = plot_w, height = plot_h, ...) {
     out_name <- check_png_ext(out_name, TRUE)
     out_path <- file.path(plots_out_dir, out_name)
     
