@@ -686,10 +686,11 @@ wrap_histogram <- function(...) {
     wrap_plot(hist, ...)
 }
 
-wrap_scatter <- function(abline_int, abline_slope, ...) {
+wrap_scatter <- function(abline_int, abline_slope, abline_name, ...) {
     #' Wrapper to wrap_plot but for scatterplot. Addionally plots a line on the scatterplot.
     #' @param abline_int {integer | NULL}: Intercept for abline.
     #' @param abline_slope {integer | NULL}: Gradient for abline.
+    #' @param abline_name {string}: Label for the abline.
     #' @param ... {any}: Arguments to wrap_plot excluding the plot_callback. 
     #' @return out_path {string}: Path to saved plot file.
 
@@ -843,8 +844,8 @@ quality_control <- function() {
             wrap_histogram(het$F, "fhet_hist.png", xlab = "Homozygosity", main = "Distribution of Homozygosity")
 
             logger("INFO", "Plotting het scatterplot")
-            wrap_scatter(0.05, "red", abs(het$F), "Distribution of abs(heterozygosity)", 
-                         "fhet_scatter.png")
+            wrap_scatter(0.05, "red", "Distribution of abs heterozygosity", abs(het$F),
+                         add_extension("fhet_scatter", exts$png))
         }
 
         het_samples_name <- add_extension("remove.het.samples", exts$txt)
