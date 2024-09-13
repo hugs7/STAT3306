@@ -100,13 +100,23 @@ quotes <- function(...) {
 }
 
 brackets <- function(...) {
+    #' Surrounds a string with round brackets.
+    #' @param ... {string}: String args to surround with brackets.
+    #' @return {string}: String surrounded with round brackets.
+
     str <- paste0(...)
     logger("TRACE", "Wrapping ", quotes(str), " in brackets.")
     paste0("(", str, ")")    
 }
 
-list_to_str <- function(lst) {
-    paste(lst, collapse = ", ")
+list_to_str <- function(lst, collapse = ", ") {
+    #' Converts a list to a string separated by commas.
+    #' @param lst {list}: List to convert to string.
+    #' @param collapse {string}: Separator to split items in list. 
+    #'                           Defaults to ', '.
+    #' @return {string}: String representation of list.
+
+    paste(lst, collapse)
 }
 
 named_flag <- function(fg_name) {
@@ -1107,10 +1117,10 @@ sample_qc <- function(data_subset_path) {
     }
 
     exclude_insig_maf <- function(qc_data_path, remove_out_path) {
-        #' Creates a subset of the data which excludes insignificant alleles by their MAF
-        #' @param qc_data_path {string}: Path to dataset to exclude from
-        #' @param remove_out_path {string}: Path to file detailing which alleles to remove
-        #' @return qc_data_maf_path {string}: Path to new subset of data
+        #' Creates a subset of the data which excludes insignificant alleles by their MAF.
+        #' @param qc_data_path {string}: Path to dataset to exclude from.
+        #' @param remove_out_path {string}: Path to file detailing which alleles to remove.
+        #' @return qc_data_maf_path {string}: Path to new subset of data.
 
         logger("Excluding insignificant alleles by MAF...")
 
@@ -1146,6 +1156,11 @@ gwas <- function(qc_data_path) {
     num_pc <- 10
     
     get_mpheno_args <- function(suffix) {
+        #' Constructs the mpheno section of the plink args based on suffix 
+        #' (which in turn can map to trait).
+        #' @param suffix {string}: The suffix of the phenotype file (mapping to trait).
+        #' @return args {string}: Mpheno args used for plink.
+
         args <- paste(pl_fgs$mpheno, alt_mpheno)
         if (grepl("binary", suffix)) {
             logger("DEBUG", quotes("binary"), " found in suffix ", quotes(suffix))
@@ -1157,9 +1172,9 @@ gwas <- function(qc_data_path) {
     }
 
     get_trait_name <- function(suffix) {
-        #' Maps suffix to trait name
+        #' Maps suffix to trait name. E.g. "_binary1" -> "Binary 1"
         #' @param suffix {string}: Suffix of the filename corresponding to phenotype.
-        #' @return trait_name {string}: Name of the trait
+        #' @return trait_name {string}: Name of the trait.
         
         if (length(suffix) == 0) {
             return("Quantitative trait")
@@ -1193,7 +1208,7 @@ gwas <- function(qc_data_path) {
     gwas_pheno <- function(pheno_path, pheno_suffix, mpheno_args) {
         #' Performs association analysis based on the phenotype
         #' defined in the specified file.
-        #' @param pheno_path {string}: Path to pheno file.
+        #' @param pheno_path {string}: Path to pheno file for specified trait.
         #' @param pheno_suffix {string}: Suffix of phenotype.
         #' @param mpheno_args {string}: Flags relating to mpheno in plink
         #' @return {string}: Path to phenotype association analysis output.
@@ -1206,6 +1221,12 @@ gwas <- function(qc_data_path) {
     }
 
     get_pheno_analysis_full_path <- function(pheno_basename, phenotype_suffix, pc) {
+        #' Adds the appropriate extensions to the phenotype analysis file basename
+        #' based on the trait and if principal components is being used.
+        #' @param pheno_basename {string}: Path to pheno analysis out without extensions.
+        #' @param phenotype_suffix {string}: Suffix mapping to trait.
+        #' @return pheno_path {string}: Full path to pheno analysis file.
+
         logger("DEBUG", "Calculating path for pheno analysis full path from basename ", 
                         quotes(pheno_basename), ".")
         
@@ -1231,6 +1252,12 @@ gwas <- function(qc_data_path) {
     }
  
     gwas_plots <- function(pheno_analysis_path, plot_suffix = "", pc) {
+        #' Saves Manhattan and QQ plots for the current pheno analysis.
+        #' @param pheno_analysis_path {string}: The path to the pheno analysis file
+        #' @param plot_suffix {string}: Suffix mapping to trait.
+        #' @param pc {boolean}: Whether principal components is being used.
+        #' @return d {data.frame}: Data.frame from phenotype analysis.
+
         trait_name <- get_trait_name(plot_suffix)
         
         name_plot <- function(plot_type) {
@@ -1271,6 +1298,12 @@ gwas <- function(qc_data_path) {
     }
 
     compute_lambda <- function(d, suffix, pc) {
+        #' Computes Genomic Inflation Factor(GIC) for phenotype analysis.
+        #' @param d {data.frame}: Data.frame from phenotype analysis.
+        #' @param suffix {string}: Suffix mapping to trait.
+        #' @param pc {boolean}: Whether principal components is being used.
+        #' @return lambda_bc {float}: The GIC (\lambda) value.
+
         logger("INFO", "Computing Genomic Inflation Factor (", suffix, ") with PC: ", 
                        pc ? "enabled" : "disabled", "...")
 
@@ -1280,12 +1313,20 @@ gwas <- function(qc_data_path) {
     }
     
     compute_principal_comps <- function(num_components) {
+        #' Computes the specified number of principal components for
+        #' for the quality controlled genomic dataset.
+        #' @param num_components {integer}: The number of principal components
+        #'                                  to compute.
+        #' @return pca_eig_vec {string}: Path to eigenvector file.
+
         # Check for existing PCA
         out_name <- "pca"
         pca_path <- construct_plink_out_path(out_name)   
         pca_eig_val <- add_extension(pca_path, exts$eigenval)
         pca_eig_vec <- add_extension(pca_path, exts$eigenvec)
 
+        # Special: We check for all files present and hence don't rely on 
+        # plink wrapper function to perform the check for us.
         eig_files <- list(pca_eig_val, pca_eig_vec)
         if (all(sapply(eig_files, file_exists))) {
             logger("INFO", "PCA already exists. Skipping.")
@@ -1302,6 +1343,14 @@ gwas <- function(qc_data_path) {
     }
 
     add_pc_covariates <- function(pheno_pc_path, suffix, pc_eigvec_file, mpheno_args) {
+        #' Performs GWAS but with principal components as covariates. Caches result.
+        #' @param pheno_pc_path {string}: Path to phenotype file for specified trait.
+        #' @param suffix {string}: Suffix mapping to trait.
+        #' @param pc_eigvec_file {string}: Path to eigenvector file contianing principal
+        #'                                 components to be used as covariates.
+        #' @param mpheno_args {string}: Plink mpheno args (calculated externally).
+        #' @return cov_out_path {string}: Path to covariate out path from plink (or cached).
+
         # Check for existing covariates
         out_name <- paste0("gwas_pheno", suffix, "_pc")
         cov_out_path <- construct_plink_out_path(out_name)
@@ -1321,6 +1370,10 @@ gwas <- function(qc_data_path) {
     }
 
     clumping <- function(pheno_pc_path) {
+        #' Performs clumping to identify most significant SNP in each LD block.
+        #' @param pheno_pc_path {string}: Path to phenotype file for the specified trait.
+        #' @return {string}: Path to clump out file from plink.
+
         logger("Clumping GWAS Results...")
         out_name <- "gwas_pheno_1_clump"
         clump_p1_val <- 0.5
@@ -1333,6 +1386,12 @@ gwas <- function(qc_data_path) {
     }
 
     read_clumps <- function(clump_basename, suffix, pc) {
+        #' Saves a copy of the clump file without the last column listing the SNP names
+        #' for each clump.
+        #' @param clump_basename {string}: Basename path to clump file.
+        #' @param suffix {string}: Suffix mapping to trait,
+        #' @param pc {boolean}: Whether principal components is being used.
+
         clump_path <- add_extension(clump_basename, exts$clumped)
         clump <- wrap_read_table(clump_path)
 
