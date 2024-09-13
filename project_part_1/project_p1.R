@@ -686,10 +686,10 @@ wrap_histogram <- function(...) {
     wrap_plot(hist, ...)
 }
 
-wrap_scatter <- function(abline_int, abline_slope, abline_name, ...) {
+wrap_scatter <- function(abline_h, abline_col, abline_name, ...) {
     #' Wrapper to wrap_plot but for scatterplot. Addionally plots a line on the scatterplot.
-    #' @param abline_int {integer | NULL}: Intercept for abline.
-    #' @param abline_slope {integer | NULL}: Gradient for abline.
+    #' @param abline_y {integer | NULL}: Height of the abline.
+    #' @param abline_col {integer | NULL}: Colour of the abline.
     #' @param abline_name {string}: Label for the abline.
     #' @param ... {any}: Arguments to wrap_plot excluding the plot_callback. 
     #' @return out_path {string}: Path to saved plot file.
