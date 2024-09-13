@@ -905,6 +905,21 @@ gwas <- function(qc_data_path) {
         return(args)
     }
 
+    get_trait_name <- function(suffix) {
+        #' Maps suffix to trait name
+        #' @param suffix {string}: Suffix of the filename corresponding to phenotype.
+        #' @return trait_name {string}: Name of the trait
+        
+        if (length(suffix) == 0) {
+            return("Quantitative trait")
+        }
+
+        binary_pattern <- "^([A-Za-z]+)(\\d+)$"
+        trait_name <- gsub(binary_pattern, "\\1 \\2", suffix)
+    
+        return(trait_name)
+    }
+
     get_pheno_path <- function(pheno_suffix) {
         logger("DEBUG", "Retrieving pheno path for suffix ", quotes(pheno_suffix), ".")
         phenotype_file_prefix <- space_to_underscore(phenotype)
@@ -953,12 +968,22 @@ gwas <- function(qc_data_path) {
     }
  
     gwas_plots <- function(pheno_analysis_path, plot_suffix = "", pc) {
+        trait_name <- get_trait_name(plot_suffix)
+        
         name_plot <- function(plot_type) {
             logger("DEBUG", "Naming plot type: ", quotes(plot_type), ".")
             file_name <- paste0("gwas_", plot_type, plot_suffix)
             file_name <- add_extension(file_name, exts$png)
             logger("DEBUG", "GWAS Plot Name: ", quotes(file_name), ".")
             return(file_name)
+        }
+
+        title_plot <- function(plot_type) {
+            logger("DEBUG", "Titling plot for type: ", quotes(plot_type), ".")
+
+            plot_title <- paste0(title_case(plot_type), " plot for ", trait_name, pc ? paste0(" ", brackets("PC")) : "")
+            logger("DEBUG", "Plot title: ", quotes(plot_title), ".")
+            return(plot_title)
         }
 
         logger("DEBUG", "Reading pheno analysis ", quotes(plot_suffix), " ",
@@ -968,17 +993,16 @@ gwas <- function(qc_data_path) {
         
         logger("INFO", "Removing n/a p-vals...")
         d <- d[!is.na(d$P), ]
-
         log_df(d, "D after na omit")
 
         logger("DEBUG", "Plotting ...")
         man_plot_name <- name_plot("manhattan")
-        logger("INFO", "Generating Manhattan Plot ", quotes(man_plot_name), " ...")
-        wrap_plot(manhattan, d, man_plot_name)
+        logger("INFO", "Generating Manhattan Plot ", quotes(man_plot_name), " for trait ", quotes(trait_name), " ...")
+        wrap_plot(manhattan, d, man_plot_name, main = title_plot("manhattan"))
 
         qq_plot_name <- name_plot("qq")
         logger("INFO", "Generating QQ Plot ", quotes(qq_plot_name), " ...")
-        wrap_plot(qq, d$P, qq_plot_name)
+        wrap_plot(qq, d$P, qq_plot_name, main = title_plot("QQ"))
 
         return(d)
     }
