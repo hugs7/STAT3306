@@ -106,7 +106,7 @@ brackets <- function(...) {
 
     str <- paste0(...)
     logger("TRACE", "Wrapping ", quotes(str), " in brackets.")
-    paste0("(", str, ")")    
+    paste0("(", str, ")")
 }
 
 list_to_str <- function(lst, collapse = ", ") {
