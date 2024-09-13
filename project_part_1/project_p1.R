@@ -75,7 +75,8 @@ cat0 <- function(...) {
 }
 
 pad <- function(width, ...) {
-    logger("TRACE", "Padding ", quotes(...), " to ", width, " chars.")
+    
+    # Do not trace log here as logger relies on pad.
     padded <- sprintf(paste0("%-", width, "s"), paste0(...))
     return(padded)
 }
