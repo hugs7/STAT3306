@@ -509,8 +509,8 @@ excess_missing_genotypes <- function(data_path, extension, out_cols, histogram, 
     
     if (histogram) {
         hist_basename <- add_extension("fmiss", extension, exts$png)
-        wrap_histogram(missing$"F_MISS", hist_basename)
-        num_indvs_to_remove <- sum(missing$"F_MISS" > genotype_threshold)
+        wrap_histogram(missing$F_MISS, hist_basename)
+        num_indvs_to_remove <- sum(missing$F_MISS > genotype_threshold)
         log_indvs_to_remove(num_indvs_to_remove)
     }
     
@@ -592,7 +592,7 @@ quality_control <- function() {
             wrap_histogram(het$F, "fhet_hist.png")
 
             logger("INFO", "Plotting het scatterplot")
-            wrap_scatter(0.05, "red", abs(het$"F"), "Distribution of abs(heterozygosity)", 
+            wrap_scatter(0.05, "red", abs(het$F), "Distribution of abs(heterozygosity)", 
                          "fhet_scatter.png")
         }
 
@@ -1065,7 +1065,7 @@ run_analysis <- function() {
     quant_traits_res_path <- construct_plink_table_path(quant_trait_res_name, exts$assoc)
     gwas_results <- wrap_read_table(quant_traits_res_path)
     if (!is.null(gwas_results)) {
-        wrap_histogram(gwas_results$"P", "gwas_manhattan.png")
+        wrap_histogram(gwas_results$P, "gwas_manhattan.png")
     }
 
     # A comparison of the results for these different traits sets
