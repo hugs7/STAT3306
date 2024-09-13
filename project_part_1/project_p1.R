@@ -523,7 +523,10 @@ excess_missing_genotypes <- function(data_path, extension, out_cols, histogram, 
     
     if (histogram) {
         hist_basename <- add_extension("fmiss", extension, exts$png)
-        wrap_histogram(missing$F_MISS, hist_basename)
+        suffix_bracketed <- brackets(suffix)
+        plot_title <- paste0("Distribution of Missingness ", suffix_bracketed)
+        wrap_histogram(missing$F_MISS, hist_basename, xlab = paste0("Missingness ", suffix_bracketed),
+                       main = plot_title)
         num_indvs_to_remove <- sum(missing$F_MISS > genotype_threshold)
         log_indvs_to_remove(num_indvs_to_remove)
     }
@@ -603,7 +606,7 @@ quality_control <- function() {
 
         if (plot) {
             logger("INFO", "Plotting het histogram")
-            wrap_histogram(het$F, "fhet_hist.png")
+            wrap_histogram(het$F, "fhet_hist.png", xlab = "Homozygosity", main = "Distribution of Homozygosity")
 
             logger("INFO", "Plotting het scatterplot")
             wrap_scatter(0.05, "red", abs(het$F), "Distribution of abs(heterozygosity)", 
@@ -737,7 +740,8 @@ sample_qc <- function(data_subset_path) {
         hwe <- wrap_read_table(hwe_path)
         
         if (histogram) {
-            wrap_histogram(hwe$P, "hwe_deviations.png")
+            wrap_histogram(hwe$P, "hwe_deviations.png", xlab = "p-values of HWE test on SNPs",
+                           main = "Distribution of HWE p-values")
         }
 
         return(hwe) 
@@ -756,7 +760,8 @@ sample_qc <- function(data_subset_path) {
         freq <- wrap_read_table(min_allele_path)
 
         if (histogram) {
-            wrap_histogram(freq$MAF, "maf_distribution.png")
+            wrap_histogram(freq$MAF, "maf_distribution.png", xlab = "Minor Allele Frequency (ref = 1)",
+                           main = "Distribution of Minor Allele Frequencies")
         }
 
         return(freq)
@@ -805,19 +810,27 @@ sample_qc <- function(data_subset_path) {
         log_df(res, "Residual minor allele frequencies")
 
         if (do_hist) {
-            logger("Plotting histogram of Minor Allele Frequency (MAF)")
-            wrap_histogram(res, "minor_allele.png")
+            logger("Plotting histogram of Residual Minor Allele Frequency (MAF)")
+            wrap_histogram(res, "residual_minor_allele.png", xlab = "Residual Minor Allele Frequency",
+                           main = "Residual Minor Allele Frequency (r-MAF) (ref = 1)")
         }
 
         if (do_plot) {
             logger("Plotting allele frequency comparison with reference...")
-            wrap_plot(plot, out_cpy$MAF ~ out_cpy$V2, "min_allele_freq_comparison.png")
+            # y: Observed, x: reference.
+            xlab <- "Reference MAF"
+            ylab <- "Observed MAF"
+            plot_title <- "Reference vs Observed Minor Allele Frequencies"
+            wrap_plot(plot, out_cpy$MAF ~ out_cpy$V2, "min_allele_freq_comparison.png",
+                      xlab, ylab, main = plot_title)
 
             logger("Removing alleles which deviate significantly from reference...")
             accept_snps <- which(abs(res) <= maf_threshold)
             logger("There were ", length(accept_snps), " accepted.")
-            out_accept <- out_cpy[accept_snps,]
-            wrap_plot(plot, out_accept$MAF ~ out_accept$V2, "corrected_min_allele_freq_comparison.png")
+            out_accept <- out_cpy[accept_snps, ]
+            # y: Observed, x: reference.
+            wrap_plot(plot, out_accept$MAF ~ out_accept$V2, "corrected_min_allele_freq_comparison.png",
+                      xlab, ylab, main = paste(plot_title, "(Corrected for Ref = 1"))
         }
 
         remove_snps_indx <- which(abs(res) > maf_threshold)
