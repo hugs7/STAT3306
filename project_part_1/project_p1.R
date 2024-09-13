@@ -75,12 +75,21 @@ cat0 <- function(...) {
 }
 
 pad <- function(width, ...) {
+    logger("TRACE", "Padding ", quotes(...), " to ", width, " chars.")
     padded <- sprintf(paste0("%-", width, "s"), paste0(...))
     return(padded)
 }
 
-quotes <- function(path) {
-    paste0("'", path, "'")
+quotes <- function(...) {
+    str <- paste0(...)
+    logger("TRACE", "Wrapping ", str, " in quotes.")
+    paste0("'", str, "'")
+}
+
+brackets <- function(...) {
+    str <- paste0(...)
+    logger("TRACE", "Wrapping ", quotes(str), " in brackets.")
+    paste0("(", str, ")")
 }
 
 list_to_str <- function(lst) {
@@ -88,10 +97,12 @@ list_to_str <- function(lst) {
 }
 
 named_flag <- function(fg_name) {
+    logger("TRACE", "Naming flag: ", quotes(fg_name), ".")
     paste0("--", fg_name)
 }
 
 ext <- function(ext_name) {
+    logger("TRACE", "Initialising extension: ", quotes(ext_name), ".")
     paste0(".", ext_name)
 }
 
@@ -117,19 +128,22 @@ wrap_dim <- function(df) {
     env <- parent.frame()
 
     if (xs[[1]] == as.name("<-")) {
-        logger("TRACE", "Assignment detected")
+        logger("TRACE", "Assignment detected.")
         x <- eval(xs[[3]], envir = env)
     }
 
     # Parse and eval ternary outcome in parent env
     outcomes <- sapply(strsplit(deparse(substitute(y)), ":"), function(e) parse(text = e))
+    logger("TRACE", "Outcomes: ", quotes(outcomes), ".")
     r <- eval(outcomes[[2 - as.logical(x)]], envir = env)
 
     # Handle assignment
     if (xs[[1]] == as.name("<-")) {
+        logger("TRACE", "Assignment detected.")
         xs[[3]] <- r
         eval.parent(as.call(xs))
     } else {
+        logger("TRACE", "No assigment in ternary operation.")
         r
     }
 }
