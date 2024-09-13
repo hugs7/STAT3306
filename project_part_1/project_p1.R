@@ -95,7 +95,6 @@ quotes <- function(...) {
     #' @return {string}: String surrounded with quotes
     
     str <- paste0(...)
-    logger("TRACE", "Wrapping ", str, " in quotes.")
     paste0("'", str, "'")
 }
 
@@ -105,7 +104,6 @@ brackets <- function(...) {
     #' @return {string}: String surrounded with round brackets.
 
     str <- paste0(...)
-    logger("TRACE", "Wrapping ", quotes(str), " in brackets.")
     paste0("(", str, ")")
 }
 
@@ -562,8 +560,8 @@ save_removed_indices <- function(table, ind_to_remove, out_cols, out_name) {
     #' @param out_name {string}: File name to save to.
     #' @return ind_out_path {string}: Path to saved file.
     
-    logger("INFO", "Saving removed indices to ", quotes(out_name), ".")
-    logger("DEBUG", "Selected columns: ", quotes(out_cols), ".")
+    logger("INFO", "Saving removed indices to ", quotes(list_to_str(out_name)), ".")
+    logger("DEBUG", "Selected columns: ", quotes(list_to_str(out_cols)), ".")
 
     file <- table[ind_to_remove, out_cols]
     ind_out_path <- construct_out_path(out_name)
