@@ -473,10 +473,10 @@ wrap_histogram <- function(...) {
     wrap_plot(hist, ...)
 }
 
-wrap_scatter <- function(abline_h, abline_col, ...) {
+wrap_scatter <- function(abline_h, abline_col, abline_name, ...) {
     plot_with_abline <- function(...) {
         plot(...)
-        abline(abline_h, abline_col)
+        abline(h = abline_h, col = abline_col, main = abline_name)
     }
 
     wrap_plot(plot_with_abline, ...)
@@ -589,10 +589,11 @@ quality_control <- function() {
 
         if (plot) {
             logger("INFO", "Plotting het histogram")
-            wrap_histogram(het$"F", "fhet_hist.png")
+            wrap_histogram(het$F, "fhet_hist.png")
 
             logger("INFO", "Plotting het scatterplot")
-            wrap_scatter(0.05, "red", abs(het$"F"), "fhet_scatter.png")
+            wrap_scatter(0.05, "red", abs(het$"F"), "Distribution of abs(heterozygosity)", 
+                         "fhet_scatter.png")
         }
 
         het_samples_name <- add_extension("remove.het.samples", exts$txt)
@@ -694,7 +695,7 @@ quality_control <- function() {
     }
 
     missing_ind_path <- find_individual_missing_genotypes(TRUE)
-    het_ind_path <- find_outlying_homozygosity(FALSE) # Graph to fix
+    het_ind_path <- find_outlying_homozygosity(TRUE)
 
     combined_ind_path <- combine_remove_files(missing_ind_path, het_ind_path)
     data_subset_path <- remove_bad_individuals(combined_ind_path)
