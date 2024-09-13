@@ -836,11 +836,12 @@ sample_qc <- function(data_subset_path) {
 
         if (do_plot) {
             logger("Plotting allele frequency comparison with reference...")
+            min_allele_freq_basename <- "min_allele_freq",
             # y: Observed, x: reference.
             xlab <- "Reference MAF"
             ylab <- "Observed MAF"
             plot_title <- "Reference vs Observed Minor Allele Frequencies"
-            wrap_plot(plot, out_cpy$MAF ~ out_cpy$V2, "min_allele_freq_comparison.png",
+            wrap_plot(plot, out_cpy$MAF ~ out_cpy$V2, add_extension(min_allele_freq_basename, exts$png)
                       xlab, ylab, main = plot_title)
 
             logger("Removing alleles which deviate significantly from reference...")
@@ -848,7 +849,8 @@ sample_qc <- function(data_subset_path) {
             logger("There were ", length(accept_snps), " accepted.")
             out_accept <- out_cpy[accept_snps, ]
             # y: Observed, x: reference.
-            wrap_plot(plot, out_accept$MAF ~ out_accept$V2, "corrected_min_allele_freq_comparison.png",
+            wrap_plot(plot, out_accept$MAF ~ out_accept$V2, add_extension(min_allele_freq_basename, 
+                                                                          "_comparison", exts$png),
                       xlab, ylab, main = paste(plot_title, "(Corrected for Ref = 1"))
         }
 
