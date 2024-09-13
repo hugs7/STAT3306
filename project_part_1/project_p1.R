@@ -780,14 +780,14 @@ sample_qc <- function(data_subset_path) {
         flip_allele <- 2
         logger("Inverting Allele Frequncies with respect to allele ", flip_allele, ".")
         out_cpy$MAF[out$A1 == flip_allele] <- 1 - out$MAF[out$A1 == flip_allele]
+        log_df(out_cpy, "Corrected Minor Allele Freqs")
 
         # Must be calculated regardless of plots
-        res <- out$MAF - out$V2
+        res <- out_cpy$MAF - out_cpy$V2
         log_df(res, "Residual minor allele frequencies")
 
         if (do_hist) {
             logger("Plotting histogram of Minor Allele Frequency (MAF)")
-            keep <- c(which(abs(res) <= maf_threshold))
             wrap_histogram(res, "minor_allele.png")
         }
 
@@ -797,6 +797,7 @@ sample_qc <- function(data_subset_path) {
 
             logger("Removing alleles which deviate significantly from reference...")
             accept_snps <- which(abs(res) <= maf_threshold)
+            logger("There were ", length(accept_snps), " accepted.")
             out_accept <- out_cpy[accept_snps,]
             wrap_plot(plot, out_accept$MAF ~ out_accept$V2, "corrected_min_allele_freq_comparison.png")
         }
