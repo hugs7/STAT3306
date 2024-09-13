@@ -1096,7 +1096,7 @@ sample_qc <- function(data_subset_path) {
             xlab <- "Reference MAF"
             ylab <- "Observed MAF"
             plot_title <- "Reference vs Observed Minor Allele Frequencies"
-            wrap_plot(plot, out_cpy$MAF ~ out_cpy$V2, add_extension(min_allele_freq_basename, exts$png)
+            wrap_plot(plot, out_cpy$MAF ~ out_cpy$V2, add_extension(min_allele_freq_basename, exts$png),
                       xlab, ylab, main = plot_title)
 
             logger("Removing alleles which deviate significantly from reference...")
