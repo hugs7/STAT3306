@@ -217,6 +217,25 @@ space_to_underscore <- function(str) {
     gsub(" ", "_", str)
 }
 
+title_case <- function(str) {
+    #' Converts a string to titlecase.
+    #' @param str {string}: The string to convert to title case.
+    #' @return result {string}: The string in titlecase form.
+
+    if (length(str) == 0) {
+        logger("DEBUG", "String is empty")
+        return(str)
+    }
+
+    logger("TRACE", "Converting ", quotes(str), " to title case...")
+    words <- strsplit(str, " ")[[1]]
+    titlecased_words <- paste0(toupper(substring(words, 1, 1)), tolower(substring(words, 2)))
+    result <- paste(titlecased_words)
+
+    logger("DEBUG", "Title case version: ", quotes(result), ".")
+    return(result)
+}
+
 shell_call <- function(...) {
     system(..., ignore.stdout = TRUE)
     invisible(NULL)
