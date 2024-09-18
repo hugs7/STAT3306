@@ -1424,7 +1424,7 @@ gwas <- function(qc_data_path) {
         pc_combined_basename <- add_extension("combined_covariates_pc", exts$txt)
         pc_combined_covars_path <- construct_out_path(pc_combined_basename)
 
-        if (file_exists(pc_combined_path)) {
+        if (file_exists(pc_combined_covars_path)) {
             logger("DEBUG", "Combined PC covariates already exists.")
         } else {
             logger("INFO", "Combining eigenvectors to existing covariates...")
