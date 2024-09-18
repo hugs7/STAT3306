@@ -1355,7 +1355,7 @@ gwas <- function(qc_data_path) {
 
         log_df(combined_covariates, "Combined covariates")
         
-        wrap_write_table(covar, combined_basename, col.names = FALSE)
+        wrap_write_table(combined_covariates, combined_basename, col.names = FALSE)
     }
     
     compute_principal_comps <- function(num_components) {
