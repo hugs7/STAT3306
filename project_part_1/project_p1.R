@@ -1329,8 +1329,10 @@ gwas <- function(qc_data_path) {
 
     combine_covariates <- function() {
         #' Combines the covariate files into a single one, to then be provided
-        #' to plink.
-        #' @return combined_covar_file {str}: Path to combined covariate file.
+        #' to plink. Combined covariates file contains headers.
+        #' @return {list} List containing 
+        #'                 - combined_covar_file {str}: Path to combined covariate file.
+        #'                 - covariate_names {vector}: Vector of covariate names.
 
         combined_basename <- add_extension("combined_covariates", exts$txt)
         combined_path <- construct_out_path(combined_basename)
@@ -1360,7 +1362,8 @@ gwas <- function(qc_data_path) {
 
         log_df(combined_covariates, "Combined covariates")
         
-        wrap_write_table(combined_covariates, combined_basename, col.names = FALSE)
+        combined_covar_path <- wrap_write_table(combined_covariates, combined_basename)
+        return(list(combined_covar_path = combined_covar_path, covariate_names = covariate_basenames))
     }
     
     compute_principal_comps <- function(num_components) {
@@ -1468,7 +1471,12 @@ gwas <- function(qc_data_path) {
             # Compute principal components once
             pc_eigvec_file <- compute_principal_comps(num_pc)
         } else {
-            covar_file_path <- combine_covariates()
+            covar_result <- combine_covariates()
+            covar_file_path <- covar_result$combined_covar_path
+            covar_names <- covar_result$covariate_names
+
+            logger("DEBUG", "Covar file path ", quotes(covar_file_path))
+            logger("DEBUG", "Covariate names ", quotes(covar_names))
         }
         
         # Perform analysis for each of the phenotypes
