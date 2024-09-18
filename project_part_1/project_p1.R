@@ -1374,8 +1374,8 @@ gwas <- function(qc_data_path) {
             }
 
             log_df(combined_covariates, "Combined covariates")
-            
-            combined_covar_path <- wrap_write_table(combined_covariates, combined_basename)
+           
+            combined_covar_path <- wrap_write_table(combined_covariates, combined_basename, quotes = FALSE)
         }
 
         return(combined_covar_path)
