@@ -1430,12 +1430,15 @@ gwas <- function(qc_data_path) {
             logger("INFO", "Combining eigenvectors to existing covariates...")
 
             existing_covars <- wrap_read_table(existing_covariates_file)
-            eigenvecs <- wrap_read_table(pc_eigvec_file)
+            eigenvecs <- wrap_read_table(pc_eigvec_file, header = FALSE)
 
             # Set colnames on eigenvector data.frame
-            colnames(df)[1:2] <- fam_ind_cols
+            n_cols <- ncol(eigenvecs)
+            colnames(eigenvecs)[1:2] <- fam_ind_cols
             if (n_cols > 2) {
-                  colnames(df)[3:n_cols] <- paste0("PC", seq_len(n_cols - 2))
+                  colnames(eigenvecs)[3:n_cols] <- paste0("PC", seq_len(n_cols - 2))
+            } else {
+                logger("ERROR", "Expected more than 2 columns for eigenvector file.")
             }
             
             pc_combined_covars <- merge(existing_covars, eigenvecs, by = fam_ind_cols)
