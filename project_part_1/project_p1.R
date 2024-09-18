@@ -47,8 +47,8 @@ freq_threshold <- 0.01
 maf_threshold <- 0.1
 
 # Data Paths
-data_folder <- file.path("/data/STAT3306")
-project_data <- file.path(data_folder, "Project")
+course_shared_data_path <- file.path("/data/STAT3306")
+project_data <- file.path(course_shared_data_path, "Project")
 data_path <- file.path(project_data, "Data")
 phenotypes <- file.path(project_data, "Phenotypes")
 
