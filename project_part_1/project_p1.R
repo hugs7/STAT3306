@@ -1222,23 +1222,31 @@ gwas <- function(qc_data_path) {
         file.path(phenotypes, pheno_file_name)
     }
 
-    gwas_pheno <- function(pheno_path, pheno_suffix, mpheno_args, covar_file_path, covar_names) {
+    gwas_pheno <- function(pheno_path, pheno_suffix, mpheno_args, covar_file_path, pc) {
         #' Performs association analysis based on the phenotype
         #' defined in the specified file.
         #' @param pheno_path {string}: Path to pheno file for specified trait.
         #' @param pheno_suffix {string}: Suffix of phenotype.
         #' @param mpheno_args {string}: Flags relating to mpheno in plink.
         #' @param covar_file_path {string}: File path to combined covariates.
-        #' @param covar_names {vector}: Covariate names.
-        #' @return {string}: Path to phenotype association analysis output.
+        #' @param pc {boolean}: Whether we are using principal components as covariates.
+        #' @return cov_out_path {string}: Path to phenotype association analysis output.
 
-        logger("Performing Pheno Association Analysis on GWAS...")
+        logger("Performing Pheno Association Analysis on GWAS ", pc ? "with pc" : "", "...")
         
-        logger("DEBUG", "Using covariate file: ", quotes(covar_file_path), ".")
-        covar_names <- to_str(covar_names, collapse = ",")
-        covar_args <- paste(pl_fgs$covar, covar_file_path, pl_fgs$covar_name, covar_names)
-        plink_args <- paste(pl_fgs$assoc, pl_fgs$pheno, pheno_path, mpheno_args, covar_args)
-        out_name <- paste0("gwas_pheno", pheno_suffix)
+        out_name <- paste0("gwas_pheno", suffix, pc ? "_pc" : "")
+        cov_out_path <- construct_plink_out_path(out_name)
+
+        if (file_exists(cov_out_path)) {
+            logger("INFO", "Covariates already exist at ", quotes(cov_out_path), ".")
+            return(cov_out_path)
+        }
+
+        # No covariates. Compute:
+        logger("INFO", "Using covariate file: ", quotes(covar_file_path), ".")
+        covar_args <- paste(pl_fgs$covar, covar_file_path)
+        regression_args <- pheno_suffix == "" ? pl_fgs$linear : pl_fgs$logistic
+        plink_args <- paste(regression_args, pl_fgs$pheno, pheno_path, mpheno_args, covar_args)
         plink(qc_data_path, plink_args, out_name)
     }
 
@@ -1335,11 +1343,10 @@ gwas <- function(qc_data_path) {
     }
 
     combine_covariates <- function() {
-        #' Combines the covariate files into a single one, to then be provided
+        #' Combines the covariate files into a single one, to then be provided.
+        #' (Without eigenvectors as covariates).
         #' to plink. Combined covariates file contains headers.
-        #' @return {list} List containing 
-        #'                 - combined_covar_file {str}: Path to combined covariate file.
-        #'                 - covariate_names {vector}: Vector of covariate names.
+        #' @return combined_covar_file {str}: Path to combined covariate file.
 
         covariate_basenames <- c("age", "gender")
         
@@ -1347,7 +1354,7 @@ gwas <- function(qc_data_path) {
         combined_covar_path <- construct_out_path(combined_basename)
 
         if (file_exists(combined_covar_path)) {
-            logger("DEBUG", "Combined covariates already exists")
+            logger("DEBUG", "Combined covariates already exists.")
         } else {
             logger("INFO", "Combining covariates...")
             
@@ -1371,7 +1378,7 @@ gwas <- function(qc_data_path) {
             combined_covar_path <- wrap_write_table(combined_covariates, combined_basename)
         }
 
-        return(list(combined_covar_path = combined_covar_path, covariate_names = covariate_basenames))
+        return(combined_covar_path)
     }
     
     compute_principal_comps <- function(num_components) {
@@ -1404,31 +1411,38 @@ gwas <- function(qc_data_path) {
         return(pca_eig_vec)
     }
 
-    add_pc_covariates <- function(pheno_pc_path, suffix, pc_eigvec_file, mpheno_args) {
-        #' Performs GWAS but with principal components as covariates. Caches result.
-        #' @param pheno_pc_path {string}: Path to phenotype file for specified trait.
-        #' @param suffix {string}: Suffix mapping to trait.
-        #' @param pc_eigvec_file {string}: Path to eigenvector file contianing principal
-        #'                                 components to be used as covariates.
-        #' @param mpheno_args {string}: Plink mpheno args (calculated externally).
-        #' @return cov_out_path {string}: Path to covariate out path from plink (or cached).
+    add_pc_eigvecs_to_covars <- function(existing_covariates_file, pc_eigvec_file) {
+        #' Combines pca eigenvector covariates with existing covariates in
+        #' a single file.
+        #' @param existing_covariates_file {string}: Path to existing (combined) covars file.
+        #' @param pc_eigvec_file {string}: Path to eigenvector file (from plink).
+        #' @return pc_combined_covars_path {string}: Path to combined covars file with
+        #'                                           existing and eigvec covars.
 
-        # Check for existing covariates
-        out_name <- paste0("gwas_pheno", suffix, "_pc")
-        cov_out_path <- construct_plink_out_path(out_name)
-        
-        if (file_exists(cov_out_path)) {
-            logger("INFO", "Covariates already exist. Skipping.")
-            return (cov_out_path)
+        pc_combined_basename <- add_extension("combined_covariates_pc", exts$txt)
+        pc_combined_covars_path <- construct_out_path(pc_combined_basename)
+
+        if (file_exists(pc_combined_path)) {
+            logger("DEBUG", "Combined PC covariates already exists.")
+        } else {
+            logger("INFO", "Combining eigenvectors to existing covariates...")
+
+            existing_covars <- wrap_read_table(existing_covariates_file)
+            eigenvecs <- wrap_read_table(pc_eigvec_file)
+
+            # Set colnames on eigenvector data.frame
+            colnames(df)[1:2] <- fam_ind_cols
+            if (n_cols > 2) {
+                  colnames(df)[3:n_cols] <- paste0("PC", seq_len(n_cols - 2))
+            }
+            
+            pc_combined_covars <- merge(existing_covars, eigenvecs, by = fam_ind_cols)
+            log_df(pc_combined_covars, "Combined covariates (with principal components)")
+
+            pc_combined_covars_path <- wrap_write_table(pc_combined_covars, col.names = TRUE, quotes = FALSE)
         }
-        
-        # No covariates. Compute:
-        logger("Adding principal components to covariates...")
-        logger("DEBUG", "Loading eigenvec file: ", quotes(pc_eigvec_file), ".")
-        check_ext(pc_eigvec_file, exts$eigenvec)
-        plink_args <- paste(suffix == "" ? pl_fgs$linear : pl_fgs$logistic, pl_fgs$covar, 
-                            pc_eigvec_file, pl_fgs$pheno, pheno_pc_path, mpheno_args)
-        plink(qc_data_path, plink_args, out_name)
+
+        return(pc_combined_covars_path)
     }
 
     clumping <- function(pheno_pc_path) {
@@ -1494,10 +1508,12 @@ gwas <- function(qc_data_path) {
             mpheno_args <- get_mpheno_args(suffix)
            
             if (pca) {
-                pheno_basename <- add_pc_covariates(pheno_path, suffix, pc_eigvec_file, mpheno_args)
+                covar_file <- covar_pc_file_path
             } else {
-                pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args, covar_file_path, covar_names)
+                covar_file <- covar_file_path
             }
+
+            pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args, covar_pc_file_path, pca)
 
             pheno_full_path <- get_pheno_analysis_full_path(pheno_basename, suffix, pca)
 
