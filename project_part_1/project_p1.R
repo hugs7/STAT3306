@@ -1444,7 +1444,7 @@ gwas <- function(qc_data_path) {
             pc_combined_covars <- merge(existing_covars, eigenvecs, by = fam_ind_cols)
             log_df(pc_combined_covars, "Combined covariates (with principal components)")
 
-            pc_combined_covars_path <- wrap_write_table(pc_combined_covars, col.names = TRUE)
+            pc_combined_covars_path <- wrap_write_table(pc_combined_covars, pc_combined_basename, col.names = TRUE)
         }
 
         return(pc_combined_covars_path)
