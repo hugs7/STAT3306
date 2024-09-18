@@ -1486,13 +1486,8 @@ gwas <- function(qc_data_path) {
     phenotype_suffixes <- list("", "_binary1", "_binary2")
        
     # Combine age and sex covariates
-    covar_result <- combine_covariates()
-    covar_file_path <- covar_result$combined_covar_path
-    covar_names <- covar_result$covariate_names
+    covar_file_path <- combine_covariates()
 
-    logger("DEBUG", "Covar file path ", quotes(covar_file_path))
-    logger("DEBUG", "Covariate names ", quotes(covar_names))
-    
     # Compute principal components once
     pc_eigvec_file <- compute_principal_comps(num_pc)
     covar_pc_file_path <- add_pc_eigvecs_to_covars(covar_file_path, pc_eigvec_file)
