@@ -1470,23 +1470,23 @@ gwas <- function(qc_data_path) {
  
     # Main
     phenotype_suffixes <- list("", "_binary1", "_binary2")
+       
+    # Combine age and sex covariates
+    covar_result <- combine_covariates()
+    covar_file_path <- covar_result$combined_covar_path
+    covar_names <- covar_result$covariate_names
+
+    logger("DEBUG", "Covar file path ", quotes(covar_file_path))
+    logger("DEBUG", "Covariate names ", quotes(covar_names))
+    
+    # Compute principal components once
+    pc_eigvec_file <- compute_principal_comps(num_pc)
+    covar_pc_file_path <- add_pc_eigvecs_to_covars(covar_file_path, pc_eigvec_file)
     
     for (pca in list(FALSE, TRUE)) {
         on <- pca == TRUE ? "enabled" : "disabled" 
         logger("INFO", "Performing GWAS with Principal Components ", on, ".")
 
-        if (pca) {
-            # Compute principal components once
-            pc_eigvec_file <- compute_principal_comps(num_pc)
-        } else {
-            covar_result <- combine_covariates()
-            covar_file_path <- covar_result$combined_covar_path
-            covar_names <- covar_result$covariate_names
-
-            logger("DEBUG", "Covar file path ", quotes(covar_file_path))
-            logger("DEBUG", "Covariate names ", quotes(covar_names))
-        }
-        
         # Perform analysis for each of the phenotypes
         for (suffix in phenotype_suffixes) {
             logger("INFO", "Inspecting phenotype ", quotes(suffix), ".")
