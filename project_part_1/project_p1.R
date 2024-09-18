@@ -1463,7 +1463,7 @@ gwas <- function(qc_data_path) {
             # Compute principal components once
             pc_eigvec_file <- compute_principal_comps(num_pc)
         } else {
-            covariates_file <- combine_covariates()
+            covar_file_path <- combine_covariates()
         }
         
         # Perform analysis for each of the phenotypes
@@ -1475,7 +1475,7 @@ gwas <- function(qc_data_path) {
             if (pca) {
                 pheno_basename <- add_pc_covariates(pheno_path, suffix, pc_eigvec_file, mpheno_args)
             } else {
-                pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args)
+                pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args, covar_file_path)
             }
 
             pheno_full_path <- get_pheno_analysis_full_path(pheno_basename, suffix, pca)
