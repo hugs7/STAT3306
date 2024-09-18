@@ -802,7 +802,8 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
                              list("cp1" = "clump-p1"), list("cp2" = "clump-p2"), 
                              list("cr2" = "clump-r2"), list("ckb" = "clump-kb"), 
                              list("rel_cutoff" = "rel-cutoff"),"keep", 
-                             list("miss_pheno_neg_9" = "1")), 
+                             list("miss_pheno_neg_9" = "1"), 
+                             list("covar_name" = "covar-name")), 
                         named_flag)
 
 # File extensions
