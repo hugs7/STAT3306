@@ -1318,6 +1318,42 @@ gwas <- function(qc_data_path) {
         logger("INFO", "Lambda_{GC} (", suffix, ") = ", lambda_gc)
         return(lambda_gc)
     }
+
+    combine_covariates <- function() {
+        #' Combines the covariate files into a single one, to then be provided
+        #' to plink.
+        #' @return combined_covar_file {str}: Path to combined covariate file.
+
+        combined_basename <- add_extension("combined_covariates", exts$txt)
+        combined_path <- construct_out_path(combined_basename)
+
+        if (file_exists(combined_path)) {
+            logger("DEBUG", "Combined covariates already exists")
+            return(combined_path)
+        }
+
+        logger("INFO", "Combining covariates...")
+        
+        covariate_basenames <- list("age", "gender")
+        combined_covariates <- NULL
+
+        for (covariate in covariate_basenames) {
+            covariate_path <- file.path(data_path, add_extension(covariate, exts$txt))
+            logger("DEBUG", "Reading covariate ", quotes(covariate), " from path ", quotes(covariate_path), ".")
+            covar <- wrap_read_table(, header = FALSE)
+            colnames(covar) <- c(fam_ind_cols, covariate)
+
+            if (is.null(combined_covariates)) {
+                combined_covariates <- covar
+            } else {
+                combined_covariates <- merge(combined_covariates, covar, by = fam_ind_cols)
+            }
+        }
+
+        log_df(combined_covariates, "Combined covariates")
+        
+        wrap_write_table(covar, combined_basename, col.names = FALSE)
+    }
     
     compute_principal_comps <- function(num_components) {
         #' Computes the specified number of principal components for
@@ -1423,6 +1459,8 @@ gwas <- function(qc_data_path) {
         if (pca) {
             # Compute principal components once
             pc_eigvec_file <- compute_principal_comps(num_pc)
+        } else {
+            covariates_file <- combine_covariates()
         }
         
         # Perform analysis for each of the phenotypes
