@@ -1336,35 +1336,36 @@ gwas <- function(qc_data_path) {
         #'                 - combined_covar_file {str}: Path to combined covariate file.
         #'                 - covariate_names {vector}: Vector of covariate names.
 
-        combined_basename <- add_extension("combined_covariates", exts$txt)
-        combined_path <- construct_out_path(combined_basename)
-
-        if (file_exists(combined_path)) {
-            logger("DEBUG", "Combined covariates already exists")
-            return(combined_path)
-        }
-
-        logger("INFO", "Combining covariates...")
-        
         covariate_basenames <- c("age", "gender")
-        combined_covariates <- NULL
+        
+        combined_basename <- add_extension("combined_covariates", exts$txt)
+        combined_covar_path <- construct_out_path(combined_basename)
 
-        for (covariate in covariate_basenames) {
-            covariate_path <- file.path(data_path, add_extension(covariate, exts$txt))
-            logger("DEBUG", "Reading covariate ", quotes(covariate), " from path ", quotes(covariate_path), ".")
-            covar <- wrap_read_table(covariate_path, header = FALSE)
-            colnames(covar) <- c(fam_ind_cols, covariate)
+        if (file_exists(combined_covar_path)) {
+            logger("DEBUG", "Combined covariates already exists")
+        } else {
+            logger("INFO", "Combining covariates...")
+            
+            combined_covariates <- NULL
 
-            if (is.null(combined_covariates)) {
-                combined_covariates <- covar
-            } else {
-                combined_covariates <- merge(combined_covariates, covar, by = fam_ind_cols)
+            for (covariate in covariate_basenames) {
+                covariate_path <- file.path(data_path, add_extension(covariate, exts$txt))
+                logger("DEBUG", "Reading covariate ", quotes(covariate), " from path ", quotes(covariate_path), ".")
+                covar <- wrap_read_table(covariate_path, header = FALSE)
+                colnames(covar) <- c(fam_ind_cols, covariate)
+
+                if (is.null(combined_covariates)) {
+                    combined_covariates <- covar
+                } else {
+                    combined_covariates <- merge(combined_covariates, covar, by = fam_ind_cols)
+                }
             }
+
+            log_df(combined_covariates, "Combined covariates")
+            
+            combined_covar_path <- wrap_write_table(combined_covariates, combined_basename)
         }
 
-        log_df(combined_covariates, "Combined covariates")
-        
-        combined_covar_path <- wrap_write_table(combined_covariates, combined_basename)
         return(list(combined_covar_path = combined_covar_path, covariate_names = covariate_basenames))
     }
     
