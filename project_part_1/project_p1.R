@@ -417,7 +417,7 @@ wrap_write_table <- function(data, basename, row.names = FALSE, ...) {
     
 
     basename <- check_txt_ext(basename, exts$txt)
-    path <- construct_out_dir(basename)
+    path <- construct_out_path(basename)
     if (file_exists(path)) {
         logger("WARN", "Overwriting file at path ", quotes(path), ".")
         delete_file(path)
