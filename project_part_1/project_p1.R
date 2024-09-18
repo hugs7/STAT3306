@@ -411,15 +411,17 @@ wrap_read_table <- function(path, header = TRUE, ...) {
     read.table(path, header = header, ...)
 }
 
-wrap_write_table <- function(data, basename, row.names = FALSE, ...) {
+wrap_write_table <- function(data, basename, row.names = FALSE, col.names = FALSE, quotes = FALSE, ...) {
     #' Wrapper for writing a table to a file. Will overwrite file if it exists
     #' at the same path.
     #' @param data {data.frame}: The data to write
     #' @param basename {string}: The basename excluding the out dir to  write 
     #'                           the file at. Ideally should include extension
     #'                           but if it doesn't this function will add it.
+    #' @param row.names {boolean}: Whether to include row names. Disabled by default.
+    #' @param col.names {boolean}: Whether to include col names. Disabled by default.
+    #' @param quotes {boolean}: Whether to include quotes. Disabled by default. 
     #' @return path {string}: The full save path where the table was saved.
-    
 
     basename <- check_txt_ext(basename, exts$txt)
     path <- construct_out_path(basename)
@@ -1375,7 +1377,7 @@ gwas <- function(qc_data_path) {
 
             log_df(combined_covariates, "Combined covariates")
            
-            combined_covar_path <- wrap_write_table(combined_covariates, combined_basename, quotes = FALSE)
+            combined_covar_path <- wrap_write_table(combined_covariates, combined_basename)
         }
 
         return(combined_covar_path)
@@ -1439,7 +1441,7 @@ gwas <- function(qc_data_path) {
             pc_combined_covars <- merge(existing_covars, eigenvecs, by = fam_ind_cols)
             log_df(pc_combined_covars, "Combined covariates (with principal components)")
 
-            pc_combined_covars_path <- wrap_write_table(pc_combined_covars, col.names = TRUE, quotes = FALSE)
+            pc_combined_covars_path <- wrap_write_table(pc_combined_covars, col.names = TRUE)
         }
 
         return(pc_combined_covars_path)
