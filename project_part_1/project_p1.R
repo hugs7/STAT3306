@@ -1340,7 +1340,7 @@ gwas <- function(qc_data_path) {
         for (covariate in covariate_basenames) {
             covariate_path <- file.path(data_path, add_extension(covariate, exts$txt))
             logger("DEBUG", "Reading covariate ", quotes(covariate), " from path ", quotes(covariate_path), ".")
-            covar <- wrap_read_table(, header = FALSE)
+            covar <- wrap_read_table(covariate_path, header = FALSE)
             colnames(covar) <- c(fam_ind_cols, covariate)
 
             if (is.null(combined_covariates)) {
