@@ -1236,7 +1236,7 @@ gwas <- function(qc_data_path) {
 
         logger("Performing Pheno Association Analysis on GWAS ", pc ? "with pc" : "", "...")
         
-        out_name <- paste0("gwas_pheno", suffix, pc ? "_pc" : "")
+        out_name <- paste0("gwas_pheno", suffix == "" ? "_quant" : suffix, pc ? "_pc" : "")
         cov_out_path <- construct_plink_out_path(out_name)
 
         if (file_exists(cov_out_path)) {
