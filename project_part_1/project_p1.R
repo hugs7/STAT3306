@@ -648,16 +648,16 @@ log_indvs_to_remove <- function(num_indvs) {
     }
 }
 
-wrap_plot <- function(plot_callback, data, out_name, width = plot_w, height = plot_h, ...) {
+wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height = plot_h) {
     #' Plots a data.frame using the specified callback and saves to a file 
     #' in the plots directory.
     #' @param plot_callback {function}: Function used to generate plot.
     #' @param data {data.frame}: The data to plot
     #' @param out_name {string}: The file name to output. Should be a png and 
     #'                           should not contain the plots directory.
+    #' @param ... {any}: Extra arguemnts to provide to plot callback.
     #' @param width {integer}: The width of the plot to save in pixels. Has a default value.
     #' @param height {integer}: The height of the plot to save in pixels. Has a default value.
-    #' @param ... {any}: Extra arguemnts to provide to plot callback.
     #' @return out_path {string}: Path to saved plot file.
 
     out_name <- check_png_ext(out_name, TRUE)
@@ -1096,7 +1096,7 @@ sample_qc <- function(data_subset_path) {
             ylab <- "Observed MAF"
             plot_title <- "Reference vs Observed Minor Allele Frequencies"
             wrap_plot(plot, out_cpy$MAF ~ out_cpy$V2, add_extension(min_allele_freq_basename, exts$png),
-                      xlab, ylab, main = plot_title)
+                      xlab = xlab, ylab = ylab, main = plot_title)
 
             logger("Removing alleles which deviate significantly from reference...")
             accept_snps <- which(abs(res) <= maf_threshold)
@@ -1105,7 +1105,7 @@ sample_qc <- function(data_subset_path) {
             # y: Observed, x: reference.
             wrap_plot(plot, out_accept$MAF ~ out_accept$V2, add_extension(min_allele_freq_basename, 
                                                                           "_comparison", exts$png),
-                      xlab, ylab, main = paste(plot_title, "(Corrected for Ref = 1"))
+                      xlab = xlab, ylab = ylab, main = paste(plot_title, "(Corrected for Ref = 1"))
         }
 
         remove_snps_indx <- which(abs(res) > maf_threshold)
