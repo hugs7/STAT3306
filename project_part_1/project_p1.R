@@ -107,14 +107,18 @@ brackets <- function(...) {
     paste0("(", str, ")")
 }
 
-list_to_str <- function(lst, collapse = ", ") {
-    #' Converts a list to a string separated by commas.
-    #' @param lst {list}: List to convert to string.
-    #' @param collapse {string}: Separator to split items in list. 
-    #'                           Defaults to ', '.
+to_str <- function(x, collapse = ", ") {
+    #' Converts a list or vector to a string separated by commas.
+    #' @param x {list|vector}: List or vector to convert to string.
+    #' @param collapse {string}: Separator to split items in list 
+    #'                           or vector. Defaults to ', '.
     #' @return {string}: String representation of list.
+    
+    if (is.list(x)) {
+        x <- unlist(x)
+    }
 
-    paste(lst, collapse = collapse)
+    paste(x, collapse = collapse)
 }
 
 named_flag <- function(fg_name) {
@@ -344,7 +348,7 @@ file_exists <- function(path, partial_match = FALSE, exclude_patterns = list()) 
 
         # Exclude files matching with any of exclude_patterns
         if (length(exclude_patterns) > 0) {
-            logger("DEBUG", "Excluding files matching patterns: ", list_to_str(exclude_patterns), ".")
+            logger("DEBUG", "Excluding files matching patterns: ", to_str(exclude_patterns), ".")
             for (exclude_pattern in exclude_patterns) {
                 exclude_files <- list_files(dir_name, exclude_pattern)
                 matching_files <- setdiff(matching_files, exclude_files)
@@ -371,7 +375,7 @@ check_any_empty <- function(...) {
     #' @return {boolean}: True if ANY of the string args are empty, false otherwise.
 
     args <- list(...)
-    logger("DEBUG", "Checking if empty: ", quotes(list_to_str(args)))
+    logger("DEBUG", "Checking if empty: ", quotes(to_str(args)))
     any(sapply(args, function(x) x == ""))
 }
 
@@ -565,8 +569,8 @@ save_removed_indices <- function(table, ind_to_remove, out_cols, out_name) {
     #' @param out_name {string}: File name to save to.
     #' @return ind_out_path {string}: Path to saved file.
     
-    logger("INFO", "Saving removed indices to ", quotes(list_to_str(out_name)), ".")
-    logger("DEBUG", "Selected columns: ", quotes(list_to_str(out_cols)), ".")
+    logger("INFO", "Saving removed indices to ", quotes(to_str(out_name)), ".")
+    logger("DEBUG", "Selected columns: ", quotes(to_str(out_cols)), ".")
 
     file <- table[ind_to_remove, out_cols]
     ind_out_path <- wrap_write_table(file, out_name, col.names = FALSE, quote = FALSE)
@@ -1337,7 +1341,7 @@ gwas <- function(qc_data_path) {
 
         logger("INFO", "Combining covariates...")
         
-        covariate_basenames <- list("age", "gender")
+        covariate_basenames <- c("age", "gender")
         combined_covariates <- NULL
 
         for (covariate in covariate_basenames) {
