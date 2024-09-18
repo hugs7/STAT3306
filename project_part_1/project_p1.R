@@ -47,8 +47,8 @@ freq_threshold <- 0.01
 maf_threshold <- 0.1
 
 # Data Paths
-data_folder <- file.path("/data/STAT3306")
-project_data <- file.path(data_folder, "Project")
+course_shared_data_path <- file.path("/data/STAT3306")
+project_data <- file.path(course_shared_data_path, "Project")
 data_path <- file.path(project_data, "Data")
 phenotypes <- file.path(project_data, "Phenotypes")
 
@@ -107,14 +107,18 @@ brackets <- function(...) {
     paste0("(", str, ")")
 }
 
-list_to_str <- function(lst, collapse = ", ") {
-    #' Converts a list to a string separated by commas.
-    #' @param lst {list}: List to convert to string.
-    #' @param collapse {string}: Separator to split items in list. 
-    #'                           Defaults to ', '.
+to_str <- function(x, collapse = ", ") {
+    #' Converts a list or vector to a string separated by commas.
+    #' @param x {list|vector}: List or vector to convert to string.
+    #' @param collapse {string}: Separator to split items in list 
+    #'                           or vector. Defaults to ', '.
     #' @return {string}: String representation of list.
+    
+    if (is.list(x)) {
+        x <- unlist(x)
+    }
 
-    paste(lst, collapse = collapse)
+    paste(x, collapse = collapse)
 }
 
 named_flag <- function(fg_name) {
@@ -344,7 +348,7 @@ file_exists <- function(path, partial_match = FALSE, exclude_patterns = list()) 
 
         # Exclude files matching with any of exclude_patterns
         if (length(exclude_patterns) > 0) {
-            logger("DEBUG", "Excluding files matching patterns: ", list_to_str(exclude_patterns), ".")
+            logger("DEBUG", "Excluding files matching patterns: ", to_str(exclude_patterns), ".")
             for (exclude_pattern in exclude_patterns) {
                 exclude_files <- list_files(dir_name, exclude_pattern)
                 matching_files <- setdiff(matching_files, exclude_files)
@@ -371,7 +375,7 @@ check_any_empty <- function(...) {
     #' @return {boolean}: True if ANY of the string args are empty, false otherwise.
 
     args <- list(...)
-    logger("DEBUG", "Checking if empty: ", quotes(list_to_str(args)))
+    logger("DEBUG", "Checking if empty: ", quotes(to_str(args)))
     any(sapply(args, function(x) x == ""))
 }
 
@@ -406,14 +410,18 @@ wrap_read_table <- function(path, header = TRUE, ...) {
     read.table(path, header = header, ...)
 }
 
-wrap_write_table <- function(data, path, row.names = FALSE, ...) {
+wrap_write_table <- function(data, basename, row.names = FALSE, ...) {
     #' Wrapper for writing a table to a file. Will overwrite file if it exists
     #' at the same path.
     #' @param data {data.frame}: The data to write
-    #' @param path {string}: The path to write the file at.
-    #' @return {NULL}
+    #' @param basename {string}: The basename excluding the out dir to  write 
+    #'                           the file at. Ideally should include extension
+    #'                           but if it doesn't this function will add it.
+    #' @return path {string}: The full save path where the table was saved.
+    
 
-    path <- check_txt_ext(path, exts$txt)
+    basename <- check_txt_ext(basename, exts$txt)
+    path <- construct_out_path(basename)
     if (file_exists(path)) {
         logger("WARN", "Overwriting file at path ", quotes(path), ".")
         delete_file(path)
@@ -421,6 +429,7 @@ wrap_write_table <- function(data, path, row.names = FALSE, ...) {
 
     logger("DEBUG", "Writing table at ", quotes(path), ".")
     write.table(data, path, row.names = row.names, sep = "\t", ...)
+    return(path)
 }
 
 plink_orig_data <- function(plink_args, out_name = NULL) {
@@ -560,12 +569,11 @@ save_removed_indices <- function(table, ind_to_remove, out_cols, out_name) {
     #' @param out_name {string}: File name to save to.
     #' @return ind_out_path {string}: Path to saved file.
     
-    logger("INFO", "Saving removed indices to ", quotes(list_to_str(out_name)), ".")
-    logger("DEBUG", "Selected columns: ", quotes(list_to_str(out_cols)), ".")
+    logger("INFO", "Saving removed indices to ", quotes(to_str(out_name)), ".")
+    logger("DEBUG", "Selected columns: ", quotes(to_str(out_cols)), ".")
 
     file <- table[ind_to_remove, out_cols]
-    ind_out_path <- construct_out_path(out_name)
-    wrap_write_table(file, ind_out_path, col.names = FALSE, quote = FALSE)
+    ind_out_path <- wrap_write_table(file, out_name, col.names = FALSE, quote = FALSE)
     return(ind_out_path)
 }
 
@@ -794,7 +802,8 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
                              list("cp1" = "clump-p1"), list("cp2" = "clump-p2"), 
                              list("cr2" = "clump-r2"), list("ckb" = "clump-kb"), 
                              list("rel_cutoff" = "rel-cutoff"),"keep", 
-                             list("miss_pheno_neg_9" = "1")), 
+                             list("miss_pheno_neg_9" = "1"), 
+                             list("covar_name" = "covar-name")), 
                         named_flag)
 
 # File extensions
@@ -896,7 +905,8 @@ quality_control <- function() {
         #'                         These files are expected to have at least two columns: FID and IID.
         #' @return {string}: File path to the combined output file with individuals to remove.
         
-        combined_file_out_path <- construct_out_path("remove.combined.samples.txt")
+        combined_basename <- "remove.combined.samples.txt"
+        combined_file_out_path <- construct_out_path(combined_basename)
         if (file_exists(combined_file_out_path)) {
             logger("INFO", "Combined samples exists at: ", quotes(combined_file_out_path), ".")
             return(combined_file_out_path)
@@ -916,8 +926,9 @@ quality_control <- function() {
         
         # Remove Duplicates
         combined_ind <- unique(combined_ind)
-        wrap_write_table(combined_ind, combined_file_out_path, col.names = FALSE, quote = FALSE)
-        return(combined_file_out_path)
+
+        # Write will return the saved path
+        wrap_write_table(combined_ind, combined_basename, col.names = FALSE, quote = FALSE)
     }
 
     remove_bad_individuals <- function(remove_path) {
@@ -1110,9 +1121,8 @@ sample_qc <- function(data_subset_path) {
 
         remove_snps_indx <- which(abs(res) > maf_threshold)
         to_remove_snps <- freq[remove_snps_indx, "SNP"]
-        remove_out_path <- construct_out_path(add_extension("maf.referenced.removed", exts$txt))
-        wrap_write_table(to_remove_snps, remove_out_path)
-        return(remove_out_path)
+        remove_basename <- add_extension("maf.referenced.removed", exts$txt)
+        wrap_write_table(to_remove_snps, remove_basename)
     }
 
     exclude_insig_maf <- function(qc_data_path, remove_out_path) {
@@ -1207,17 +1217,22 @@ gwas <- function(qc_data_path) {
         file.path(phenotypes, pheno_file_name)
     }
 
-    gwas_pheno <- function(pheno_path, pheno_suffix, mpheno_args) {
+    gwas_pheno <- function(pheno_path, pheno_suffix, mpheno_args, covar_file_path, covar_names) {
         #' Performs association analysis based on the phenotype
         #' defined in the specified file.
         #' @param pheno_path {string}: Path to pheno file for specified trait.
         #' @param pheno_suffix {string}: Suffix of phenotype.
-        #' @param mpheno_args {string}: Flags relating to mpheno in plink
+        #' @param mpheno_args {string}: Flags relating to mpheno in plink.
+        #' @param covar_file_path {string}: File path to combined covariates.
+        #' @param covar_names {vector}: Covariate names.
         #' @return {string}: Path to phenotype association analysis output.
 
         logger("Performing Pheno Association Analysis on GWAS...")
         
-        plink_args <- paste(pl_fgs$assoc, pl_fgs$pheno, pheno_path, mpheno_args)
+        logger("DEBUG", "Using covariate file: ", quotes(covar_file_path), ".")
+        covar_names <- to_str(covar_names, collapse = ",")
+        covar_args <- paste(pl_fgs$covar, covar_file_path, pl_fgs$covar_name, covar_names)
+        plink_args <- paste(pl_fgs$assoc, pl_fgs$pheno, pheno_path, mpheno_args, covar_args)
         out_name <- paste0("gwas_pheno", pheno_suffix)
         plink(qc_data_path, plink_args, out_name)
     }
@@ -1313,6 +1328,46 @@ gwas <- function(qc_data_path) {
         logger("INFO", "Lambda_{GC} (", suffix, ") = ", lambda_gc)
         return(lambda_gc)
     }
+
+    combine_covariates <- function() {
+        #' Combines the covariate files into a single one, to then be provided
+        #' to plink. Combined covariates file contains headers.
+        #' @return {list} List containing 
+        #'                 - combined_covar_file {str}: Path to combined covariate file.
+        #'                 - covariate_names {vector}: Vector of covariate names.
+
+        covariate_basenames <- c("age", "gender")
+        
+        combined_basename <- add_extension("combined_covariates", exts$txt)
+        combined_covar_path <- construct_out_path(combined_basename)
+
+        if (file_exists(combined_covar_path)) {
+            logger("DEBUG", "Combined covariates already exists")
+        } else {
+            logger("INFO", "Combining covariates...")
+            
+            combined_covariates <- NULL
+
+            for (covariate in covariate_basenames) {
+                covariate_path <- file.path(data_path, add_extension(covariate, exts$txt))
+                logger("DEBUG", "Reading covariate ", quotes(covariate), " from path ", quotes(covariate_path), ".")
+                covar <- wrap_read_table(covariate_path, header = FALSE)
+                colnames(covar) <- c(fam_ind_cols, covariate)
+
+                if (is.null(combined_covariates)) {
+                    combined_covariates <- covar
+                } else {
+                    combined_covariates <- merge(combined_covariates, covar, by = fam_ind_cols)
+                }
+            }
+
+            log_df(combined_covariates, "Combined covariates")
+            
+            combined_covar_path <- wrap_write_table(combined_covariates, combined_basename)
+        }
+
+        return(list(combined_covar_path = combined_covar_path, covariate_names = covariate_basenames))
+    }
     
     compute_principal_comps <- function(num_components) {
         #' Computes the specified number of principal components for
@@ -1393,6 +1448,7 @@ gwas <- function(qc_data_path) {
         #' @param clump_basename {string}: Basename path to clump file.
         #' @param suffix {string}: Suffix mapping to trait,
         #' @param pc {boolean}: Whether principal components is being used.
+        #' @return {string}: Path to clump file that was saved.
 
         clump_path <- add_extension(clump_basename, exts$clumped)
         clump <- wrap_read_table(clump_path)
@@ -1403,8 +1459,8 @@ gwas <- function(qc_data_path) {
         log_df(clump_out, paste0("Clump output", suffix))
         
         # Write to file
-        out_path <- construct_out_path(add_extension(paste0("clumps", suffix, pc ? "_pc" : ""), exts$txt))
-        wrap_write_table(clump_out, out_path)
+        out_basename <- add_extension(paste0("clumps", suffix, pc ? "_pc" : ""), exts$txt)
+        wrap_write_table(clump_out, out_basename)
     }
  
     # Main
@@ -1417,6 +1473,13 @@ gwas <- function(qc_data_path) {
         if (pca) {
             # Compute principal components once
             pc_eigvec_file <- compute_principal_comps(num_pc)
+        } else {
+            covar_result <- combine_covariates()
+            covar_file_path <- covar_result$combined_covar_path
+            covar_names <- covar_result$covariate_names
+
+            logger("DEBUG", "Covar file path ", quotes(covar_file_path))
+            logger("DEBUG", "Covariate names ", quotes(covar_names))
         }
         
         # Perform analysis for each of the phenotypes
@@ -1428,7 +1491,7 @@ gwas <- function(qc_data_path) {
             if (pca) {
                 pheno_basename <- add_pc_covariates(pheno_path, suffix, pc_eigvec_file, mpheno_args)
             } else {
-                pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args)
+                pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args, covar_file_path, covar_names)
             }
 
             pheno_full_path <- get_pheno_analysis_full_path(pheno_basename, suffix, pca)
