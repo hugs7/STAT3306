@@ -406,14 +406,18 @@ wrap_read_table <- function(path, header = TRUE, ...) {
     read.table(path, header = header, ...)
 }
 
-wrap_write_table <- function(data, path, row.names = FALSE, ...) {
+wrap_write_table <- function(data, basename, row.names = FALSE, ...) {
     #' Wrapper for writing a table to a file. Will overwrite file if it exists
     #' at the same path.
     #' @param data {data.frame}: The data to write
-    #' @param path {string}: The path to write the file at.
-    #' @return {NULL}
+    #' @param basename {string}: The basename excluding the out dir to  write 
+    #'                           the file at. Ideally should include extension
+    #'                           but if it doesn't this function will add it.
+    #' @return path {string}: The full save path where the table was saved.
+    
 
-    path <- check_txt_ext(path, exts$txt)
+    basename <- check_txt_ext(basename, exts$txt)
+    path <- construct_out_dir(basename)
     if (file_exists(path)) {
         logger("WARN", "Overwriting file at path ", quotes(path), ".")
         delete_file(path)
@@ -421,6 +425,7 @@ wrap_write_table <- function(data, path, row.names = FALSE, ...) {
 
     logger("DEBUG", "Writing table at ", quotes(path), ".")
     write.table(data, path, row.names = row.names, sep = "\t", ...)
+    return(path)
 }
 
 plink_orig_data <- function(plink_args, out_name = NULL) {
@@ -564,8 +569,7 @@ save_removed_indices <- function(table, ind_to_remove, out_cols, out_name) {
     logger("DEBUG", "Selected columns: ", quotes(list_to_str(out_cols)), ".")
 
     file <- table[ind_to_remove, out_cols]
-    ind_out_path <- construct_out_path(out_name)
-    wrap_write_table(file, ind_out_path, col.names = FALSE, quote = FALSE)
+    ind_out_path <- wrap_write_table(file, out_name, col.names = FALSE, quote = FALSE)
     return(ind_out_path)
 }
 
@@ -896,7 +900,8 @@ quality_control <- function() {
         #'                         These files are expected to have at least two columns: FID and IID.
         #' @return {string}: File path to the combined output file with individuals to remove.
         
-        combined_file_out_path <- construct_out_path("remove.combined.samples.txt")
+        combined_basename <- "remove.combined.samples.txt")
+        combined_file_out_path <- construct_out_path(combined_basename)
         if (file_exists(combined_file_out_path)) {
             logger("INFO", "Combined samples exists at: ", quotes(combined_file_out_path), ".")
             return(combined_file_out_path)
@@ -916,8 +921,9 @@ quality_control <- function() {
         
         # Remove Duplicates
         combined_ind <- unique(combined_ind)
-        wrap_write_table(combined_ind, combined_file_out_path, col.names = FALSE, quote = FALSE)
-        return(combined_file_out_path)
+
+        # Write will return the saved path
+        wrap_write_table(combined_ind, combined_basename, col.names = FALSE, quote = FALSE)
     }
 
     remove_bad_individuals <- function(remove_path) {
@@ -1110,9 +1116,8 @@ sample_qc <- function(data_subset_path) {
 
         remove_snps_indx <- which(abs(res) > maf_threshold)
         to_remove_snps <- freq[remove_snps_indx, "SNP"]
-        remove_out_path <- construct_out_path(add_extension("maf.referenced.removed", exts$txt))
-        wrap_write_table(to_remove_snps, remove_out_path)
-        return(remove_out_path)
+        remove_basename <- add_extension("maf.referenced.removed", exts$txt)
+        wrap_write_table(to_remove_snps, remove_basename)
     }
 
     exclude_insig_maf <- function(qc_data_path, remove_out_path) {
@@ -1393,6 +1398,7 @@ gwas <- function(qc_data_path) {
         #' @param clump_basename {string}: Basename path to clump file.
         #' @param suffix {string}: Suffix mapping to trait,
         #' @param pc {boolean}: Whether principal components is being used.
+        #' @return {string}: Path to clump file that was saved.
 
         clump_path <- add_extension(clump_basename, exts$clumped)
         clump <- wrap_read_table(clump_path)
@@ -1403,8 +1409,8 @@ gwas <- function(qc_data_path) {
         log_df(clump_out, paste0("Clump output", suffix))
         
         # Write to file
-        out_path <- construct_out_path(add_extension(paste0("clumps", suffix, pc ? "_pc" : ""), exts$txt))
-        wrap_write_table(clump_out, out_path)
+        out_basename <- add_extension(paste0("clumps", suffix, pc ? "_pc" : ""), exts$txt)
+        wrap_write_table(clump_out, out_basename)
     }
  
     # Main
