@@ -37,6 +37,7 @@ level_colours <- list(
 
 phenotype <- "Fasting Glucose"
 fam_ind_cols <- c("FID", "IID")
+find_related <- FALSE
 
 # Thresholds
 genotype_threshold <- 0.05
@@ -963,10 +964,14 @@ quality_control <- function() {
     data_subset_path <- remove_bad_individuals(combined_ind_path)
 
     # Keep only individuals specified here
-    related_path <- find_related_samples()
-    data_related_subset_path <- keep_related_samples(related_path, data_subset_path)
+    if (find_related) {
+        related_path <- find_related_samples()
+        data_related_subset_path <- keep_related_samples(related_path, data_subset_path)
 
-    return(data_related_subset_path)
+        return(data_related_subset_path)
+    } else {
+        return(data_subset_path)
+    }
 }
 
 sample_qc <- function(data_subset_path) {
