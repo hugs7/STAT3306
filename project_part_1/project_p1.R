@@ -1217,19 +1217,21 @@ gwas <- function(qc_data_path) {
         file.path(phenotypes, pheno_file_name)
     }
 
-    gwas_pheno <- function(pheno_path, pheno_suffix, mpheno_args, covar_file_path) {
+    gwas_pheno <- function(pheno_path, pheno_suffix, mpheno_args, covar_file_path, covar_names) {
         #' Performs association analysis based on the phenotype
         #' defined in the specified file.
         #' @param pheno_path {string}: Path to pheno file for specified trait.
         #' @param pheno_suffix {string}: Suffix of phenotype.
         #' @param mpheno_args {string}: Flags relating to mpheno in plink.
         #' @param covar_file_path {string}: File path to combined covariates.
+        #' @param covar_names {vector}: Covariate names.
         #' @return {string}: Path to phenotype association analysis output.
 
         logger("Performing Pheno Association Analysis on GWAS...")
         
         logger("DEBUG", "Using covariate file: ", quotes(covar_file_path), ".")
-        covar_args <- paste(pl_fgs$covar, covar_file_path)
+        covar_names <- to_str(covar_names, collapse = ",")
+        covar_args <- paste(pl_fgs$covar, covar_file_path, pl_fgs$covar_name, covar_names)
         plink_args <- paste(pl_fgs$assoc, pl_fgs$pheno, pheno_path, mpheno_args, covar_args)
         out_name <- paste0("gwas_pheno", pheno_suffix)
         plink(qc_data_path, plink_args, out_name)
@@ -1488,7 +1490,7 @@ gwas <- function(qc_data_path) {
             if (pca) {
                 pheno_basename <- add_pc_covariates(pheno_path, suffix, pc_eigvec_file, mpheno_args)
             } else {
-                pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args, covar_file_path)
+                pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args, covar_file_path, covar_names)
             }
 
             pheno_full_path <- get_pheno_analysis_full_path(pheno_basename, suffix, pca)
