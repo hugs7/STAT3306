@@ -1260,6 +1260,7 @@ gwas <- function(qc_data_path) {
                         quotes(pheno_basename), ".")
         
         if (phenotype_suffix == "") {
+            # Quantitative phenotype
             if (pc) {
                 logger("TRACE", "Principal components enabled.")
                 ext_to_add <- paste0(exts$assoc, exts$linear)
@@ -1268,6 +1269,7 @@ gwas <- function(qc_data_path) {
                 ext_to_add <- exts$qassoc
             }
         } else {
+            # Binary phenotype
             if (pc) {
                 ext_to_add <- paste0(exts$assoc, exts$logistic)
             } else {
