@@ -168,7 +168,7 @@ wrap_dim <- function(df) {
 
     # Parse and eval ternary outcome in parent env
     outcomes <- sapply(strsplit(deparse(substitute(y)), ":"), function(e) parse(text = e))
-    logger("TRACE", "Outcomes: ", quotes(outcomes), ".")
+    logger("TRACE", "Outcomes: ", quotes(to_str(outcomes)), ".")
     r <- eval(outcomes[[2 - as.logical(x)]], envir = env)
 
     # Handle assignment
