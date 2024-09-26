@@ -307,6 +307,11 @@ log_df <- function(df, name, log_level = "INFO") {
     #' @param log_level {string}: The level to log at. Defaults to INFO.
     #' @return {NULL}
 
+    if (is.null(df)) {
+        logger("ERROR", "Unexpected! Dataframe is NULL.")
+        return
+    }
+
     logger(log_level, "Dim ", name, ": ", wrap_dim(df))
     print(head(df))
 }
