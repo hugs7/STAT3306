@@ -343,16 +343,17 @@ title_case <- function(str) {
     return(result)
 }
 
-regex_escape <- function(pattern) {
+regex_escape <- function(string) {
     #' Escapes characters in a string so they can be 
-    #' used in a regex pattern.
-    #' @param pattern {string}: The pattern to be escaped.
-    #' @return {string}: The same pattern but regex escaped.
+    #' used in a regex string.
+    #' @param string {string}: The string to be escaped.
+    #' @return {string}: The same string but regex escaped.
    
-    logger("TRACE", "Escaping string: ", quotes(pattern), ".")
-    escaped <- gsub("([\\.\\|\\(\\)\\[\\]\\{\\}\\^\\$\\*\\+\\?\\\\])", "\\\\\\1", pattern)
-    logger("TRACE", "Escaped pattern: ", quotes(escaped), ".")
-    return(escaped)
+    logger("TRACE", "Escaping string: ", quotes(string), ".")
+
+    string <- gsub("([\\W])", "\\\\\\1", string, perl = TRUE)
+    logger("TRACE", "Escaped string: ", quotes(string), ".")
+    return(string)
 }
 
 shell_call <- function(...) {
@@ -393,7 +394,11 @@ list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
         logger("DEBUG", "Matching pattern ", quotes(pattern), ".")
     }
 
-    matching_files <- list.files(path = dir_name, pattern = pattern, full.names = full.names, ...)
+    matching_files <- list.files(path = dir_name, full.names = full.names, ...)
+    if (!is.null(pattern)) {
+        filtered_files <- matching_files[!grepl(pattern, matching_files, perl = TRUE)]
+        matching_files <- filtered_files
+    }
 
     logger("DEBUG", "There are ", length(matching_files), " files matching")
     return(matching_files)
