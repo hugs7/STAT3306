@@ -323,7 +323,7 @@ list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
     #'                    matching criteria.
     
     logger("DEBUG", "Listing files in dir ", quotes(dir_name), ".")
-    if (pattern != NULL) {
+    if (!is.null(pattern)) {
         logger("DEBUG", "Matching pattern ", quotes(pattern), ".")
     }
 
