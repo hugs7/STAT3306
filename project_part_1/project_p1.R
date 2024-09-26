@@ -238,12 +238,46 @@ get_calling_function <- function(ignore_names) {
     return("Global Environment")
 }
 
+log_stack <- function(log_level = "INFO") {
+    #' Logs the call stack to the console.
+    #' @return {NULL}
+    
+    call_stack <- sys.calls()
+    frames <- sys.frames()
+
+    logger(log_level, "Stack Trace")
+    indent <- strrep(" ", 4)
+
+    # Skip this function
+    for (i in (length(call_stack) - 1):1) {
+        current_call <- call_stack[[i]]
+        current_env <- frames[[i]]
+        func_name <- get_func_name(current_call)
+
+        srcref <- attr(current_call, "srcref")
+        if (!is.null(srcref)) {
+            line_num <- srcref[[1]]
+        } else {
+            logger("TRACE", indent, "Unable to obtain line num")
+            line_num <- "Unknown"
+        }
+
+        code_line <- paste0(deparse(current_call), collapse = " ")
+        logger(log_level, indent, "Function: ", func_name, ", Line: ", line_num)
+        logger(log_level, indent, "Code: ", code_line)
+    }
+}
+
 logger <- function(log_level = "INFO", ...) {
     #' A mini logger function with ansi coloured log levels. Outputs timestamp,
     #' calling function, log level and message to the console.
     #' @param log_level {string}: Optional. The level to log at. If not provided, 
     #'                            will default to default_log_level.
     #' @return {NULL}
+
+    if (log_level == "ERROR") {
+        log_stack()
+    }
 
     if (!(log_level %in% allowed_log_levels)) {
         logger(default_log_level, log_level, ...)
