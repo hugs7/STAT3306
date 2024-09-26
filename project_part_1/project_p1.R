@@ -412,7 +412,7 @@ file_exists <- function(path, match_pattern = FALSE) {
     #'                                 as a pattern (so we can do partial matches)
     #' @return exists {boolean}: True if file exists, false otherwise.
 
-    logger("TRACE", "Checking if file exists at path ", quotes(path), ".")
+    logger("DEBUG", "Checking if file exists at path ", quotes(path), ".")
     if (length(path) == 0) {
         logger("WARN", "Path is empty")
         return(FALSE)
@@ -570,7 +570,7 @@ plink <- function(bfile, plink_args, out_name = NULL) {
     } else {
         # Search for partial match
         logger("DEBUG", "Checking for existing match: ", quotes(plink_out_path), ".")
-        plink_pattern <- paste0(regex_escape(plink_out_path), "(?:.*\\.log)")
+        plink_pattern <- paste0(regex_escape(plink_out_path), "(?!\\.log$).*$")
         if (file_exists(plink_pattern, TRUE) && !overwrite_plink_out) {
             logger("Matching file(s) already exists at: ", quotes(plink_out_path), ".")
             return(plink_out_path)
