@@ -289,6 +289,18 @@ title_case <- function(str) {
     return(result)
 }
 
+regex_escape <- function(pattern) {
+    #' Escapes characters in a string so they can be 
+    #' used in a regex pattern.
+    #' @param pattern {string}: The pattern to be escaped.
+    #' @return {string}: The same pattern but regex escaped.
+   
+    logger("TRACE", "Escaping string: ", quotes(pattern), ".")
+    escaped <- gsub("([\\.\\|\\(\\)\\[\\]\\{\\}\\^\\$\\*\\+\\?\\\\])", "\\\\\\1", pattern)
+    logger("TRACE", "Escaped pattern: ", quotes(escaped), ".")
+    return(escaped)
+}
+
 shell_call <- function(...) {
     #' Makes a system call with standard out disabled.
     #' @param ... {string}: String args containing system command.
@@ -499,7 +511,7 @@ plink <- function(bfile, plink_args, out_name = NULL) {
     } else {
         # Search for partial match
         logger("DEBUG", "Checking for existing match: ", quotes(plink_out_path), ".")
-        plink_pattern <- paste0(plink_out_path, "(?:.*\\.log)")
+        plink_pattern <- paste0(regex_escape(plink_out_path), "(?:.*\\.log)")
         if (file_exists(plink_pattern, TRUE) && !overwrite_plink_out) {
             logger("Matching file(s) already exists at: ", quotes(plink_out_path), ".")
             return(plink_out_path)
