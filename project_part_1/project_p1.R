@@ -203,6 +203,21 @@ create_object <- function(items, transform_fn) {
     return(result)
 }
 
+get_func_name <- function(call) {
+    #' Given a call from the call stack, returns
+    #' the name of the function called.
+    #' @param call {object}: The call to get the function name from.
+    #' @return func_name {string}: The function name
+    
+    if (is.call(call) && length(call) > 0) {
+        func_name <- as.character(call[[1]])
+    } else {
+        func_name <- "Unknown"
+    }
+
+    return(func_name)
+}
+
 get_calling_function <- function(ignore_names) {
     #' Gets the name of the function calling a function from the call stack
     #' @param ignore_names {list[string]}: List of functions to skip in the call stack
@@ -211,9 +226,9 @@ get_calling_function <- function(ignore_names) {
     call_stack <- sys.calls()
 
     # Skip this function
-    for (i in (length(call_stack)-1):1) {
+    for (i in (length(call_stack) - 1):1) {
         current_call <- call_stack[[i]]
-        func_name <- as.character(current_call[[1]])
+        func_name <- get_func_name(current_call)
 
         if (!(func_name %in% ignore_names)) {
             return(func_name)
