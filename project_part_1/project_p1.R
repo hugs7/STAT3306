@@ -321,8 +321,16 @@ list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
     #' @param ... {any}: Any extra arguemnts for list.files()
     #' @return {charvec}: Character vector containing filenames/filepaths 
     #'                    matching criteria.
+    
+    logger("DEBUG", "Listing files in dir ", quotes(dir_name), ".")
+    if (pattern != NULL) {
+        logger("DEBUG", "Matching pattern ", quotes(pattern), ".")
+    }
 
-    list.files(path = dir_name, pattern = pattern, full.names = full.names, ...)
+    matching_files <- list.files(path = dir_name, pattern = pattern, full.names = full.names, ...)
+
+    logger("DEBUG", "There are ", length(matching_files), " files matching")
+    return(matching_files)
 }
 
 file_exists <- function(path, partial_match = FALSE, exclude_patterns = list()) {
