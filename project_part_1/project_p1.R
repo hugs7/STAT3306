@@ -1337,7 +1337,7 @@ gwas <- function(qc_data_path) {
                 ext_to_add <- paste0(exts$assoc, exts$linear)
             } else {
                 logger("TRACE", "Principal components disabled.")
-                ext_to_add <- exts$qassoc
+                ext_to_add <- exts$assoc
             }
         } else {
             # Binary phenotype
