@@ -333,13 +333,12 @@ list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
     return(matching_files)
 }
 
-file_exists <- function(path, partial_match = FALSE, exclude_patterns = list()) {
+file_exists <- function(path, match_pattern = FALSE) {
     #' Checks to see if a file exists at the specified path
-    #' @param path {string}: The specified path to check. Can be relative.
-    #' @param partial_match {boolean}. If true, allows path check to match 
-    #'                                 partially. Defaults to false.
-    #' @param exclude_patterns: {list(string}): List of RegEx patterns to exclude 
-    #'                                          in partial match.
+    #' @param path {string}: The specified path to check. Can be relative. Can also
+    #'                       be a regular expression if match_pattern flag is TRUE.
+    #' @param match_pattern {boolean}: If true, will match for existing path 
+    #'                                 as a pattern (so we can do partial matches)
     #' @return exists {boolean}: True if file exists, false otherwise.
 
     logger("TRACE", "Checking if file exists at path ", quotes(path), ".")
@@ -348,22 +347,11 @@ file_exists <- function(path, partial_match = FALSE, exclude_patterns = list()) 
         return(FALSE)
     }
 
-    if (partial_match) {
-        logger("DEBUG", "Searching partial match")
+    if (match_pattern) {
+        logger("DEBUG", "Searching pattern match")
         dir_name <- dirname(path)
         file_pattern <- basename(path)
-
-        matching_files <- list_files(dir_name, paste0("^", file_pattern))
-
-        # Exclude files matching with any of exclude_patterns
-        if (length(exclude_patterns) > 0) {
-            logger("DEBUG", "Excluding files matching patterns: ", to_str(exclude_patterns), ".")
-            for (exclude_pattern in exclude_patterns) {
-                exclude_files <- list_files(dir_name, exclude_pattern)
-                matching_files <- setdiff(matching_files, exclude_files)
-            }
-        }
-
+        matching_files <- list_files(dir_name, file_pattern)
         exists <- (length(matching_files) > 0)
     } else {
         logger("DEBUG", "Searching exact match")
@@ -511,7 +499,8 @@ plink <- function(bfile, plink_args, out_name = NULL) {
     } else {
         # Search for partial match
         logger("DEBUG", "Checking for existing match: ", quotes(plink_out_path), ".")
-        if (file_exists(plink_out_path, TRUE, list("*.log$")) && !overwrite_plink_out) {
+        plink_pattern <- paste0(plink_out_path, "(?:.*\.log)")
+        if (file_exists(plink_pattern, TRUE) && !overwrite_plink_out) {
             logger("Matching file(s) already exists at: ", quotes(plink_out_path), ".")
             return(plink_out_path)
         }
