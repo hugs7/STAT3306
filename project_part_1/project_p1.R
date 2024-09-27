@@ -432,6 +432,28 @@ file_exists <- function(path, match_pattern = FALSE) {
     return(exists)
 }
 
+match_not_log <- function(path) {
+    #' Given an extensionless file path, constructs
+    #' a Regex pattern to exclude matching .log files.
+    #' @param path {string}: The extensionless pattern to match.
+    #' @return {string}: The Regex pattern which includes a negative
+    #'                   lookahead to log files.
+   
+    # Check the path does not already contain an extension.
+    ext_pattern <- paste0("(", to_str(exts, collapse = "|"), ")$")
+    logger("TRACE", "Extension pattern: ", quotes(ext_pattern), ".")
+
+    ends_with_extension <- grepl(ext_pattern, path)
+    if (ends_with_extension) {
+        logger("ERROR", "Unexpected! Path ends with extension ", quotes(ext), ".")
+        return(path)
+    }
+
+    pattern <- paste0(path, "(?!\\.log$).*$")
+    logger("DEBUG", "Match not log pattern ", quotes(pattern), ".")
+    return(pattern)
+}
+
 check_any_empty <- function(...) {
     #' Checks if any string args are empty ("")
     #' @param ... {string}: String args to check
@@ -565,7 +587,7 @@ plink <- function(bfile, plink_args, out_name = NULL) {
     } else {
         # Search for partial match
         logger("DEBUG", "Checking for existing match: ", quotes(plink_out_path), ".")
-        plink_pattern <- paste0(plink_out_path, "(?!\\.log$).*$")
+        plink_pattern <- match_not_log(plink_out_path)
         if (file_exists(plink_pattern, TRUE) && !overwrite_plink_out) {
             logger("Matching file(s) already exists at: ", quotes(plink_out_path), ".")
             return(plink_out_path)
@@ -1301,9 +1323,9 @@ gwas <- function(qc_data_path) {
         
         out_name <- paste0("gwas_pheno", suffix == "" ? "_quant" : suffix, pc ? "_pc" : "")
         cov_out_path <- construct_plink_out_path(out_name)
-
-        if (file_exists(cov_out_path, TRUE)) {
-            logger("INFO", "Covariates already exist at ", quotes(cov_out_path), ".")
+        cov_out_pattern <- match_not_log(cov_out_path)
+        if (file_exists(cov_out_pattern, TRUE)) {
+            logger("INFO", "Covariates already exist at ", quotes(cov_out_pattern), ".")
             return(cov_out_path)
         }
 
