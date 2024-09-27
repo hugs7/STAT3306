@@ -277,7 +277,8 @@ log_stack <- function(log_level = "INFO") {
 
 logger <- function(log_level = "INFO", ...) {
     #' A mini logger function with ansi coloured log levels. Outputs timestamp,
-    #' calling function, log level and message to the console.
+    #' calling function, log level and message to the console. Logs the stack 
+    #' trace if log level is ERROR.
     #' @param log_level {string}: Optional. The level to log at. If not provided, 
     #'                            will default to default_log_level.
     #' @return {NULL}
@@ -285,11 +286,7 @@ logger <- function(log_level = "INFO", ...) {
     if (!is.character(log_level) || !(log_level %in% allowed_log_levels)) {
         logger(default_log_level, log_level, ...)
         return(invisible(NULL))
-    }
-    
-    if (log_level == "ERROR") {
-        log_stack()
-    }
+    } 
 
     logger_func_name <- deparse(sys.call()[[1]])
     parent_call <- get_calling_function(c(logger_func_name))
@@ -304,6 +301,11 @@ logger <- function(log_level = "INFO", ...) {
     
     coloured_msg <- colour_func(msg)
     cat(coloured_msg, "\n")
+
+    if (log_level == "ERROR" && parent_call != "log_stack") {
+        log_stack("ERROR")
+    }
+
     invisible(NULL)
 }
 
