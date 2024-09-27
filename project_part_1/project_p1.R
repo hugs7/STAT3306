@@ -401,10 +401,10 @@ list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
 
 file_exists <- function(path, match_pattern = FALSE) {
     #' Checks to see if a file exists at the specified path
-    #' @param path {string}: The specified path to check. Can be relative. Can also
-    #'                       be a regular expression if match_pattern flag is TRUE.
-    #' @param match_pattern {boolean}: If true, will match for existing path 
-    #'                                 as a pattern (so we can do partial matches)
+    #' @param path {string}: The specified path to check. Can be relative.
+    #' @param match_pattern {bool}: If TRUE, the basename of the path will be considered as a 
+    #'                        regular expression. Defaults to FALSE where the path is 
+    #'                        considered exactly.
     #' @return exists {boolean}: True if file exists, false otherwise.
 
     logger("DEBUG", "Checking if file exists at path ", quotes(path), ".")
@@ -414,7 +414,7 @@ file_exists <- function(path, match_pattern = FALSE) {
     }
 
     if (match_pattern) {
-        logger("DEBUG", "Searching pattern match")
+        logger("DEBUG", "Searching pattern match...")
         dir_name <- dirname(path)
         file_pattern <- basename(path)
         matching_files <- list_files(dir_name, file_pattern)
@@ -424,11 +424,7 @@ file_exists <- function(path, match_pattern = FALSE) {
         exists <- file.exists(path)
     }
 
-    if (exists) {
-        logger("DEBUG", "File exists at ", quotes(path), ".")
-    } else {
-        logger("DEBUG", "File does not exist at ", quotes(path), ".")
-    }
+    logger("DEBUG", "File ", exists ? "exists" : "does not exist", " at ", quotes(path), ".")
     return(exists)
 }
 
