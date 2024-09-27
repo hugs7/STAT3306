@@ -561,7 +561,7 @@ plink <- function(bfile, plink_args, out_name = NULL) {
     } else {
         # Search for partial match
         logger("DEBUG", "Checking for existing match: ", quotes(plink_out_path), ".")
-        plink_pattern <- paste0(regex_escape(plink_out_path), "(?!\\.log$).*$")
+        plink_pattern <- paste0(plink_out_path, "(?!\\.log$).*$")
         if (file_exists(plink_pattern, TRUE) && !overwrite_plink_out) {
             logger("Matching file(s) already exists at: ", quotes(plink_out_path), ".")
             return(plink_out_path)
@@ -1298,7 +1298,7 @@ gwas <- function(qc_data_path) {
         out_name <- paste0("gwas_pheno", suffix == "" ? "_quant" : suffix, pc ? "_pc" : "")
         cov_out_path <- construct_plink_out_path(out_name)
 
-        if (file_exists(cov_out_path)) {
+        if (file_exists(cov_out_path, TRUE)) {
             logger("INFO", "Covariates already exist at ", quotes(cov_out_path), ".")
             return(cov_out_path)
         }
