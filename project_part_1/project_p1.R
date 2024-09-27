@@ -111,7 +111,7 @@ brackets <- function(...) {
 to_str <- function(x, collapse = ", ") {
     #' Converts a list or vector to a string separated by commas.
     #' @param x {list|vector}: List or vector to convert to string.
-    #' @param collapse {string}: Separator to split items in list 
+    #' @param collapse {string}: Separator to split items in list
     #'                           or vector. Defaults to ', '.
     #' @return {string}: String representation of list.
     
@@ -277,16 +277,16 @@ log_stack <- function(log_level = "INFO") {
 
 logger <- function(log_level = "INFO", ...) {
     #' A mini logger function with ansi coloured log levels. Outputs timestamp,
-    #' calling function, log level and message to the console. Logs the stack 
+    #' calling function, log level and message to the console. Logs the stack
     #' trace if log level is ERROR.
-    #' @param log_level {string}: Optional. The level to log at. If not provided, 
+    #' @param log_level {string}: Optional. The level to log at. If not provided,
     #'                            will default to default_log_level.
     #' @return {NULL}
 
     if (!is.character(log_level) || !(log_level %in% allowed_log_levels)) {
         logger(default_log_level, log_level, ...)
         return(invisible(NULL))
-    } 
+    }
 
     logger_func_name <- deparse(sys.call()[[1]])
     parent_call <- get_calling_function(c(logger_func_name))
@@ -353,7 +353,7 @@ title_case <- function(str) {
 }
 
 regex_escape <- function(string) {
-    #' Escapes characters in a string so they can be 
+    #' Escapes characters in a string so they can be
     #' used in a regex string.
     #' @param string {string|list{string}}: The string or list of strings to be escaped.
     #' @return {string|list{string}}: The same string but regex escaped.
@@ -407,10 +407,10 @@ list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
     #' Wrapper for list.files to set full.names default to TRUE.
     #' @param dir_name {string}: The directory to search in.
     #' @param pattern {string}: Optionally match filenames with a RegEx pattern.
-    #' @param full.names {boolean}: If true, the directory path is prepended 
+    #' @param full.names {boolean}: If true, the directory path is prepended
     #'                              to the file names
     #' @param ... {any}: Any extra arguemnts for list.files()
-    #' @return {charvec}: Character vector containing filenames/filepaths 
+    #' @return {charvec}: Character vector containing filenames/filepaths
     #'                    matching criteria.
     
     logger("DEBUG", "Listing files in dir ", quotes(dir_name), ".")
@@ -438,8 +438,8 @@ list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
 file_exists <- function(path, match_pattern = FALSE) {
     #' Checks to see if a file exists at the specified path
     #' @param path {string}: The specified path to check. Can be relative.
-    #' @param match_pattern {bool}: If TRUE, the basename of the path will be considered as a 
-    #'                        regular expression. Defaults to FALSE where the path is 
+    #' @param match_pattern {bool}: If TRUE, the basename of the path will be considered as a
+    #'                        regular expression. Defaults to FALSE where the path is
     #'                        considered exactly.
     #' @return exists {boolean}: True if file exists, false otherwise.
 
@@ -527,21 +527,21 @@ wrap_read_table <- function(path, header = TRUE, ...) {
     read.table(path, header = header, ...)
 }
 
-wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE, 
+wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE,
                              sep = "\t", quote = FALSE, ...) {
     #' Wrapper for writing a table to a file. Will overwrite file if it exists
     #' at the same path.
     #' @param data {data.frame}: The data to write
-    #' @param basename {string}: The basename excluding the out dir to  write 
+    #' @param basename {string}: The basename excluding the out dir to  write
     #'                           the file at. Ideally should include extension
     #'                           but if it doesn't this function will add it.
     #' @param row.names {boolean}: Whether to include row names. Disabled by default.
     #' @param col.names {boolean}: Whether to include col names. Enabled by default but
-    #'                             if the data contains default columns, will not be 
+    #'                             if the data contains default columns, will not be
     #'                             written.
     #' @param sep {string}: The separator to delimit between columns in the table.
-    #' @param quote {boolean}: Whether to include quotes for strings in the table 
-    #'                         data. Disabled by default. 
+    #' @param quote {boolean}: Whether to include quotes for strings in the table
+    #'                         data. Disabled by default.
     #' @return path {string}: The full save path where the table was saved.
 
     basename <- check_txt_ext(basename, exts$txt)
@@ -574,7 +574,7 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     }
 
     logger("DEBUG", "Writing table at ", quotes(path), ".")
-    write.table(data, path, row.names = row.names, col.names = col.names, 
+    write.table(data, path, row.names = row.names, col.names = col.names,
                 sep = sep, quote = quote, ...)
     return(path)
 }
@@ -583,13 +583,13 @@ plink_orig_data <- function(plink_args, out_name = NULL) {
     #' Makes a plink call with the original dataset and specified arguments.
     #' Serves as wrapper to plink function.
     #' @param plink_args {string}: Arguments provided to plink.
-    #' @param out_name {string}: Basename for plink to output to. Should 
-    #'                           exclude plink directory. If NULL, output 
+    #' @param out_name {string}: Basename for plink to output to. Should
+    #'                           exclude plink directory. If NULL, output
     #'                           is piped to console.
-    #' @return plink_out_path {string}: Relative path from script to plink 
-    #'                                  output. Notably, this path does not 
-    #'                                  contain extension added by plink as 
-    #'                                  this differs depending upon arguments 
+    #' @return plink_out_path {string}: Relative path from script to plink
+    #'                                  output. Notably, this path does not
+    #'                                  contain extension added by plink as
+    #'                                  this differs depending upon arguments
     #'                                  provided to plink.
 
     data_files_pattern <- file.path(data_path, plink_datafile_basename)
@@ -598,18 +598,18 @@ plink_orig_data <- function(plink_args, out_name = NULL) {
     plink(data_files_pattern, plink_args, out_name)
 }
 
-plink <- function(bfile, plink_args, out_name = NULL) { 
+plink <- function(bfile, plink_args, out_name = NULL) {
     #' Makes a plink call with the given dataset and specified arguments.
-    #' @param bfile {string}: Path to binary fileset. Should not include 
+    #' @param bfile {string}: Path to binary fileset. Should not include
     #'                        extension.
     #' @param plink_args {string}: Arguments provided to plink.
-    #' @param out_name {string}: Basename for plink to output to. Should 
-    #'                           exclude plink directory. If NULL, output 
+    #' @param out_name {string}: Basename for plink to output to. Should
+    #'                           exclude plink directory. If NULL, output
     #'                           is piped to console.
-    #' @return plink_out_path {string}: Relative path from script to plink 
-    #'                                  output. Notably, this path does not 
-    #'                                  contain extension added by plink as 
-    #'                                  this differs depending upon arguments 
+    #' @return plink_out_path {string}: Relative path from script to plink
+    #'                                  output. Notably, this path does not
+    #'                                  contain extension added by plink as
+    #'                                  this differs depending upon arguments
     #'                                  provided to plink.
 
     if (is.null(bfile)) {
@@ -661,10 +661,10 @@ plink <- function(bfile, plink_args, out_name = NULL) {
 }
 
 add_extension <- function(basename, ...) {
-    #' Adds extension(s) to a given basename. The basename can by a file 
+    #' Adds extension(s) to a given basename. The basename can by a file
     #' path or just a file basename.
     #' @param basename {string}: File path or basename to add extension to.
-    #' @param ... {string}: String args containing additional extension(s) 
+    #' @param ... {string}: String args containing additional extension(s)
     #'                      to append.
     #' @return path {string}: Basename or path with extension(s) appended.
 
@@ -745,10 +745,10 @@ check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
     #' adds it if it's not present.
     #' @param out_name {string}: File path or name to check.
     #' @param expected_ext {string}: The expected extension (with .).
-    #' @param add_if_missing {boolean}: Adds the expected extension if 
+    #' @param add_if_missing {boolean}: Adds the expected extension if
     #'                                  not present. Defaults to true.
-    #' @return out_name {string|NULL}: The (possibly revised) file path 
-    #'                                 or name. NULL if expected extension 
+    #' @return out_name {string|NULL}: The (possibly revised) file path
+    #'                                 or name. NULL if expected extension
     #'                                 is blank.
 
     if (length(expected_ext) == 0) {
@@ -758,14 +758,14 @@ check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
 
     logger("DEBUG", "Checking ", quotes(out_name), " for extension ", quotes(expected_ext), ".")
     if (!endsWith(out_name, expected_ext)) {
-        logger("WARN", "Out name ", quotes(out_name), " does not end with ", 
+        logger("WARN", "Out name ", quotes(out_name), " does not end with ",
                quotes(expected_ext), ".")
         if (add_if_missing) {
             logger("DEBUG", "Adding ", quotes(expected_ext), " to file name")   
             out_name <- paste0(out_name, expected_ext)
         }
     } else {
-        logger("DEBUG", "Out name ", quotes(out_name), " contains extension ", 
+        logger("DEBUG", "Out name ", quotes(out_name), " contains extension ",
                quotes(expected_ext), ".")
     }
 
@@ -775,9 +775,9 @@ check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
 check_png_ext <- function(out_name, add_if_missing = TRUE) {
     #' Wrapper to check_ext() for png extension.
     #' @param out_name {string}: File path or name to check.
-    #' @param add_if_missing {boolean}: Adds the expected extension if 
+    #' @param add_if_missing {boolean}: Adds the expected extension if
     #'                                  not present. Defaults to true.
-    #' @return out_name {string}: The (possibly revised) file path 
+    #' @return out_name {string}: The (possibly revised) file path
     #'                            or name.
 
     check_ext(out_name, exts$png, add_if_missing)
@@ -786,9 +786,9 @@ check_png_ext <- function(out_name, add_if_missing = TRUE) {
 check_txt_ext <- function(out_name, add_if_missing = TRUE) {
     #' Wrapper to check_ext() for txt extension.
     #' @param out_name {string}: File path or name to check.
-    #' @param add_if_missing {boolean}: Adds the expected extension if 
+    #' @param add_if_missing {boolean}: Adds the expected extension if
     #'                                  not present. Defaults to true.
-    #' @return out_name {string}: The (possibly revised) file path 
+    #' @return out_name {string}: The (possibly revised) file path
     #'                            or name.
     
     check_ext(out_name, exts$txt, add_if_missing)
@@ -796,7 +796,7 @@ check_txt_ext <- function(out_name, add_if_missing = TRUE) {
 
 log_indvs_to_remove <- function(num_indvs) {
     #' Logs if there are individuals to remove.
-    #' @param num_indvs {integer}: Number of individuals to remove 
+    #' @param num_indvs {integer}: Number of individuals to remove
     #'                             (from a data.frame).
     #' @return {NULL}
 
@@ -808,11 +808,11 @@ log_indvs_to_remove <- function(num_indvs) {
 }
 
 wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height = plot_h) {
-    #' Plots a data.frame using the specified callback and saves to a file 
+    #' Plots a data.frame using the specified callback and saves to a file
     #' in the plots directory.
     #' @param plot_callback {function}: Function used to generate plot.
     #' @param data {data.frame}: The data to plot
-    #' @param out_name {string}: The file name to output. Should be a png and 
+    #' @param out_name {string}: The file name to output. Should be a png and
     #'                           should not contain the plots directory.
     #' @param ... {any}: Extra arguemnts to provide to plot callback.
     #' @param width {integer}: The width of the plot to save in pixels. Has a default value.
@@ -837,7 +837,7 @@ wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height
 
 wrap_histogram <- function(...) {
     #' Wrapper to wrap_plot but for histograms.
-    #' @param ... {any}: Arguments to wrap_plot excluding the plot_callback. 
+    #' @param ... {any}: Arguments to wrap_plot excluding the plot_callback.
     #' @return out_path {string}: Path to saved plot file.
 
     wrap_plot(hist, ...)
@@ -848,7 +848,7 @@ wrap_scatter <- function(abline_h, abline_col, abline_name, ...) {
     #' @param abline_y {integer | NULL}: Height of the abline.
     #' @param abline_col {integer | NULL}: Colour of the abline.
     #' @param abline_name {string}: Label for the abline.
-    #' @param ... {any}: Arguments to wrap_plot excluding the plot_callback. 
+    #' @param ... {any}: Arguments to wrap_plot excluding the plot_callback.
     #' @return out_path {string}: Path to saved plot file.
 
     plot_with_abline <- function(...) {
@@ -879,11 +879,11 @@ genomic_inflation_factor <- function(d, df = 1) {
 }
 
 excess_missing_genotypes <- function(data_path, extension, out_cols, histogram, suffix) {
-    #' Finds excess missingness in the genetic data. Generic method. Can be used 
+    #' Finds excess missingness in the genetic data. Generic method. Can be used
     #' to find misingness in individuals or SNPs. Includes plotting functionality.
-    #' @param data_path {string | NULL}: Path to dataset. If NULL, original dataset 
+    #' @param data_path {string | NULL}: Path to dataset. If NULL, original dataset
     #'                                   will be used.
-    #' @param extension {string}: File extension specifiying what type of missingness to 
+    #' @param extension {string}: File extension specifiying what type of missingness to
     #'                            exclude for.
     #' @param out_cols {vec(string)}: Vector of columns to include in save file.
     #' @param histogram {boolean}: If true, will plot histogram of missingness.
@@ -910,7 +910,7 @@ excess_missing_genotypes <- function(data_path, extension, out_cols, histogram, 
         hist_basename <- add_extension("fmiss", extension, exts$png)
         suffix_bracketed <- brackets(suffix)
         plot_title <- paste0("Distribution of Missingness ", suffix_bracketed)
-        wrap_histogram(missing$F_MISS, hist_basename, xlab = paste0("Missingness ", 
+        wrap_histogram(missing$F_MISS, hist_basename, xlab = paste0("Missingness ",
                        suffix_bracketed), main = plot_title)
         num_indvs_to_remove <- sum(missing$F_MISS > genotype_threshold)
         log_indvs_to_remove(num_indvs_to_remove)
@@ -921,7 +921,7 @@ excess_missing_genotypes <- function(data_path, extension, out_cols, histogram, 
     if (file_exists(missing_file_path)) {
         logger("Missing genotypes already saved at ", quotes(missing_file_path), ".")
     } else {
-        missing_file_path <- remove_indices_by_threshold(missing, "F_MISS", genotype_threshold, 
+        missing_file_path <- remove_indices_by_threshold(missing, "F_MISS", genotype_threshold,
                                                          out_cols, out_name)
     }
 
@@ -945,22 +945,22 @@ init <- function() {
 init()
 
 # Plink flags
-pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"), 
-                             "hardy", "het", "mind", "pheno", "covar", 
-                             list("dup_vars" = "list-duplicate-vars"), "out", 
+pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
+                             "hardy", "het", "mind", "pheno", "covar",
+                             list("dup_vars" = "list-duplicate-vars"), "out",
                              "bfile", "chr", "freq", "exclude", "mpheno",
-                             "pca", "linear", "logistic", "assoc", "clump", 
-                             list("cp1" = "clump-p1"), list("cp2" = "clump-p2"), 
-                             list("cr2" = "clump-r2"), list("ckb" = "clump-kb"), 
-                             list("rel_cutoff" = "rel-cutoff"),"keep", 
-                             list("miss_pheno_neg_9" = "1"), 
-                             list("covar_name" = "covar-name")), 
+                             "pca", "linear", "logistic", "assoc", "clump",
+                             list("cp1" = "clump-p1"), list("cp2" = "clump-p2"),
+                             list("cr2" = "clump-r2"), list("ckb" = "clump-kb"),
+                             list("rel_cutoff" = "rel-cutoff"),"keep",
+                             list("miss_pheno_neg_9" = "1"),
+                             list("covar_name" = "covar-name")),
                         named_flag)
 
 # File extensions
-exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", 
+exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe",
                            "frq", "txt", "png", "eigenvec", "eigenval",
-                           "qassoc", "linear", "clumped", "rel", "id", "logistic"), 
+                           "qassoc", "linear", "clumped", "rel", "id", "logistic"),
                       ext)
 
 # === Main ===
@@ -979,9 +979,9 @@ quality_control <- function(perform) {
 
     find_individual_missing_genotypes <- function(histogram) {
         #' Finds individuals with excess missing genotypes to remove from the dataset
-        #' @param histogram {boolean}: If true, will plot a histogram of the frequency 
+        #' @param histogram {boolean}: If true, will plot a histogram of the frequency
         #'                             of missingness.
-        #' @return missing_file_path {string}: The file path to the file containing 
+        #' @return missing_file_path {string}: The file path to the file containing
         #'                                     the individuals to remove.
 
         excess_missing_genotypes(NULL, exts$imiss, fam_ind_cols, histogram, "individual")
@@ -989,10 +989,10 @@ quality_control <- function(perform) {
 
     find_outlying_homozygosity <- function(plot) {
         #' Finds individuals with outlying homozygosity values to remove from the dataset
-        #' @param plot {boolean}: If true, will plot a histogram of the frequency of hz 
-        #'                        freqs and a scatterplot of their distribution across 
+        #' @param plot {boolean}: If true, will plot a histogram of the frequency of hz
+        #'                        freqs and a scatterplot of their distribution across
         #"                        the geneome.
-        #' @return het_ind_file_path {string}: The file path to the file containing 
+        #' @return het_ind_file_path {string}: The file path to the file containing
         #"                                     the individuals to remove.
 
         logger("Checking for outlying homozygosity values...")
@@ -1007,7 +1007,7 @@ quality_control <- function(perform) {
 
         if (plot) {
             logger("INFO", "Plotting het histogram")
-            wrap_histogram(het$F, add_extension("fhet_hist", exts$png), xlab = "Homozygosity", 
+            wrap_histogram(het$F, add_extension("fhet_hist", exts$png), xlab = "Homozygosity",
                            main = "Distribution of Homozygosity")
 
             logger("INFO", "Plotting het scatterplot")
@@ -1020,7 +1020,7 @@ quality_control <- function(perform) {
         if (file_exists(het_ind_file_path)) {
             logger("Het indices saved at: ", quotes(het_ind_file_path))
         } else {
-            het_ind_file_path <- remove_indices_by_threshold(het, "F", het_threshold, 
+            het_ind_file_path <- remove_indices_by_threshold(het, "F", het_threshold,
                                                              fam_ind_cols, het_samples_name)
         }
         return(het_ind_file_path)
@@ -1064,7 +1064,7 @@ quality_control <- function(perform) {
         #' @param ... {character}: File paths to individual files containing IDs of
         #'                         individuals to remove. These files are expected
         #'                         to have at least two columns: FID and IID.
-        #' @return {string}: File path to the combined output file with individuals 
+        #' @return {string}: File path to the combined output file with individuals
         #"                   to remove.
         
         combined_basename <- add_extension("remove.combined.samples", exts$txt)
@@ -1095,9 +1095,9 @@ quality_control <- function(perform) {
 
     remove_bad_individuals <- function(remove_path) {
         #' Removes individuals from the dataset who are specified in the provided file.
-        #' @param remove_path {string}: File path to file containing individuals to remove 
+        #' @param remove_path {string}: File path to file containing individuals to remove
         #'                              from the dataset.
-        #' @return out_path {string}: File path to subset of original dataset with specified 
+        #' @return out_path {string}: File path to subset of original dataset with specified
         #'                            individuals removed.
 
         out_name <- "test_indv_subset"
@@ -1114,7 +1114,7 @@ quality_control <- function(perform) {
     keep_related_samples <- function(related_path, data_subset_path) {
         #' Keeps only related samples from the data subset who are listed in the related file
         #' @param related_path {string}: Path to file containing list of individuals to keep.
-        #' @param data_subset_path {string}: Path to subset of data with some individuals 
+        #' @param data_subset_path {string}: Path to subset of data with some individuals
         #'                                   already removed.
         #' @return out_path {string}: Path to a further subset of the data
 
@@ -1158,7 +1158,7 @@ sample_qc <- function(data_subset_path, perform) {
     #' @param data_subset_path {string}: Path to subset of data from individual
     #'                                   quality control step.
     #' @param perform {bool}: Whether to perform quality control or not. If disabled, will
-    #'                        attempt to return existing QC dataset. 
+    #'                        attempt to return existing QC dataset.
     #' @return qc_data_maf_path {string}: Path to subset of data from this step
     #'                                    of the quality control process.
     
@@ -1171,7 +1171,7 @@ sample_qc <- function(data_subset_path, perform) {
         #' @param histogram {boolean}: Will plot histogram of missingness if true.
         #' @return lmsis {data.frame}: Data.frame containing missingness of SNPs.
 
-        missing_file_path <- excess_missing_genotypes(data_subset_path, exts$lmiss, 2, 
+        missing_file_path <- excess_missing_genotypes(data_subset_path, exts$lmiss, 2,
                                                       histogram, "SNPs")
         lmiss <- wrap_read_table(missing_file_path)
         return(lmiss)
@@ -1195,7 +1195,7 @@ sample_qc <- function(data_subset_path, perform) {
                            main = "Distribution of HWE p-values")
         }
 
-        return(hwe) 
+        return(hwe)
     }
 
     min_allele_freq <- function(histogram) {
@@ -1211,7 +1211,7 @@ sample_qc <- function(data_subset_path, perform) {
         freq <- wrap_read_table(min_allele_path)
 
         if (histogram) {
-            wrap_histogram(freq$MAF, add_extension("maf_distribution", exts$png), 
+            wrap_histogram(freq$MAF, add_extension("maf_distribution", exts$png),
                            xlab = "Minor Allele Frequency (ref = 1)",
                            main = "Distribution of Minor Allele Frequencies")
         }
@@ -1220,24 +1220,24 @@ sample_qc <- function(data_subset_path, perform) {
     }
 
     remove_snps <- function(lmiss, hwe, freq) {
-        #' Removes snps from dataset which do not meet thresholds for missingness, 
+        #' Removes snps from dataset which do not meet thresholds for missingness,
         #' hwe, or minor allele frequency.
         #' @param lmiss {data.frame}: Data.frame for missingness of SNPs.
         #' @param lmiss {data.frame}: Data.frame for hardy statistics of SNPs.
         #' @param lmiss {data.frame}: Data.frame for minor allele frequencies of SNPs.
-        #' @return remove_snps_path {string}: Path to a txt file containing 
+        #' @return remove_snps_path {string}: Path to a txt file containing
         #'                                    combined SNPs to remove.
 
         logger("INFO", "Computing SNPs to remove...")
         
         ind_to_remove <- unique(c(
                                     which(lmiss$F_MISS > genotype_threshold,
-                                    freq$MAF < freq_threshold), 
+                                    freq$MAF < freq_threshold),
                                     which(hwe$P < hwe_threshold)
                                  )
                                )
         snp_id_col <- 2
-        remove_snps_path <- save_removed_indices(freq, ind_to_remove, snp_id_col, 
+        remove_snps_path <- save_removed_indices(freq, ind_to_remove, snp_id_col,
                                                  add_extension("remove.SNPs", exts$txt))
         return(remove_snps_path)
     }
@@ -1259,9 +1259,9 @@ sample_qc <- function(data_subset_path, perform) {
         #' of threshold and saves file containing SNPs to remove.
         #' @param freq {data.frame}: Data.frame containing minor allele frequencies
         #'                           of the current data subset.
-        #' @param do_hist {boolean}: If true, will plot a histogram of minor allele 
+        #' @param do_hist {boolean}: If true, will plot a histogram of minor allele
         #'                           frequencies for this dataset.
-        #' @param do_plot {boolean}: If true, will save scatterplot of corrected 
+        #' @param do_plot {boolean}: If true, will save scatterplot of corrected
         #'                           MAFs both with and without threshold cutoff.
         #' @return remove_out_path {string}: Path to file containins SNPs which fall
         #'                                   outside threshold and are to be removed.
@@ -1288,7 +1288,7 @@ sample_qc <- function(data_subset_path, perform) {
 
         if (do_hist) {
             logger("Plotting histogram of Residual Minor Allele Frequency (MAF)")
-            wrap_histogram(res, add_extension("residual_minor_allele", exts$png), 
+            wrap_histogram(res, add_extension("residual_minor_allele", exts$png),
                            xlab = "Residual Minor Allele Frequency",
                            main = "Residual Minor Allele Frequency (r-MAF) (ref = 1)")
         }
@@ -1300,7 +1300,7 @@ sample_qc <- function(data_subset_path, perform) {
             xlab <- "Reference MAF"
             ylab <- "Observed MAF"
             plot_title <- "Reference vs Observed Minor Allele Frequencies"
-            wrap_plot(plot, out_cpy$MAF ~ out_cpy$V2, 
+            wrap_plot(plot, out_cpy$MAF ~ out_cpy$V2,
                       add_extension(min_allele_freq_basename, exts$png),
                       xlab = xlab, ylab = ylab, main = plot_title)
 
@@ -1309,7 +1309,7 @@ sample_qc <- function(data_subset_path, perform) {
             logger("There were ", length(accept_snps), " accepted.")
             out_accept <- out_cpy[accept_snps, ]
             # y: Observed, x: reference.
-            wrap_plot(plot, out_accept$MAF ~ out_accept$V2, add_extension(min_allele_freq_basename, 
+            wrap_plot(plot, out_accept$MAF ~ out_accept$V2, add_extension(min_allele_freq_basename,
                                                                           "_comparison", exts$png),
                       xlab = xlab, ylab = ylab, main = paste(plot_title, "(Corrected for Ref = 1"))
         }
@@ -1348,7 +1348,7 @@ sample_qc <- function(data_subset_path, perform) {
         remove_out_path <- compare_minor_allele_freqs(freq, TRUE, TRUE)
     } else {
         # Provide dummy paths
-        qc_data_path <- "" 
+        qc_data_path <- ""
         remove_out_path <- ""
     }
 
@@ -1358,9 +1358,9 @@ sample_qc <- function(data_subset_path, perform) {
 }
 
 gwas <- function(qc_data_path) {
-    #' Performs a Genome-Wide Association study on the data, 
+    #' Performs a Genome-Wide Association study on the data,
     #' specified by the path.
-    #' @param qc_data_path {string}: Path to dataset from the output of 
+    #' @param qc_data_path {string}: Path to dataset from the output of
     #'                               quality control.
     #' @return {NULL}
 
@@ -1371,7 +1371,7 @@ gwas <- function(qc_data_path) {
     num_pc <- 10
     
     get_mpheno_args <- function(suffix) {
-        #' Constructs the mpheno section of the plink args based on suffix 
+        #' Constructs the mpheno section of the plink args based on suffix
         #' (which in turn can map to trait).
         #' @param suffix {string}: The suffix of the phenotype file (mapping to trait).
         #' @return args {string}: Mpheno args used for plink.
@@ -1406,14 +1406,14 @@ gwas <- function(qc_data_path) {
 
     get_pheno_path <- function(pheno_suffix) {
         #' Gets the phenotype file path for a given trait. The possible traits are:
-        #'   1. "": a quantitative trait. 
-        #'   2. "_binary1": A binary trait in which those scoring in the top 20% of 
-        #'                  the phenotype are scored 1 = case and the remainder 
+        #'   1. "": a quantitative trait.
+        #'   2. "_binary1": A binary trait in which those scoring in the top 20% of
+        #'                  the phenotype are scored 1 = case and the remainder
         #'                  0 = control.
-        #'   3. "_binary2": A binary trait in which those scoring in the top 20% of 
-        #'                  the phenotype are scored 1 = case and those scoring in 
+        #'   3. "_binary2": A binary trait in which those scoring in the top 20% of
+        #'                  the phenotype are scored 1 = case and those scoring in
         #'                  the bottom 30% of the phenotype are scored 0 = control.
-        #' @param pheno_suffix {string}: The suffix corresponding to the phenotype 
+        #' @param pheno_suffix {string}: The suffix corresponding to the phenotype
         #'                               file compute a filepath for.
         #' @return {string}: Complete file path.
  
@@ -1458,7 +1458,7 @@ gwas <- function(qc_data_path) {
         #' @param phenotype_suffix {string}: Suffix mapping to trait.
         #' @return pheno_path {string}: Full path to pheno analysis file.
 
-        logger("DEBUG", "Calculating path for pheno analysis full path from basename ", 
+        logger("DEBUG", "Calculating path for pheno analysis full path from basename ",
                         quotes(pheno_basename), ".")
         
         if (phenotype_suffix == "") {
@@ -1494,7 +1494,7 @@ gwas <- function(qc_data_path) {
         title_plot <- function(plot_type) {
             logger("DEBUG", "Titling plot for type: ", quotes(plot_type), ".")
 
-            plot_title <- paste0(title_case(plot_type), " plot for ", trait_name, 
+            plot_title <- paste0(title_case(plot_type), " plot for ", trait_name,
                                  pc ? paste0(" ", brackets("PC")) : "")
             logger("DEBUG", "Plot title: ", quotes(plot_title), ".")
             return(plot_title)
@@ -1515,7 +1515,7 @@ gwas <- function(qc_data_path) {
 
         logger("DEBUG", "Plotting ...")
         man_plot_name <- name_plot("manhattan")
-        logger("INFO", "Generating Manhattan Plot ", quotes(man_plot_name), " for trait ", 
+        logger("INFO", "Generating Manhattan Plot ", quotes(man_plot_name), " for trait ",
                quotes(trait_name), " ...")
         wrap_plot(manhattan, d, man_plot_name, main = title_plot("manhattan"))
 
@@ -1533,7 +1533,7 @@ gwas <- function(qc_data_path) {
         #' @param pc {boolean}: Whether principal components is being used.
         #' @return lambda_bc {float}: The GIC (\lambda) value.
 
-        logger("INFO", "Computing Genomic Inflation Factor (", suffix, ") with PC: ", 
+        logger("INFO", "Computing Genomic Inflation Factor (", suffix, ") with PC: ",
                        pc ? "enabled" : "disabled", "...")
 
         lambda_gc <- genomic_inflation_factor(d, 1)
@@ -1561,7 +1561,7 @@ gwas <- function(qc_data_path) {
 
             for (covariate in covariate_basenames) {
                 covariate_path <- file.path(data_path, add_extension(covariate, exts$txt))
-                logger("DEBUG", "Reading covariate ", quotes(covariate), " from path ", 
+                logger("DEBUG", "Reading covariate ", quotes(covariate), " from path ",
                        quotes(covariate_path), ".")
                 covar <- wrap_read_table(covariate_path, header = FALSE)
                 colnames(covar) <- c(fam_ind_cols, covariate)
@@ -1575,7 +1575,7 @@ gwas <- function(qc_data_path) {
 
             log_df(combined_covariates, "Combined covariates")
            
-            combined_covar_path <- wrap_write_table(combined_covariates, combined_basename, 
+            combined_covar_path <- wrap_write_table(combined_covariates, combined_basename,
                                                     col.names = TRUE)
         }
 
@@ -1595,7 +1595,7 @@ gwas <- function(qc_data_path) {
         pca_eig_val <- add_extension(pca_path, exts$eigenval)
         pca_eig_vec <- add_extension(pca_path, exts$eigenvec)
 
-        # Special: We check for all files present and hence don't rely on 
+        # Special: We check for all files present and hence don't rely on
         # plink wrapper function to perform the check for us.
         eig_files <- list(pca_eig_val, pca_eig_vec)
         if (all(sapply(eig_files, file_exists))) {
@@ -1604,7 +1604,7 @@ gwas <- function(qc_data_path) {
         }
 
         # No PCA. Compute:
-        logger("Performing Principal Component Analysis on Data QC with ", num_components, 
+        logger("Performing Principal Component Analysis on Data QC with ", num_components,
                " components...")
 
         plink_args <- paste(pl_fgs$pca, num_components)
@@ -1645,7 +1645,7 @@ gwas <- function(qc_data_path) {
             pc_combined_covars <- merge(existing_covars, eigenvecs, by = fam_ind_cols)
             log_df(pc_combined_covars, "Combined covariates (with principal components)")
 
-            pc_combined_covars_path <- wrap_write_table(pc_combined_covars, pc_combined_basename, 
+            pc_combined_covars_path <- wrap_write_table(pc_combined_covars, pc_combined_basename,
                                                         col.names = TRUE)
         }
 
@@ -1700,7 +1700,7 @@ gwas <- function(qc_data_path) {
     covar_pc_file_path <- add_pc_eigvecs_to_covars(covar_file_path, pc_eigvec_file)
     
     for (pc in list(FALSE, TRUE)) {
-        on <- pc == TRUE ? "enabled" : "disabled" 
+        on <- pc == TRUE ? "enabled" : "disabled"
         logger("INFO", "Performing GWAS with Principal Components ", on, ".")
 
         # Perform analysis for each of the phenotypes
