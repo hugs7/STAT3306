@@ -253,7 +253,7 @@ log_stack <- function(log_level = "INFO") {
         func_name <- get_func_name(current_call)
 
         code_line <- paste0(deparse(current_call), collapse = " ")
-        logger(log_level, indent, "Function: ", func_name, ", Code: ", code_line)
+        logger(log_level, indent, pad(30, func_name), " | Code: ", code_line)
     }
 }
 
