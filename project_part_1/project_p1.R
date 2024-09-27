@@ -94,8 +94,17 @@ quotes <- function(...) {
     #' Surrounds a string with double quotes (")
     #' @param ... {string}: String args to surround with quotes
     #' @return {string}: String surrounded with quotes
-    
-    str <- paste0(...)
+ 
+    args <- list(...)
+    string_args <- sapply(args, function(arg) {
+        if (is.list(arg)) {
+            to_str(arg)
+        } else {
+            as.character(arg)
+        }
+    })
+
+    str <- paste0(string_args)
     paste0("'", str, "'")
 }
 
