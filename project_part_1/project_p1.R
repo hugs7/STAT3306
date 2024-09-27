@@ -640,7 +640,6 @@ plink <- function(bfile, plink_args, out_name = NULL) {
         logger("ERROR", "You were trying to run ", quotes(plink_cmd))
     }
 
-
     if (std_out) {
         logger("Running: ", quotes(plink_cmd))
         system(plink_cmd)
@@ -665,7 +664,8 @@ add_extension <- function(basename, ...) {
     #' Adds extension(s) to a given basename. The basename can by a file 
     #' path or just a file basename.
     #' @param basename {string}: File path or basename to add extension to.
-    #' @param ... {string}: String args containing extension(s) to append.
+    #' @param ... {string}: String args containing additional extension(s) 
+    #'                      to append.
     #' @return path {string}: Basename or path with extension(s) appended.
 
     args <- list(...)
@@ -760,13 +760,15 @@ check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
 
     logger("DEBUG", "Checking ", quotes(out_name), " for extension ", quotes(expected_ext), ".")
     if (!endsWith(out_name, expected_ext)) {
-        logger("WARN", "Out name ", quotes(out_name), " does not end with ", quotes(expected_ext), ".")
+        logger("WARN", "Out name ", quotes(out_name), " does not end with ", 
+               quotes(expected_ext), ".")
         if (add_if_missing) {
             logger("DEBUG", "Adding ", quotes(expected_ext), " to file name")   
             out_name <- paste0(out_name, expected_ext)
         }
     } else {
-        logger("DEBUG", "Out name ", quotes(out_name), " contains extension ", quotes(expected_ext), ".")
+        logger("DEBUG", "Out name ", quotes(out_name), " contains extension ", 
+               quotes(expected_ext), ".")
     }
 
     return(out_name)
@@ -910,8 +912,8 @@ excess_missing_genotypes <- function(data_path, extension, out_cols, histogram, 
         hist_basename <- add_extension("fmiss", extension, exts$png)
         suffix_bracketed <- brackets(suffix)
         plot_title <- paste0("Distribution of Missingness ", suffix_bracketed)
-        wrap_histogram(missing$F_MISS, hist_basename, xlab = paste0("Missingness ", suffix_bracketed),
-                       main = plot_title)
+        wrap_histogram(missing$F_MISS, hist_basename, xlab = paste0("Missingness ", 
+                       suffix_bracketed), main = plot_title)
         num_indvs_to_remove <- sum(missing$F_MISS > genotype_threshold)
         log_indvs_to_remove(num_indvs_to_remove)
     }
@@ -979,17 +981,21 @@ quality_control <- function(perform) {
 
     find_individual_missing_genotypes <- function(histogram) {
         #' Finds individuals with excess missing genotypes to remove from the dataset
-        #' @param histogram {boolean}: if true, will plot a histogram of the frequency of missingness
-        #' @return missing_file_path {string}: The file path to the file containing the individuals to remove.
+        #' @param histogram {boolean}: If true, will plot a histogram of the frequency 
+        #'                             of missingness.
+        #' @return missing_file_path {string}: The file path to the file containing 
+        #'                                     the individuals to remove.
 
         excess_missing_genotypes(NULL, exts$imiss, fam_ind_cols, histogram, "individual")
     }
 
     find_outlying_homozygosity <- function(plot) {
         #' Finds individuals with outlying homozygosity values to remove from the dataset
-        #' @param plot {boolean}: if true, will plot a histogram of the frequency of hz freqs and a scatterplot
-        #'                        of their distribution across the geneome.
-        #' @return het_ind_file_path {string}: The file path to the file containing the individuals to remove.
+        #' @param plot {boolean}: If true, will plot a histogram of the frequency of hz 
+        #'                        freqs and a scatterplot of their distribution across 
+        #"                        the geneome.
+        #' @return het_ind_file_path {string}: The file path to the file containing 
+        #"                                     the individuals to remove.
 
         logger("Checking for outlying homozygosity values...")
 
@@ -1003,7 +1009,8 @@ quality_control <- function(perform) {
 
         if (plot) {
             logger("INFO", "Plotting het histogram")
-            wrap_histogram(het$F, "fhet_hist.png", xlab = "Homozygosity", main = "Distribution of Homozygosity")
+            wrap_histogram(het$F, add_extension("fhet_hist", exts$png), xlab = "Homozygosity", 
+                           main = "Distribution of Homozygosity")
 
             logger("INFO", "Plotting het scatterplot")
             wrap_scatter(0.05, "red", "Distribution of abs heterozygosity", abs(het$F),
@@ -1022,10 +1029,10 @@ quality_control <- function(perform) {
     }
 
     find_related_samples <- function(threshold = related_threshold) {
-        #' Finds individuals from each pair of samples with observed genomic relatedness 
+        #' Finds individuals from each pair of samples with observed genomic relatedness
         #' above a given threshold. NP-Hard problem so will used cached result if exists.
         #' @param threshold {float}: The threshold to exclude related samples by.
-        #' @return related_file_path {string}: File path to a file containing individuals 
+        #' @return related_file_path {string}: File path to a file containing individuals
         #'                                     to remove.
 
         basename_with_extension <- function(basename) {
@@ -1056,9 +1063,11 @@ quality_control <- function(perform) {
 
     combine_remove_files <- function(...) {
         #' Combines the individuasl to remove into a single txt file
-        #' @param ... {character}: File paths to individual files containing IDs of individuals to remove.
-        #'                         These files are expected to have at least two columns: FID and IID.
-        #' @return {string}: File path to the combined output file with individuals to remove.
+        #' @param ... {character}: File paths to individual files containing IDs of
+        #'                         individuals to remove. These files are expected
+        #'                         to have at least two columns: FID and IID.
+        #' @return {string}: File path to the combined output file with individuals 
+        #"                   to remove.
         
         combined_basename <- add_extension("remove.combined.samples", exts$txt)
         combined_file_out_path <- construct_out_path(combined_basename)
@@ -1088,8 +1097,10 @@ quality_control <- function(perform) {
 
     remove_bad_individuals <- function(remove_path) {
         #' Removes individuals from the dataset who are specified in the provided file.
-        #' @param remove_path {string}: File path to file containing individuals to remove from the dataset.
-        #' @return out_path {string}: File path to subset of original dataset with specified individuals removed.
+        #' @param remove_path {string}: File path to file containing individuals to remove 
+        #'                              from the dataset.
+        #' @return out_path {string}: File path to subset of original dataset with specified 
+        #'                            individuals removed.
 
         out_name <- "test_indv_subset"
         if (!perform) {
@@ -1105,7 +1116,8 @@ quality_control <- function(perform) {
     keep_related_samples <- function(related_path, data_subset_path) {
         #' Keeps only related samples from the data subset who are listed in the related file
         #' @param related_path {string}: Path to file containing list of individuals to keep.
-        #' @param data_subset_path {string}: Path to subset of data with some individuals already removed.
+        #' @param data_subset_path {string}: Path to subset of data with some individuals 
+        #'                                   already removed.
         #' @return out_path {string}: Path to a further subset of the data
 
         
@@ -1161,7 +1173,8 @@ sample_qc <- function(data_subset_path, perform) {
         #' @param histogram {boolean}: Will plot histogram of missingness if true.
         #' @return lmsis {data.frame}: Data.frame containing missingness of SNPs.
 
-        missing_file_path <- excess_missing_genotypes(data_subset_path, exts$lmiss, 2, histogram, "SNPs")
+        missing_file_path <- excess_missing_genotypes(data_subset_path, exts$lmiss, 2, 
+                                                      histogram, "SNPs")
         lmiss <- wrap_read_table(missing_file_path)
         return(lmiss)
     }
@@ -1200,7 +1213,8 @@ sample_qc <- function(data_subset_path, perform) {
         freq <- wrap_read_table(min_allele_path)
 
         if (histogram) {
-            wrap_histogram(freq$MAF, "maf_distribution.png", xlab = "Minor Allele Frequency (ref = 1)",
+            wrap_histogram(freq$MAF, add_extension("maf_distribution", exts$png), 
+                           xlab = "Minor Allele Frequency (ref = 1)",
                            main = "Distribution of Minor Allele Frequencies")
         }
 
@@ -1225,7 +1239,8 @@ sample_qc <- function(data_subset_path, perform) {
                                  )
                                )
         snp_id_col <- 2
-        remove_snps_path <- save_removed_indices(freq, ind_to_remove, snp_id_col, "remove.SNPs.txt")
+        remove_snps_path <- save_removed_indices(freq, ind_to_remove, snp_id_col, 
+                                                 add_extension("remove.SNPs", exts$txt))
         return(remove_snps_path)
     }
 
@@ -1254,7 +1269,7 @@ sample_qc <- function(data_subset_path, perform) {
         #'                                   outside threshold and are to be removed.
 
         logger("Comparing Minor Allele Frequencies...")
-        snp_ref_path <- file.path(data_path, "reference_allele_frequencies.txt")
+        snp_ref_path <- file.path(data_path, add_extension("reference_allele_frequencies", exts$txt)
         ref <- wrap_read_table(snp_ref_path, header = FALSE)
         log_df(ref, "Reference allele requencies")
         
@@ -1275,7 +1290,8 @@ sample_qc <- function(data_subset_path, perform) {
 
         if (do_hist) {
             logger("Plotting histogram of Residual Minor Allele Frequency (MAF)")
-            wrap_histogram(res, "residual_minor_allele.png", xlab = "Residual Minor Allele Frequency",
+            wrap_histogram(res, add_extension("residual_minor_allele", exts$png), 
+                           xlab = "Residual Minor Allele Frequency",
                            main = "Residual Minor Allele Frequency (r-MAF) (ref = 1)")
         }
 
@@ -1286,7 +1302,8 @@ sample_qc <- function(data_subset_path, perform) {
             xlab <- "Reference MAF"
             ylab <- "Observed MAF"
             plot_title <- "Reference vs Observed Minor Allele Frequencies"
-            wrap_plot(plot, out_cpy$MAF ~ out_cpy$V2, add_extension(min_allele_freq_basename, exts$png),
+            wrap_plot(plot, out_cpy$MAF ~ out_cpy$V2, 
+                      add_extension(min_allele_freq_basename, exts$png),
                       xlab = xlab, ylab = ylab, main = plot_title)
 
             logger("Removing alleles which deviate significantly from reference...")
@@ -1479,7 +1496,8 @@ gwas <- function(qc_data_path) {
         title_plot <- function(plot_type) {
             logger("DEBUG", "Titling plot for type: ", quotes(plot_type), ".")
 
-            plot_title <- paste0(title_case(plot_type), " plot for ", trait_name, pc ? paste0(" ", brackets("PC")) : "")
+            plot_title <- paste0(title_case(plot_type), " plot for ", trait_name, 
+                                 pc ? paste0(" ", brackets("PC")) : "")
             logger("DEBUG", "Plot title: ", quotes(plot_title), ".")
             return(plot_title)
         }
@@ -1499,7 +1517,8 @@ gwas <- function(qc_data_path) {
 
         logger("DEBUG", "Plotting ...")
         man_plot_name <- name_plot("manhattan")
-        logger("INFO", "Generating Manhattan Plot ", quotes(man_plot_name), " for trait ", quotes(trait_name), " ...")
+        logger("INFO", "Generating Manhattan Plot ", quotes(man_plot_name), " for trait ", 
+               quotes(trait_name), " ...")
         wrap_plot(manhattan, d, man_plot_name, main = title_plot("manhattan"))
 
         qq_plot_name <- name_plot("qq")
@@ -1544,7 +1563,8 @@ gwas <- function(qc_data_path) {
 
             for (covariate in covariate_basenames) {
                 covariate_path <- file.path(data_path, add_extension(covariate, exts$txt))
-                logger("DEBUG", "Reading covariate ", quotes(covariate), " from path ", quotes(covariate_path), ".")
+                logger("DEBUG", "Reading covariate ", quotes(covariate), " from path ", 
+                       quotes(covariate_path), ".")
                 covar <- wrap_read_table(covariate_path, header = FALSE)
                 colnames(covar) <- c(fam_ind_cols, covariate)
 
@@ -1557,7 +1577,8 @@ gwas <- function(qc_data_path) {
 
             log_df(combined_covariates, "Combined covariates")
            
-            combined_covar_path <- wrap_write_table(combined_covariates, combined_basename, col.names = TRUE)
+            combined_covar_path <- wrap_write_table(combined_covariates, combined_basename, 
+                                                    col.names = TRUE)
         }
 
         return(combined_covar_path)
@@ -1626,7 +1647,8 @@ gwas <- function(qc_data_path) {
             pc_combined_covars <- merge(existing_covars, eigenvecs, by = fam_ind_cols)
             log_df(pc_combined_covars, "Combined covariates (with principal components)")
 
-            pc_combined_covars_path <- wrap_write_table(pc_combined_covars, pc_combined_basename, col.names = TRUE)
+            pc_combined_covars_path <- wrap_write_table(pc_combined_covars, pc_combined_basename, 
+                                                        col.names = TRUE)
         }
 
         return(pc_combined_covars_path)
