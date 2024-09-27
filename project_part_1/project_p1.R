@@ -1311,7 +1311,7 @@ gwas <- function(qc_data_path) {
         plink(qc_data_path, plink_args, out_name)
     }
 
-    get_pheno_analysis_full_path <- function(pheno_basename, phenotype_suffix, pc) {
+    get_pheno_analysis_full_path <- function(pheno_basename, phenotype_suffix) {
         #' Adds the appropriate extensions to the phenotype analysis file basename
         #' based on the trait and if principal components is being used.
         #' @param pheno_basename {string}: Path to pheno analysis out without extensions.
@@ -1323,20 +1323,10 @@ gwas <- function(qc_data_path) {
         
         if (phenotype_suffix == "") {
             # Quantitative phenotype
-            if (pc) {
-                logger("TRACE", "Principal components enabled.")
-                ext_to_add <- paste0(exts$assoc, exts$linear)
-            } else {
-                logger("TRACE", "Principal components disabled.")
-                ext_to_add <- exts$assoc
-            }
+            ext_to_add <- paste0(exts$assoc, exts$linear)
         } else {
             # Binary phenotype
-            if (pc) {
-                ext_to_add <- paste0(exts$assoc, exts$logistic)
-            } else {
-                ext_to_add <- exts$assoc
-            }
+            ext_to_add <- paste0(exts$assoc, exts$logistic)
         }
     
         pheno_path <- add_extension(pheno_basename, ext_to_add)
@@ -1558,8 +1548,8 @@ gwas <- function(qc_data_path) {
     pc_eigvec_file <- compute_principal_comps(num_pc)
     covar_pc_file_path <- add_pc_eigvecs_to_covars(covar_file_path, pc_eigvec_file)
     
-    for (pca in list(FALSE, TRUE)) {
-        on <- pca == TRUE ? "enabled" : "disabled" 
+    for (pc in list(FALSE, TRUE)) {
+        on <- pc == TRUE ? "enabled" : "disabled" 
         logger("INFO", "Performing GWAS with Principal Components ", on, ".")
 
         # Perform analysis for each of the phenotypes
@@ -1568,23 +1558,22 @@ gwas <- function(qc_data_path) {
             pheno_path <- get_pheno_path(suffix)
             mpheno_args <- get_mpheno_args(suffix)
            
-            if (pca) {
+            if (pc) {
                 covar_file <- covar_pc_file_path
             } else {
                 covar_file <- covar_file_path
             }
 
-            pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args, covar_pc_file_path, pca)
+            pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args, covar_pc_file_path, pc)
+            pheno_full_path <- get_pheno_analysis_full_path(pheno_basename, suffix)
 
-            pheno_full_path <- get_pheno_analysis_full_path(pheno_basename, suffix, pca)
-
-            if (pca) {
+            if (pc) {
                 clump_path <- clumping(pheno_full_path)
-                read_clumps(clump_path, suffix, pca)
+                read_clumps(clump_path, suffix, pc)
             }
 
-            d <- gwas_plots(pheno_full_path, suffix, pca)
-            compute_lambda(d, suffix, pca)
+            d <- gwas_plots(pheno_full_path, suffix, pc)
+            compute_lambda(d, suffix, pc)
         }
     }
 }
