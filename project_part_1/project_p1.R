@@ -1555,6 +1555,8 @@ gwas <- function(qc_data_path) {
             } else {
                 logger("ERROR", "Expected more than 2 columns for eigenvector file.")
             }
+            log_df(eigenvecs, "Eigenvectors")
+            log_df(existing_covars, "Existing covars")
             
             pc_combined_covars <- merge(existing_covars, eigenvecs, by = fam_ind_cols)
             log_df(pc_combined_covars, "Combined covariates (with principal components)")
