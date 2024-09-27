@@ -464,12 +464,12 @@ match_not_log <- function(path) {
     #'                   lookahead to log files.
    
     # Check the path does not already contain an extension.
-    ext_pattern <- paste0("(", to_str(exts, collapse = "|"), ")$")
+    ext_pattern <- paste0("(", to_str(regex_escape(exts), collapse = "|"), ")$")
     logger("TRACE", "Extension pattern: ", quotes(ext_pattern), ".")
 
     ends_with_extension <- grepl(ext_pattern, path)
     if (ends_with_extension) {
-        logger("ERROR", "Unexpected! Path ends with extension ", quotes(ext), ".")
+        logger("ERROR", "Unexpected! Path ends with extension ", quotes(ext_pattern), ".")
         return(path)
     }
 
