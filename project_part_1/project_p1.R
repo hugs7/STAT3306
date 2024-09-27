@@ -95,16 +95,7 @@ quotes <- function(...) {
     #' @param ... {string}: String args to surround with quotes
     #' @return {string}: String surrounded with quotes
  
-    args <- list(...)
-    string_args <- sapply(args, function(arg) {
-        if (is.list(arg)) {
-            to_str(arg)
-        } else {
-            as.character(arg)
-        }
-    })
-
-    str <- paste0(string_args)
+    str <- args_to_string(...)
     paste0("'", str, "'")
 }
 
@@ -113,7 +104,7 @@ brackets <- function(...) {
     #' @param ... {string}: String args to surround with brackets.
     #' @return {string}: String surrounded with round brackets.
 
-    str <- paste0(...)
+    str <- args_to_string(...)
     paste0("(", str, ")")
 }
 
@@ -129,6 +120,24 @@ to_str <- function(x, collapse = ", ") {
     }
 
     paste(x, collapse = collapse)
+}
+
+args_to_string <- function(...) {
+    #' Converts any argument which is a list to a string
+    #' @param ... {string}: Arguments to convert.
+    #' @return {list{string}}: String arguments.
+
+    args <- list(...)
+    string_args <- sapply(args, function(arg) {
+        if (is.list(arg)) {
+            to_str(arg)
+        } else {
+            as.character(arg)
+        }
+    })
+
+    str <- paste0(string_args)
+    return(str)
 }
 
 named_flag <- function(fg_name) {
