@@ -967,7 +967,7 @@ quality_control <- function() {
         #'                         These files are expected to have at least two columns: FID and IID.
         #' @return {string}: File path to the combined output file with individuals to remove.
         
-        combined_basename <- "remove.combined.samples.txt"
+        combined_basename <- add_extension("remove.combined.samples", exts$txt)
         combined_file_out_path <- construct_out_path(combined_basename)
         if (file_exists(combined_file_out_path)) {
             logger("INFO", "Combined samples exists at: ", quotes(combined_file_out_path), ".")
