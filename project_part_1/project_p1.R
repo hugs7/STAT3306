@@ -1315,7 +1315,7 @@ sample_qc <- function(data_subset_path, perform) {
             # y: Observed, x: reference.
             wrap_plot(plot, out_accept$MAF ~ out_accept$V2, add_extension(min_allele_freq_basename,
                                                                           "_comparison", exts$png),
-                      xlab = xlab, ylab = ylab, main = paste(plot_title, "(Corrected for Ref = 1"))
+                      xlab = xlab, ylab = ylab, main = paste(plot_title, brackets("Corrected for Ref = 1")))
         }
 
         remove_snps_indx <- which(abs(res) > maf_threshold)
@@ -1524,7 +1524,7 @@ gwas <- function(qc_data_path) {
                quotes(trait_name), " ...")
         wrap_plot(manhattan, d, man_plot_name, main = title_plot("manhattan"))
 
-        qq_plot_name <- name_plot("qq")
+        qq_plot_name <- name_plot("QQ", FALSE)
         logger("INFO", "Generating QQ Plot ", quotes(qq_plot_name), " ...")
         wrap_plot(qq, d$P, qq_plot_name, main = title_plot("QQ"))
 
@@ -1730,6 +1730,8 @@ gwas <- function(qc_data_path) {
 
             d <- gwas_plots(pheno_full_path, suffix, pc)
             compute_lambda(d, suffix, pc)
+
+            gc()
         }
     }
 }
