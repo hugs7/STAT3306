@@ -1391,7 +1391,7 @@ gwas <- function(qc_data_path) {
         #' @param suffix {string}: Suffix of the filename corresponding to phenotype.
         #' @return trait_name {string}: Name of the trait.
         
-        if (length(suffix) == 0) {
+        if (suffix == "") {
             return("Quantitative trait")
         }
 
