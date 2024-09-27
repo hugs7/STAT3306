@@ -525,7 +525,8 @@ wrap_read_table <- function(path, header = TRUE, ...) {
     read.table(path, header = header, ...)
 }
 
-wrap_write_table <- function(data, basename, row.names = FALSE, col.names = FALSE, quotes = FALSE, ...) {
+wrap_write_table <- function(data, basename, row.names = FALSE, col.names = FALSE, 
+                             sep = "\t", quote = FALSE, ...) {
     #' Wrapper for writing a table to a file. Will overwrite file if it exists
     #' at the same path.
     #' @param data {data.frame}: The data to write
@@ -534,7 +535,9 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = FALS
     #'                           but if it doesn't this function will add it.
     #' @param row.names {boolean}: Whether to include row names. Disabled by default.
     #' @param col.names {boolean}: Whether to include col names. Disabled by default.
-    #' @param quotes {boolean}: Whether to include quotes. Disabled by default. 
+    #' @param sep {string}: The separator to delimit between columns in the table.
+    #' @param quote {boolean}: Whether to include quotes for strings in the table 
+    #'                         data. Disabled by default. 
     #' @return path {string}: The full save path where the table was saved.
 
     basename <- check_txt_ext(basename, exts$txt)
@@ -545,7 +548,8 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = FALS
     }
 
     logger("DEBUG", "Writing table at ", quotes(path), ".")
-    write.table(data, path, row.names = row.names, sep = "\t", ...)
+    write.table(data, path, row.names = row.names, col.names = col.names, 
+                sep = sep, quote = quote, ...)
     return(path)
 }
 
@@ -691,7 +695,7 @@ save_removed_indices <- function(table, ind_to_remove, out_cols, out_name) {
     logger("DEBUG", "Selected columns: ", quotes(to_str(out_cols)), ".")
 
     file <- table[ind_to_remove, out_cols]
-    ind_out_path <- wrap_write_table(file, out_name, col.names = FALSE, quote = FALSE)
+    ind_out_path <- wrap_write_table(file, out_name, col.names = FALSE)
     return(ind_out_path)
 }
 
@@ -1046,7 +1050,7 @@ quality_control <- function() {
         combined_ind <- unique(combined_ind)
 
         # Write will return the saved path
-        wrap_write_table(combined_ind, combined_basename, col.names = FALSE, quote = FALSE)
+        wrap_write_table(combined_ind, combined_basename, col.names = FALSE)
     }
 
     remove_bad_individuals <- function(remove_path) {
