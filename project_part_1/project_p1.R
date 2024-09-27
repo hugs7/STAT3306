@@ -1567,7 +1567,7 @@ gwas <- function(qc_data_path) {
         #' @return {string}: Path to clump out file from plink.
 
         logger("Clumping GWAS Results...")
-        out_name <- "gwas_pheno_1_clump"
+        out_name <- "gwas_pheno_clump"
         clump_p1_val <- 0.5
         clump_p2_val <- 0.5
         clump_r2_val <- 0.2
