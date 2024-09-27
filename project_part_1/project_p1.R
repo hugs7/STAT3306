@@ -938,11 +938,15 @@ exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe",
 
 # ====== Analysis ======
 
-quality_control <- function() {
+quality_control <- function(perform) {
     #' Performs stage 1 quality control on individuals in the genomic dataset.
+    #' @param perform {bool}: Whether to perform quality control or not. If disabled, will
+    #'                        attempt to return existing QC dataset.
     #' @return data_subset_related_path {string}: Path to quality controlled dataset.
-
-    logger("Performing Quality Control")
+    
+    if (perform) {
+        logger("Performing Individual Quality Control")
+    }
 
     find_individual_missing_genotypes <- function(histogram) {
         #' Finds individuals with excess missing genotypes to remove from the dataset
@@ -1004,7 +1008,7 @@ quality_control <- function() {
         related_name <- "related_samples"
         expected_related_path <- construct_plink_out_path(basename_with_extension(related_name))
         logger("DEBUG", "Checking for cached result at path ", quotes(expected_related_path), "...")
-        if (file_exists(expected_related_path)) {
+        if (file_exists(expected_related_path) || !perform) {
             logger("INFO", "Found cached related samples result")
             return(expected_related_path)
         }
@@ -1058,9 +1062,13 @@ quality_control <- function() {
         #' @param remove_path {string}: File path to file containing individuals to remove from the dataset.
         #' @return out_path {string}: File path to subset of original dataset with specified individuals removed.
 
-        logger("Removing bad samples...")
         out_name <- "test_indv_subset"
+        if (!perform) {
+            plink_path <- construct_plink_out_path(out_name)
+            return(plink_path)
+        }
 
+        logger("Removing bad samples...")
         plink_flags <- paste(pl_fgs$mb, pl_fgs$remove, remove_path)
         plink_orig_data(plink_flags, out_name)
     }
@@ -1071,17 +1079,28 @@ quality_control <- function() {
         #' @param data_subset_path {string}: Path to subset of data with some individuals already removed.
         #' @return out_path {string}: Path to a further subset of the data
 
-        logger("Retaining unrelated samples...")
-
-        plink_args <- paste(pl_fgs$keep, related_path, pl_fgs$mb)
+        
         out_name <- "test_indv_related"
+        if (!perform) {
+            plink_path <- construct_plink_out_path(out_name)
+            return(plink_path)
+        }
+
+        logger("Retaining unrelated samples...")
+        plink_args <- paste(pl_fgs$keep, related_path, pl_fgs$mb)
         plink(data_subset_path, plink_args, out_name)
     }
 
-    missing_ind_path <- find_individual_missing_genotypes(TRUE)
-    het_ind_path <- find_outlying_homozygosity(TRUE)
+    if (perform) {
+        missing_ind_path <- find_individual_missing_genotypes(TRUE)
+        het_ind_path <- find_outlying_homozygosity(TRUE)
 
-    combined_ind_path <- combine_remove_files(missing_ind_path, het_ind_path)
+        combined_ind_path <- combine_remove_files(missing_ind_path, het_ind_path)
+    } else {
+        # Unused - provide dummy path
+        combined_ind_path <- ""
+    }
+
     data_subset_path <- remove_bad_individuals(combined_ind_path)
 
     # Keep only individuals specified here
@@ -1095,12 +1114,18 @@ quality_control <- function() {
     }
 }
 
-sample_qc <- function(data_subset_path) {
+sample_qc <- function(data_subset_path, perform) {
     #' Performs quality control with respect to SNPs in the genomic dataset
     #' @param data_subset_path {string}: Path to subset of data from individual
     #'                                   quality control step.
+    #' @param perform {bool}: Whether to perform quality control or not. If disabled, will
+    #'                        attempt to return existing QC dataset. 
     #' @return qc_data_maf_path {string}: Path to subset of data from this step
     #'                                    of the quality control process.
+    
+    if (perform) {
+        logger("Performing SNP Quality Control")
+    }
 
     missing_snps <- function(histogram) {
         #' Computes missingness of the SNPs in the dataset.
@@ -1257,21 +1282,32 @@ sample_qc <- function(data_subset_path) {
         #' @param remove_out_path {string}: Path to file detailing which alleles to remove.
         #' @return qc_data_maf_path {string}: Path to new subset of data.
 
-        logger("Excluding insignificant alleles by MAF...")
-
         out_name <-"test_qc_insif_maf"
+        if (!perform) {
+            plink_path <- construct_plink_out_path(out_name)
+            return(plink_path)
+        }
+        
+        logger("Excluding insignificant alleles by MAF...")
         plink_args <- paste(pl_fgs$mb, pl_fgs$exclude, remove_out_path)
         plink(qc_data_path, plink_args, out_name)
     }
-    
-    lmiss <- missing_snps(TRUE)
-    hwe <- hw_eq(TRUE)
-    freq <- min_allele_freq(TRUE)
-    
-    remove_snps_path <- remove_snps(lmiss, hwe, freq)
-    qc_data_path <- exclude_snps(remove_snps_path)
+   
+    if (perform) {
+        lmiss <- missing_snps(TRUE)
+        hwe <- hw_eq(TRUE)
+        freq <- min_allele_freq(TRUE)
+        
+        remove_snps_path <- remove_snps(lmiss, hwe, freq)
+        qc_data_path <- exclude_snps(remove_snps_path)
 
-    remove_out_path <- compare_minor_allele_freqs(freq, TRUE, TRUE)
+        remove_out_path <- compare_minor_allele_freqs(freq, TRUE, TRUE)
+    } else {
+        # Provide dummy paths
+        qc_data_path <- "" 
+        remove_out_path <- ""
+    }
+
     qc_data_maf_path <- exclude_insig_maf(qc_data_path, remove_out_path)
     
     return(qc_data_maf_path)
@@ -1644,9 +1680,28 @@ gwas <- function(qc_data_path) {
     }
 }
 
-data_subset_path <- quality_control()
-qc_data_path <- sample_qc(data_subset_path)
-gwas(qc_data_path)
+args <- commandArgs(trailingOnly = TRUE)
+
+# Run all by default
+perform_qc <- TRUE
+perform_gwas <- TRUE
+
+if (length(args) > 0) {
+    if (!("qc" %in% args)) {
+        perform_qc <- FALSE
+    }
+
+    if (!("gwas" %in% args)) {
+        perform_gwas <- FALSE
+    }
+}
+
+data_subset_path <- quality_control(perform_qc)
+qc_data_path <- sample_qc(data_subset_path, perform_qc)
+
+if (perform_gwas) {
+    gwas(qc_data_path)
+}
 
 logger("DONE!")
 
