@@ -294,7 +294,7 @@ logger <- function(log_level = "INFO", ...) {
     logger_func_name <- deparse(sys.call()[[1]])
     parent_call <- get_calling_function(c(logger_func_name))
     timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    msg <- paste0("[", timestamp, "]", "  ", pad(7, log_level), pad(25, parent_call), args_to_string(...))
+    msg <- paste0("[", timestamp, "]", "  ", pad(7, log_level), pad(25, parent_call), ...)
     
     colour_func <- level_colours[[log_level]]
     if (is.null(colour_func)) {
