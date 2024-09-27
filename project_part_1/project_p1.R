@@ -1544,7 +1544,7 @@ gwas <- function(qc_data_path) {
         } else {
             logger("INFO", "Combining eigenvectors to existing covariates...")
 
-            existing_covars <- wrap_read_table(existing_covariates_file)
+            existing_covars <- wrap_read_table(existing_covariates_file, header = FALSE)
             eigenvecs <- wrap_read_table(pc_eigvec_file, header = FALSE)
 
             # Set colnames on eigenvector data.frame
