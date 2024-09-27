@@ -525,7 +525,7 @@ wrap_read_table <- function(path, header = TRUE, ...) {
     read.table(path, header = header, ...)
 }
 
-wrap_write_table <- function(data, basename, row.names = FALSE, col.names = FALSE, 
+wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE, 
                              sep = "\t", quote = FALSE, ...) {
     #' Wrapper for writing a table to a file. Will overwrite file if it exists
     #' at the same path.
@@ -534,7 +534,9 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = FALS
     #'                           the file at. Ideally should include extension
     #'                           but if it doesn't this function will add it.
     #' @param row.names {boolean}: Whether to include row names. Disabled by default.
-    #' @param col.names {boolean}: Whether to include col names. Disabled by default.
+    #' @param col.names {boolean}: Whether to include col names. Enabled by default but
+    #'                             if the data contains default columns, will not be 
+    #'                             written.
     #' @param sep {string}: The separator to delimit between columns in the table.
     #' @param quote {boolean}: Whether to include quotes for strings in the table 
     #'                         data. Disabled by default. 
@@ -542,9 +544,31 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = FALS
 
     basename <- check_txt_ext(basename, exts$txt)
     path <- construct_out_path(basename)
+
     if (file_exists(path)) {
         logger("WARN", "Overwriting file at path ", quotes(path), ".")
         delete_file(path)
+    }
+
+    if (!is.data.frame(data)) {
+        logger("ERROR", "Cannot write data. Type is not dataframe")
+        return(path)
+    }
+
+    log_df(data, "Writing data...")
+    num_cols <- ncol(data)
+    if (num_cols == 0) {
+        logger("ERROR", "No columns found in data. Failed to write table.")
+        return(path)
+    }
+
+    default_colnames <- paste0("V", seq_len(num_cols))
+    data_colnames <- colnames(data)
+    logger("DEBUG", "Data colnames: ", to_str(data_colnames), ".")
+    if (col.names == TRUE && all(data_colnames == default_colnames)) {
+        logger("INFO", "Data contains default column names (V1, V2, ...).",
+               "Supressing column names.")
+        col.names <- FALSE
     }
 
     logger("DEBUG", "Writing table at ", quotes(path), ".")
