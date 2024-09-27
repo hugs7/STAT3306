@@ -371,7 +371,7 @@ mkdir_if_not_exist <- function(path) {
 list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
     #' Wrapper for list.files to set full.names default to TRUE.
     #' @param dir_name {string}: The directory to search in.
-    #' @param pattern {string}: Optionally match files with a RegEx pattern.
+    #' @param pattern {string}: Optionally match filenames with a RegEx pattern.
     #' @param full.names {boolean}: If true, the directory path is prepended 
     #'                              to the file names
     #' @param ... {any}: Any extra arguemnts for list.files()
@@ -384,12 +384,18 @@ list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
     }
 
     matching_files <- list.files(path = dir_name, full.names = full.names, ...)
+
     if (!is.null(pattern)) {
-        filtered_files <- matching_files[!grepl(pattern, matching_files, perl = TRUE)]
+        logger("TRACE", "Filtering files...")
+        filtered_files <- matching_files[grepl(pattern, matching_files, perl = TRUE)]
         matching_files <- filtered_files
     }
 
     logger("DEBUG", "There are ", length(matching_files), " files matching")
+    for (file in matching_files) {
+        logger("TRACE", "   ", basename(file))
+    }
+
     return(matching_files)
 }
 
