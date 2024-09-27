@@ -1489,6 +1489,10 @@ gwas <- function(qc_data_path) {
         trait_name <- get_trait_name(plot_suffix)
         
         name_plot <- function(plot_type) {
+            #' Computes a plot's file name given its type.
+            #' @param plot_type {string}: The type of the plot.
+            #' @return file_name {string}: File name of plot.
+
             logger("DEBUG", "Naming plot type: ", quotes(plot_type), ".")
             file_name <- paste0("gwas_", plot_type, plot_suffix)
             file_name <- add_extension(file_name, exts$png)
