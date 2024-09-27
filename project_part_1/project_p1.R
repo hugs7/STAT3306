@@ -803,7 +803,7 @@ log_indvs_to_remove <- function(num_indvs) {
     if (num_indvs == 0) {
         logger("INFO", "No individuals to remove")
     } else {
-        logger("WARN", "There are ", num_indvs, " individuals to remove")
+        logger("INFO", "There are ", num_indvs, " individuals to remove")
     }
 }
 
