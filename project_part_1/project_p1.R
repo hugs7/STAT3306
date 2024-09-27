@@ -1299,7 +1299,7 @@ sample_qc <- function(data_subset_path, perform) {
         remove_snps_indx <- which(abs(res) > maf_threshold)
         to_remove_snps <- freq[remove_snps_indx, "SNP", drop = FALSE]
         remove_basename <- add_extension("maf.referenced.removed", exts$txt)
-        wrap_write_table(to_remove_snps, remove_basename)
+        wrap_write_table(to_remove_snps, remove_basename, col.names = FALSE)
     }
 
     exclude_insig_maf <- function(qc_data_path, remove_out_path) {
@@ -1554,7 +1554,7 @@ gwas <- function(qc_data_path) {
 
             log_df(combined_covariates, "Combined covariates")
            
-            combined_covar_path <- wrap_write_table(combined_covariates, combined_basename)
+            combined_covar_path <- wrap_write_table(combined_covariates, combined_basename, col.names = TRUE)
         }
 
         return(combined_covar_path)
@@ -1606,7 +1606,7 @@ gwas <- function(qc_data_path) {
         } else {
             logger("INFO", "Combining eigenvectors to existing covariates...")
 
-            existing_covars <- wrap_read_table(existing_covariates_file, header = FALSE)
+            existing_covars <- wrap_read_table(existing_covariates_file)
             eigenvecs <- wrap_read_table(pc_eigvec_file, header = FALSE)
 
             # Set colnames on eigenvector data.frame
@@ -1663,7 +1663,7 @@ gwas <- function(qc_data_path) {
         
         # Write to file
         out_basename <- add_extension(paste0("clumps", suffix, pc ? "_pc" : ""), exts$txt)
-        wrap_write_table(clump_out, out_basename)
+        wrap_write_table(clump_out, out_basename, col.names = TRUE)
     }
  
     # Main
