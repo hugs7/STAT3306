@@ -749,8 +749,9 @@ check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
     #' @param expected_ext {string}: The expected extension (with .).
     #' @param add_if_missing {boolean}: Adds the expected extension if 
     #'                                  not present. Defaults to true.
-    #' @return out_name {string}: The (possibly revised) file path 
-    #'                            or name.
+    #' @return out_name {string|NULL}: The (possibly revised) file path 
+    #'                                 or name. NULL if expected extension 
+    #'                                 is blank.
 
     if (length(expected_ext) == 0) {
         logger("ERROR", "Expected extension is blank")
