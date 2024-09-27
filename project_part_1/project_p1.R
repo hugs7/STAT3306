@@ -1267,7 +1267,7 @@ sample_qc <- function(data_subset_path, perform) {
         #'                                   outside threshold and are to be removed.
 
         logger("Comparing Minor Allele Frequencies...")
-        snp_ref_path <- file.path(data_path, add_extension("reference_allele_frequencies", exts$txt)
+        snp_ref_path <- file.path(data_path, add_extension("reference_allele_frequencies", exts$txt))
         ref <- wrap_read_table(snp_ref_path, header = FALSE)
         log_df(ref, "Reference allele requencies")
         
