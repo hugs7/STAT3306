@@ -387,7 +387,11 @@ list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
 
     if (!is.null(pattern)) {
         logger("TRACE", "Filtering files...")
-        filtered_files <- matching_files[grepl(pattern, matching_files, perl = TRUE)]
+        basenames <- basename(matching_files)
+        for (file in basenames) {
+            logger("TRACE", "    ", file)
+        }
+        filtered_files <- matching_files[grepl(pattern, basenames, perl = TRUE)]
         matching_files <- filtered_files
     }
 
