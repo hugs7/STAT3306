@@ -1414,9 +1414,13 @@ gwas <- function(qc_data_path) {
         d <- wrap_read_table(pheno_analysis_path)
         log_df(d, "D before na omit")
         
-        logger("INFO", "Removing n/a p-vals...")
+        logger("Removing n/a p-vals...")
         d <- d[!is.na(d$P), ]
-        log_df(d, "D after na omit")
+        log_df(d, "D after n/a p-val omit")
+
+        logger("Removing 0 p-vals...")
+        d <- d[d$P != 0, ]
+        log_df(d, "D after 0 p-val omit")
 
         logger("DEBUG", "Plotting ...")
         man_plot_name <- name_plot("manhattan")
