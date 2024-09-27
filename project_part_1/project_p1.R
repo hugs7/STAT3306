@@ -344,13 +344,28 @@ title_case <- function(str) {
 regex_escape <- function(string) {
     #' Escapes characters in a string so they can be 
     #' used in a regex string.
-    #' @param string {string}: The string to be escaped.
-    #' @return {string}: The same string but regex escaped.
-   
-    logger("TRACE", "Escaping string: ", quotes(string), ".")
+    #' @param string {string|list{string}}: The string or list of strings to be escaped.
+    #' @return {string|list{string}}: The same string but regex escaped.
+    
+    escape_string <- function(s) {
+        #' Escapes a single strings.
+        #' @param s {string}: Single string to escape.
+        #' @return {string}: Regex escaped string.
 
-    string <- gsub("([\\W])", "\\\\\\1", string, perl = TRUE)
-    logger("TRACE", "Escaped string: ", quotes(string), ".")
+        gsub("([\\W])", "\\\\\\1", s, perl = TRUE)
+    }
+
+    multiple <- is.list(string)
+    string_word <- paste0("string", multiple ? "s" : "")
+    logger("TRACE", "Escaping ", string_word, ": ", quotes(string), ".")
+
+    if (multiple) {
+        string <- lapply(string, escape_string)
+    } else {
+        string <- escape_string(string)
+    }
+
+    logger("TRACE", "Escaped ", string_word, ": ", quotes(string), ".")
     return(string)
 }
 
