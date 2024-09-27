@@ -718,7 +718,9 @@ save_removed_indices <- function(table, ind_to_remove, out_cols, out_name) {
     logger("INFO", "Saving removed indices to ", quotes(to_str(out_name)), ".")
     logger("DEBUG", "Selected columns: ", quotes(to_str(out_cols)), ".")
 
-    file <- table[ind_to_remove, out_cols]
+    log_df(table, "Pre removing indices")
+    file <- table[ind_to_remove, out_cols, drop = FALSE]
+    log_df(file, "Removed indices table")
     ind_out_path <- wrap_write_table(file, out_name, col.names = FALSE)
     return(ind_out_path)
 }
@@ -1295,7 +1297,7 @@ sample_qc <- function(data_subset_path, perform) {
         }
 
         remove_snps_indx <- which(abs(res) > maf_threshold)
-        to_remove_snps <- freq[remove_snps_indx, "SNP"]
+        to_remove_snps <- freq[remove_snps_indx, "SNP", drop = FALSE]
         remove_basename <- add_extension("maf.referenced.removed", exts$txt)
         wrap_write_table(to_remove_snps, remove_basename)
     }
