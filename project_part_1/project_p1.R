@@ -576,6 +576,8 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     logger("DEBUG", "Writing table at ", quotes(path), ".")
     write.table(data, path, row.names = row.names, col.names = col.names,
                 sep = sep, quote = quote, ...)
+    rm(data)
+    gc()
     return(path)
 }
 
@@ -657,6 +659,7 @@ plink <- function(bfile, plink_args, out_name = NULL) {
         logger("Plink results directed to ", quotes(plink_out_path), ".")
     }
 
+    gc()
     return(plink_out_path)
 }
 
@@ -1141,6 +1144,7 @@ quality_control <- function(perform) {
     }
 
     data_subset_path <- remove_bad_individuals(combined_ind_path)
+    gc()
 
     # Keep only individuals specified here
     if (find_related) {
@@ -1354,6 +1358,7 @@ sample_qc <- function(data_subset_path, perform) {
 
     qc_data_maf_path <- exclude_insig_maf(qc_data_path, remove_out_path)
     
+    gc()
     return(qc_data_maf_path)
 }
 
