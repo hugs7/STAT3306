@@ -1500,10 +1500,20 @@ gwas <- function(qc_data_path) {
             return(file_name)
         }
 
-        title_plot <- function(plot_type) {
+        title_plot <- function(plot_type, title_case = TRUE) {
+            #' Titles a plot given it's type.
+            #' @param plot_type {string}: The type of the plot.
+            #' @param title_case {bool}: Whether to use title case on the plot type.
+            #'                           Defaults to TRUE.
+            #' @return plot_title {string}: Title of the plot.
+ 
             logger("DEBUG", "Titling plot for type: ", quotes(plot_type), ".")
 
-            plot_title <- paste0(title_case(plot_type), " plot for ", trait_name,
+            if (title_case) {
+                plot_type <- title_case(plot_type)
+            }
+
+            plot_title <- paste0(plot_type, " plot for ", trait_name,
                                  pc ? paste0(" ", brackets("PC")) : "")
             logger("DEBUG", "Plot title: ", quotes(plot_title), ".")
             return(plot_title)
@@ -1528,9 +1538,9 @@ gwas <- function(qc_data_path) {
                quotes(trait_name), " ...")
         wrap_plot(manhattan, d, man_plot_name, main = title_plot("manhattan"))
 
-        qq_plot_name <- name_plot("QQ", FALSE)
+        qq_plot_name <- name_plot("qq")
         logger("INFO", "Generating QQ Plot ", quotes(qq_plot_name), " ...")
-        wrap_plot(qq, d$P, qq_plot_name, main = title_plot("QQ"))
+        wrap_plot(qq, d$P, qq_plot_name, main = title_plot("QQ", FALSE))
 
         return(d)
     }
