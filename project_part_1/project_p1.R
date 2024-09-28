@@ -597,7 +597,7 @@ wrap_write <- function(content, basename) {
     
     logger("DEBUG", "Writing data to ", quotes(path), " ...")
 
-    write(data, path)
+    write(content, path)
     logger("DEBUG", "Writing complete. Cleaning up...")
     rm(data)
     gc()
