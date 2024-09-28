@@ -522,6 +522,11 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
                 logger("DEBUG", "Formatting column ", i, " as scientific notation with ",
                        num_decimals, " decimal places.")
                 num_decimals <- num_decimals * -1
+
+                if (!is.numeric(data[[i]])) {
+                    logger("WARN", "Column ", i, " is not numeric.")
+                }
+
                 data[[i]] <- format(data[[i]], format = "e", digits = num_decimals)
             }
         }
