@@ -1996,7 +1996,7 @@ gwas <- function(qc_data_path) {
                 covar_file <- covar_file_path
             }
 
-            pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args, covar_pc_file_path, pc)
+            pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args, covar_file, pc)
             pheno_full_path <- get_pheno_analysis_full_path(pheno_basename, suffix)
 
             clump_path <- clumping(pheno_full_path, suffix, pc)
