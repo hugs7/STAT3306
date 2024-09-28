@@ -562,7 +562,6 @@ match_not_log <- function(path) {
     #'                   lookahead to log files.
    
     # Check the path does not already contain an extension.
-    
     ext_pattern <- get_ext_pattern(exts)
     if (ends_with_extension(ext_pattern, path)) {
         logger("ERROR", "Unexpected! Path ends with extension ",
@@ -1249,7 +1248,6 @@ quality_control <- function(perform) {
         #' @param data_subset_path {string}: Path to subset of data with some individuals
         #'                                   already removed.
         #' @return out_path {string}: Path to a further subset of the data
-
         
         out_name <- "test_indv_related"
         if (!perform) {
