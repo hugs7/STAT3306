@@ -528,6 +528,31 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     return(latex_path)
 }
 
+get_ext_pattern <- function(extensions) {
+    #' Generates a RegEx pattern to match any extension provided
+    #' from a list of extensions
+    #' @param extensions {list{str}}: List of extensions to match
+    #'                                to.
+    #' @return {string}: RegEx pattern matching provided extensions.
+
+    ext_pattern <- paste0("(", to_str(regex_escape(extensions),
+                          collapse = "|"), ")$")
+    logger("TRACE", "Extension pattern: ", quotes(ext_pattern), ".")
+    return(ext_pattern)
+}
+
+ends_with_extension <- function(ext_pattern, path) {
+    #' Checks if a path ends with an extension given in a pattern.
+    #' @param ext_pattern {string}: RegEx pattern to match path to.
+    #' @param path {string}: Path to check extension in.
+    #' @return {bool}: TRUE if the path contains extension in
+    #'                 pattern, FALSE otherwise.
+
+    ends_with_extension <- grepl(ext_pattern, path)
+    logger("TRACE", "Ends with extension: ", quotes(ext_pattern), " ",
+           ends_with_extension, ".")
+    return(ends_with_extension)
+}
 
 match_not_log <- function(path) {
     #' Given an extensionless file path, constructs
@@ -537,12 +562,11 @@ match_not_log <- function(path) {
     #'                   lookahead to log files.
    
     # Check the path does not already contain an extension.
-    ext_pattern <- paste0("(", to_str(regex_escape(exts), collapse = "|"), ")$")
-    logger("TRACE", "Extension pattern: ", quotes(ext_pattern), ".")
-
-    ends_with_extension <- grepl(ext_pattern, path)
-    if (ends_with_extension) {
-        logger("ERROR", "Unexpected! Path ends with extension ", quotes(ext_pattern), ".")
+    
+    ext_pattern <- get_ext_pattern(exts)
+    if (ends_with_extension(ext_pattern, path)) {
+        logger("ERROR", "Unexpected! Path ends with extension ",
+               quotes(ext_pattern), ".")
         return(path)
     }
 
