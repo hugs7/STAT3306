@@ -626,7 +626,7 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
                              sep = "\t", quote = FALSE, ...) {
     #' Wrapper for writing a table to a file. Will overwrite file if it exists
     #' at the same path.
-    #' @param data {data.frame}: The data to write
+    #' @param data {data.frame}: The data to write.
     #' @param basename {string}: The basename excluding the out dir to  write
     #'                           the file at. Ideally should include extension
     #'                           but if it doesn't this function will add it.
