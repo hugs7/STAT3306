@@ -583,7 +583,7 @@ wrap_write <- function(content, basename) {
     #' @param basename {string}: Name of the file to write to.
     #' @return path {string}: The full save path where the file was saved.
 
-    basename <- check_txt_ext(basename, exts$txt)
+    basename <- check_txt_ext(basename)
     path <- construct_out_path(basename)
 
     if (file_exists(path)) {
@@ -639,7 +639,7 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     #'                         data. Disabled by default.
     #' @return path {string}: The full save path where the table was saved.
 
-    basename <- check_txt_ext(basename, exts$txt)
+    basename <- check_txt_ext(basename)
     path <- construct_out_path(basename)
 
     if (file_exists(path)) {
