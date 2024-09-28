@@ -361,14 +361,14 @@ title_case <- function(str) {
 
 regex_escape <- function(string) {
     #' Escapes characters in a string so they can be
-    #' used in a regex string.
+    #' used in a RegEx string.
     #' @param string {string|list{string}}: The string or list of strings to be escaped.
-    #' @return {string|list{string}}: The same string but regex escaped.
+    #' @return {string|list{string}}: The same string but RegEx escaped.
     
     escape_string <- function(s) {
-        #' Escapes a single strings.
+        #' Escapes a single string.
         #' @param s {string}: Single string to escape.
-        #' @return {string}: Regex escaped string.
+        #' @return {string}: RegEx escaped string.
 
         gsub("([\\W])", "\\\\\\1", s, perl = TRUE)
     }
