@@ -16,7 +16,7 @@ install_if_missing <- function(packages) {
 
 # === Packages ===
 
-required_packages <- c("crayon", "qqman")
+required_packages <- c("crayon", "qqman", "xtable")
 install_if_missing(required_packages)
 invisible(lapply(required_packages, require, character.only = TRUE))
 
@@ -470,6 +470,42 @@ file_exists <- function(path, match_pattern = FALSE) {
     logger("DEBUG", "File ", exists ? "exists" : "does not exist", " at ", quotes(path), ".")
     return(exists)
 }
+
+latex_table <- function(data, out_name, table_align, caption = NULL, col.names = NULL,
+                        digits = 2, line_spacing_factor = 1, hide_row_names = FALSE) {
+    #' Generates a LaTeX table given a data.frame and saves to a file.
+    #' @param data {data.frame}: The data.frame to output as a LaTeX table.
+    #' @param out_name {string}: Filename to save the output as.
+    #' @param table_align {string}: Latex coding for aligning columns.
+    #' @param caption {string|NULL}: Optional caption for the table.
+    #' @param col.names {vec|NULL}: Optional column names to provide to the table.
+    #' @param digits {integer}: Number of decimal places to display numbers as.
+    #' @param line_spacing_factor {integer}: Line spacing factor for LaTeX table.
+    #' @param hide_row_names {bool}: Whether to include row names from the data.frame
+    #'                               as the first column in the table. Defaults to FALSE.
+    #' @return path {string}: Path to saved LaTeX table.
+    
+    table <- xtable(data, align = table_align, caption = caption, digits = digits)
+
+    if (!is.null(col.names)) {
+        colnames(table) <- col.names
+    }
+
+    latex <- print.xtable(table, print.results = FALSE, table.placement = "htb",
+                          comment = FALSE, include.rownames = !hide_row_names)
+
+    latex <- gsub("\\begin{tabular}", 
+                  paste0("\\renewcommand{\\arraystretch}{",
+                         line_spacing_factor, "}\n\\begin{tabular}"
+                        ),
+                  latex,
+                  fixed=TRUE)
+    
+    logger("DEBUG", "Writing latex table...")
+    latex_path <- wrap_write(latex, out_name)
+    return(latex_path)
+}
+
 
 match_not_log <- function(path) {
     #' Given an extensionless file path, constructs
