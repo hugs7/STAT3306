@@ -1931,15 +1931,16 @@ gwas <- function(qc_data_path) {
 
         num_cols <- ncol(clumps)
         logger("TRACE", "Num clump cols: ", num_cols)
-        latex_col_align <- paste0("l|", paste0(rep("r|", num_cols), collapse = ""))
+        latex_col_align <- paste0("|", paste0(rep("r|", num_cols), collapse = ""))
         logger("DEBUG", "Latex col align: ", latex_col_align)
         
         trait_name <- get_trait_name(suffix)
         caption <- paste0("Clumps for ", trait_name, pc ? " with pc" : "")
         col_names <- colnames(clumps)
         out_name <- add_extension(paste0("clumps", suffix, pc ? "_pc" : "", "_latex_table.tex"), exts$txt)
-        digits <- c(0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0)
-        latex_table(clumps, out_name, latex_col_align, caption, col_names,
+        digits <- c(0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0)
+        
+        digits <- c(0, digits)latex_table(clumps, out_name, latex_col_align, caption, col_names,
                     digits, line_spacing_factor = 1.0, hide_row_names = TRUE)
 
         return(NULL)
@@ -1954,7 +1955,7 @@ gwas <- function(qc_data_path) {
         logger("Saving lambdas data.frame...")
 
         log_df(lambdas, "Lambdas")
-        latex_col_align <- paste0("l|l|", paste(rep("l:l", 3), collapse = "|"), "|")
+        latex_col_align <- paste0("|l|", paste(rep("l:l", 3), collapse = "|"), "|")
         logger("DEBUG", "Latex col align: ", latex_col_align)
 
         caption <- "Genomic Inflation Values ($\\lambda$) obtained with different covariates"
