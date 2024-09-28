@@ -944,12 +944,15 @@ init <- function() {
     #' Performs initialisation for the script.
     #' @return {NULL}
 
-    logger("INFO", "Initialising directories...")
+    logger("Initialising...")
+    logger("Log level set at ", app_log_level, " (", app_log_index, ").")
+
+    logger("Initialising directories...")
     mkdir_if_not_exist(plots_out_dir)
     mkdir_if_not_exist(plink_out_dir)
     mkdir_if_not_exist(out_dir)
 
-    logger("INFO", "Initialisation complete!")
+    logger("Initialisation complete!")
 }
 
 init()
