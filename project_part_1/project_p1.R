@@ -1116,7 +1116,7 @@ quality_control <- function(perform) {
     }
 
     keep_related_samples <- function(related_path, data_subset_path) {
-        #' Keeps only related samples from the data subset who are listed in the related file
+        #' Keeps only related samples from the data subset who are listed in the related file.
         #' @param related_path {string}: Path to file containing list of individuals to keep.
         #' @param data_subset_path {string}: Path to subset of data with some individuals
         #'                                   already removed.
