@@ -1128,9 +1128,9 @@ quality_control <- function(perform) {
         #' Finds individuals with outlying homozygosity values to remove from the dataset
         #' @param plot {boolean}: If true, will plot a histogram of the frequency of hz
         #'                        freqs and a scatterplot of their distribution across
-        #"                        the geneome.
+        #'                        the geneome.
         #' @return het_ind_file_path {string}: The file path to the file containing
-        #"                                     the individuals to remove.
+        #'                                     the individuals to remove.
 
         logger("Checking for outlying homozygosity values...")
 
@@ -1202,7 +1202,7 @@ quality_control <- function(perform) {
         #'                         individuals to remove. These files are expected
         #'                         to have at least two columns: FID and IID.
         #' @return {string}: File path to the combined output file with individuals
-        #"                   to remove.
+        #'                   to remove.
         
         combined_basename <- add_extension("remove.combined.samples", exts$txt)
         combined_file_out_path <- construct_out_path(combined_basename)
