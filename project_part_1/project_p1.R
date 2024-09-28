@@ -479,13 +479,27 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #' @param table_align {string}: Latex coding for aligning columns.
     #' @param caption {string|NULL}: Optional caption for the table.
     #' @param col.names {vec|NULL}: Optional column names to provide to the table.
-    #' @param digits {integer}: Number of decimal places to display numbers as.
+    #' @param digits {integer|vector(integer)}: Number of decimal places to display 
+    #'                                          numbers as.
     #' @param line_spacing_factor {integer}: Line spacing factor for LaTeX table.
     #' @param hide_row_names {bool}: Whether to include row names from the data.frame
     #'                               as the first column in the table. Defaults to FALSE.
     #' @return path {string}: Path to saved LaTeX table.
+   
+    xtable_table_align <- gsub(":": "|", table_align)
+
+    table_align_num_cols <- nchar(gsub("\\|", "", xtable_table_align))
+    df_ncol <- ncol(df)
+    if (table_align_num_cols != df_ncol) {
+        logger("WARN", "Number of columns in table alignment ", brackets(table_align_num_cols), 
+               " does not match number of cols in df ", brackets(df_ncol), ".")
+    }
     
-    table <- xtable(data, align = table_align, caption = caption, digits = digits)
+    if (hide_row_names) {
+        table_align <- sub("A-Z|a-z", "", table_align)
+    }
+
+    table <- xtable(data, align = xtable_table_align, caption = caption, digits = digits)
 
     if (!is.null(col.names)) {
         colnames(table) <- col.names
@@ -500,6 +514,8 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
                         ),
                   latex,
                   fixed=TRUE)
+
+    latex <- gsub(xtable_table_align, table_align, latex)
     
     logger("DEBUG", "Writing latex table...")
     latex_path <- wrap_write(latex, out_name)
@@ -1837,7 +1853,7 @@ gwas <- function(qc_data_path) {
         logger("Saving lambdas data.frame...")
 
         log_df(lambdas, "Lambdas")
-        latex_col_align <- paste0("|l|", paste(rep("l:l", 3), collapse = "|"), "|")
+        latex_col_align <- paste0("l|l|", paste(rep("l:l", 3), collapse = "|"), "|")
         logger("DEBUG", "Latex col align: ", latex_col_align)
 
         caption <- "Genomic Inflation Values ($\\lambda$) obtained with different covariates"
