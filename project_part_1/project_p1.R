@@ -1525,6 +1525,10 @@ gwas <- function(qc_data_path) {
                         "Principal components = ", pc, "...")
         d <- wrap_read_table(pheno_analysis_path)
         log_df(d, "D before na omit")
+
+        logger("Retaining ADD tests only...")
+        d <- d[which(d$TEST == "ADD"), ]
+        log_df(d, "D after retaining ADD tests.")
         
         logger("Removing n/a p-vals...")
         d <- d[!is.na(d$P), ]
