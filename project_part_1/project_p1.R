@@ -1882,10 +1882,9 @@ gwas <- function(qc_data_path) {
             if (is.null(col_name)) {
                 logger("ERROR", "Col name not found from trait: ", quotes(trait_name), ".")
             }
-            delta_col_name <- delta_col_name(col_name)
-
+            
             lambda_row[1, col_name] <- lambda
-            lambda_row[1, delta_col_name] <- lambda_delta
+            lambda_row[1, delta_col_name(col_name)] <- lambda_delta
 
             gc()
         }
