@@ -1924,7 +1924,7 @@ gwas <- function(qc_data_path) {
 
         num_cols <- ncol(clumps)
         logger("TRACE", "Num clump cols: ", num_cols)
-        latex_col_align <- paste0("l", paste0(rep("r|", num_cols), collapse = ""))
+        latex_col_align <- paste0("l|", paste0(rep("r|", num_cols), collapse = ""))
         logger("DEBUG", "Latex col align: ", latex_col_align)
         
         trait_name <- get_trait_name(suffix)
