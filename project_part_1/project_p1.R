@@ -494,7 +494,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     latex <- print.xtable(table, print.results = FALSE, table.placement = "htb",
                           comment = FALSE, include.rownames = !hide_row_names)
 
-    latex <- gsub("\\begin{tabular}", 
+    latex <- gsub("\\begin{tabular}",
                   paste0("\\renewcommand{\\arraystretch}{",
                          line_spacing_factor, "}\n\\begin{tabular}"
                         ),
@@ -1755,6 +1755,23 @@ gwas <- function(qc_data_path) {
         return(pc_combined_covars_path)
     }
 
+    init_lambdas_df <- function() {
+        #' Initialises a data.frame to store lambda values in.
+        #' @return {data.frame}: Data.frame to store lambda values in.
+        
+        lambdas <- data.frame(
+            Covariate_Used = character(),
+            Fasting_Glucose = numeric(),
+            FG_Delta = numeric(),
+            Binary_1 = numeric(),
+            Binary_1_Delta = numeric(),
+            Binary_2 = numeric(),
+            Binary_2_Delta = numeric(),
+            stringAsFactors = FALSE
+        )
+        return(lambdas)
+    }
+
     clumping <- function(pheno_pc_path) {
         #' Performs clumping to identify most significant SNP in each LD block.
         #' @param pheno_pc_path {string}: Path to phenotype file for the specified trait.
@@ -1801,10 +1818,22 @@ gwas <- function(qc_data_path) {
     # Compute principal components once
     pc_eigvec_file <- compute_principal_comps(num_pc)
     covar_pc_file_path <- add_pc_eigvecs_to_covars(covar_file_path, pc_eigvec_file)
-    
-    for (pc in list(FALSE, TRUE)) {
+
+    lambdas <- init_lambdas_df()
+    lambda_df_col_map <- list(
+        "Fasting glucose", "Fasting_Glucose"
+    )
+    covariate_combs <- list(
+        "Age, Gender" = FALSE,
+        "Age, Gender + 10 PCs" = TRUE
+    )
+   
+    for (covariates in names(covariate_combs)) {
+        pc <- covariate_combs[[covariates]]
         on <- pc == TRUE ? "enabled" : "disabled"
         logger("INFO", "Performing GWAS with Principal Components ", on, ".")
+
+        lambda_row <- data.frame(Covariates_Used = covariates)
 
         # Perform analysis for each of the phenotypes
         for (suffix in phenotype_suffixes) {
@@ -1827,11 +1856,34 @@ gwas <- function(qc_data_path) {
             }
 
             d <- gwas_plots(pheno_full_path, pc, suffix)
-            compute_lambda(d, suffix, pc)
+            lambda <- compute_lambda(d, suffix, pc)
+            lambda_delta <- lambda - 1.0
+            
+            trait_name <- get_trait_name(suffix)
+            col_name <- lambda_df_col_map[[trait_name]]
+            if (is.null(col_name)) {
+                logger("ERROR", "Col name not found from trait: ", quotes(trait_name), ".")
+            }
+
+            row[[col_name]] <- lambda
+            row[[col_name]] <- lambda_delta
 
             gc()
         }
+
+        lambdas <- rbind(lambdas, row)
     }
+
+    latex_col_align <- paste0("|l|", paste(rep("l:l", collapse = "|")), "|")
+    caption <- "Genomic Inflation Values ($\\lambda$) obtained with different covariates"
+    col_names <- c("Covariates Used", sapply(phenotype_suffixes, function(suffix) {
+        trait_name <- get_trait_name(suffix)
+        c(trait_name, paste0(trait_name, " \\Delta")))
+    }
+
+    out_name <- add_extension("lambdas.tex", exts$txt)
+    latex_table(lambdas, out_name, latex_col_align, caption, col_names,
+                digits = 3, line_spacing_factor = 1.0, hide_row_names = TRUE)
 }
 
 args <- commandArgs(trailingOnly = TRUE)
