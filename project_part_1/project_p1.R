@@ -630,7 +630,6 @@ wrap_write <- function(content, basename) {
     return(path)
 }
 
-
 wrap_read_table <- function(path, header = TRUE, ...) {
     #' Wrapper for reading a table from a file.
     #' @param path {string}: The path of the file to read the table from.
