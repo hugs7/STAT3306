@@ -1849,28 +1849,34 @@ gwas <- function(qc_data_path) {
         wrap_write_table(clump_out, out_basename, col.names = TRUE)
     }
 
-    save_clumps_df <- function(clumps, suffix, pc, nrows) {
+    save_clumps_df <- function(clumps_path, suffix, pc, nrows) {
         #' Saves the clump data to a LaTeX table.
-        #' @param clumps {data.frame}: Contains clumping data.
+        #' @param clump_path {string}: Path to clumps file.
         #' @param suffix {string}: Suffix mapping to trait,
         #' @param pc {boolean}: Whether principal components is being used.
         #' @param nrows {integer}: The number of rows from the head of the df
         #'                         to save.
         #' @return {NULL}
 
-        logger("Saving clumps data.frame to LaTeX table...")
+        logger("Saving clumps data.frame to LaTeX table phen: ", quotes(suffix), " ",
+               pc ? " with PC": "", "...")
         
+        clumps <- wrap_read_table(clumps_path)
+
+        logger("DEBUG", "Taking top ", nrows, "rows from clumps dataframe")
         clumps <- head(clumps, nrows)
 
-        latex_col_align <- paste0("l", paste0(rep("r|", ncol(clumps))))
+        num_cols <- ncol(clumps)
+        logger("TRACE", "Num clump cols: ", num_cols)
+        latex_col_align <- paste0("l", paste0(rep("r|", num_cols), collapse = ""))
         logger("DEBUG", "Latex col align: ", latex_col_align)
         
         trait_name <- get_trait_name(suffix)
         caption <- paste0("Clumps for ", trait_name, pc ? " with pc" : "")
         col_names <- colnames(clumps)
         out_name <- add_extension(paste0("clumps", suffix, pc ? "_pc" : "", "_latex_table.tex"), exts$txt)
-        latex_table(lambdas, out_name, latex_col_align, caption, col_names,
-                    digits = 3, line_spacing_factor = 1.0, hide_row_names = TRUE)
+        latex_table(clumps, out_name, latex_col_align, caption, col_names,
+                    digits = 0, line_spacing_factor = 1.0, hide_row_names = TRUE)
 
         return(NULL)
     }
