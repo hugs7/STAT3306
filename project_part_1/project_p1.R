@@ -487,16 +487,14 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #' @return path {string}: Path to saved LaTeX table.
    
     log_df(data, paste("Latex table", out_name))
-
-    xtable_table_align <- gsub(":", "|", table_align)
-
-    table_align_num_cols <- nchar(gsub("\\|", "", xtable_table_align))
-    logger("DEBUG", "Table align num cols: ", table_align_num_cols)
-    df_ncol <- ncol(data)
-    logger("DEBUG", "DF num cols: ", df_ncol)
     
-    if (table_align_num_cols != df_ncol + 1) {
-        logger("WARN", "Number of columns in table alignment ", brackets(table_align_num_cols), 
+    xtable_table_align <- gsub(":", "|", table_align)
+    align_num_cols <- nchar(gsub("\\|", "", xtable_table_align))
+    logger("DEBUG", "Table align num cols: ", align_num_cols)
+    df_ncol <- ncol(data)
+   
+    if (align_num_cols != df_ncol) {
+        logger("WARN", "Number of columns in table alignment ", brackets(align_num_cols), 
                " does not match number of cols in df ", brackets(df_ncol), ".")
     }
     
