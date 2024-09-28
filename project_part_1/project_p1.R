@@ -24,7 +24,7 @@ invisible(lapply(required_packages, require, character.only = TRUE))
 
 default_log_level <- "INFO"
 allowed_log_levels <- c("TRACE", "DEBUG", "INFO", "WARN", "ERROR")
-app_log_level <- "TRACE"
+app_log_level <- "DEBUG"
 level_colours <- list(
     TRACE = crayon::silver,
     DEBUG = crayon::magenta,
