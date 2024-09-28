@@ -1871,7 +1871,8 @@ gwas <- function(qc_data_path) {
         #' @param pc {boolean}: Whether principal components is being used.
         #' @return {string}: Path to clump out file from plink.
 
-        logger("Clumping GWAS Results...")
+        logger("Clumping GWAS Results - phen: ", quotes(suffix), " ",
+               pc ? " with PC": "", "...")
 
         out_name <- paste0("gwas_pheno_clumps", suffix, pc ? "_pc" : "")
         clump_p1_val <- 0.5
