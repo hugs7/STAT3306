@@ -502,6 +502,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     
     if (hide_row_names) {
         table_align <- sub("A-Z|a-z", "", table_align)
+        logger("TRACE", "Table align with first col hidden: ", quotes(table_align), ".")
     }
 
     table <- xtable(data, align = xtable_table_align, caption = caption, digits = digits)
