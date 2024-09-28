@@ -1931,8 +1931,9 @@ gwas <- function(qc_data_path) {
         caption <- paste0("Clumps for ", trait_name, pc ? " with pc" : "")
         col_names <- colnames(clumps)
         out_name <- add_extension(paste0("clumps", suffix, pc ? "_pc" : "", "_latex_table.tex"), exts$txt)
+        digits <- c(0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0)
         latex_table(clumps, out_name, latex_col_align, caption, col_names,
-                    digits = 0, line_spacing_factor = 1.0, hide_row_names = TRUE)
+                    digits, line_spacing_factor = 1.0, hide_row_names = TRUE)
 
         return(NULL)
     }
@@ -2026,6 +2027,7 @@ gwas <- function(qc_data_path) {
     }
 
     save_lambdas_df(lambdas)
+    invisible(NULL)
 }
 
 args <- commandArgs(trailingOnly = TRUE)
