@@ -564,7 +564,7 @@ wrap_write <- function(content, basename) {
     basename <- check_txt_ext(basename, exts$txt)
     path <- construct_out_path(basename)
 
-    if (file_exsits(path)) {
+    if (file_exits(path)) {
         logger("WARN", "Overwriting file at path ", quotes(path), ".")
         delete_file(path)
     }
