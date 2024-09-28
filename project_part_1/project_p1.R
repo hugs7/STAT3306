@@ -1837,7 +1837,7 @@ gwas <- function(qc_data_path) {
         logger("Saving lambdas data.frame...")
 
         log_df(lambdas, "Lambdas")
-        latex_col_align <- paste0("|l|", paste(rep("l:l", collapse = "|")), "|")
+        latex_col_align <- paste0("|l|", paste(rep("l:l", 3), collapse = "|"), "|")
         logger("DEBUG", "Latex col align: ", latex_col_align)
 
         caption <- "Genomic Inflation Values ($\\lambda$) obtained with different covariates"
