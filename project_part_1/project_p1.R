@@ -346,7 +346,7 @@ title_case <- function(str) {
     #' @return result {string}: The string in titlecase form.
 
     if (length(str) == 0) {
-        logger("DEBUG", "String is empty")
+        logger("WARN", "String is empty")
         return(str)
     }
 
@@ -355,7 +355,7 @@ title_case <- function(str) {
     titlecased_words <- paste0(toupper(substring(words, 1, 1)), tolower(substring(words, 2)))
     result <- to_str(paste(titlecased_words), " ")
     
-    logger("DEBUG", "Title case version: ", quotes(result), ".")
+    logger("TRACE", "Title case version: ", quotes(result), ".")
     return(result)
 }
 
@@ -1553,6 +1553,17 @@ gwas <- function(qc_data_path) {
         # No covariates. Compute:
         logger("INFO", "Using covariate file: ", quotes(covar_file_path), ".")
         covar_args <- paste(pl_fgs$covar, covar_file_path)
+
+        if (suffix == "_binary2") {
+            # Remove N/A values.
+            logger("Removing N/A Values from binary 2 pheontype data: ", quotes(pheno_path), ".")
+            bin2_pheno <- wrap_read_table(pheno_path, header = FALSE)
+            
+            log_df(bin2_pheno, "Pre N/A removal from binary 2 phenotype data")
+            bin2_pheno <- bin2_pheno[!is.na(bin2_pheno[[2]]), ]
+            log_df(bin2_pheno, "Post N/A removal from binary 2 phenotype data")
+        }
+
         regression_args <- pheno_suffix == "" ? pl_fgs$linear : pl_fgs$logistic
         plink_args <- paste(regression_args, pl_fgs$pheno, pheno_path, mpheno_args, covar_args)
         plink(qc_data_path, plink_args, out_name)
@@ -1821,6 +1832,7 @@ gwas <- function(qc_data_path) {
         #' @return {string}: Path to clump out file from plink.
 
         logger("Clumping GWAS Results...")
+
         out_name <- paste0("gwas_pheno_clumps", suffix, pc ? "_pc" : "")
         clump_p1_val <- 0.5
         clump_p2_val <- 0.5
