@@ -116,7 +116,7 @@ to_str <- function(x, collapse = ", ") {
     #'                           or vector. Defaults to ', '.
     #' @return {string}: String representation of list.
     
-    if (is.list(x)) {
+    if (is.list(x) || is.vector(x)) {
         x <- unlist(x)
     }
 
@@ -130,7 +130,7 @@ args_to_string <- function(...) {
 
     args <- list(...)
     string_args <- sapply(args, function(arg) {
-        if (is.list(arg)) {
+        if (is.list(arg) || is.vector(arg)) {
             to_str(arg)
         } else {
             as.character(arg)
@@ -353,8 +353,8 @@ title_case <- function(str) {
     logger("TRACE", "Converting ", quotes(str), " to title case...")
     words <- strsplit(str, " ")[[1]]
     titlecased_words <- paste0(toupper(substring(words, 1, 1)), tolower(substring(words, 2)))
-    result <- paste(titlecased_words)
-
+    result <- to_str(paste(titlecased_words), " ")
+    
     logger("DEBUG", "Title case version: ", quotes(result), ".")
     return(result)
 }
