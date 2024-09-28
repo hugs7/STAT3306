@@ -1562,7 +1562,7 @@ gwas <- function(qc_data_path) {
     gwas_pheno <- function(pheno_path, pheno_suffix, mpheno_args, covar_file_path, pc) {
         #' Performs association analysis based on the phenotype
         #' defined in the specified file.
-        #' @param pheno_path {string}: Path to pheno file for specified trait.
+        #' @param pheno_path {string}: Path to pheno file for specified trait (no extension).
         #' @param pheno_suffix {string}: Suffix of phenotype.
         #' @param mpheno_args {string}: Flags relating to mpheno in plink.
         #' @param covar_file_path {string}: File path to combined covariates.
@@ -1585,13 +1585,13 @@ gwas <- function(qc_data_path) {
 
         if (suffix == "_binary2") {
             # Remove N/A values.
-            out_name <- add_extension("bin2_pheno_na_removed", exts$phen)
-            expected_out_path <- construct_out_path(out_name)
+            out_stem <- "bin2_pheno_na_removed"
+            out_basename <- add_extension(out_stem, exts$phen)
+            expected_out_path <- construct_out_path(out_basename)
 
             if (file_exists(expected_out_path)) {
                 logger("Binary 2 data with n/a removed already exists at: ",
                        quotes(expected_out_path), ".")
-                pheno_path <- expected_out_path
             } else {
                 logger("Removing N/A Values from binary 2 pheontype data: ", quotes(pheno_path), ".")
                 bin2_pheno <- wrap_read_table(pheno_path, header = FALSE)
@@ -1600,9 +1600,11 @@ gwas <- function(qc_data_path) {
                 bin2_pheno <- bin2_pheno[!is.na(bin2_pheno[[2]]), ]
                 log_df(bin2_pheno, "Post N/A removal from binary 2 phenotype data")
 
-                # Overwrite path with new data.
-                pheno_path <- wrap_write_table(bin2_pheno, out_name)
+                wrap_write_table(bin2_pheno, out_basename)
             }
+
+            # Overwrite path with new data.
+            pheno_path <- construct_plink_out_path(out_stem)
         }
 
         regression_args <- pheno_suffix == "" ? pl_fgs$linear : pl_fgs$logistic
