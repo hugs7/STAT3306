@@ -664,6 +664,7 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     #' @return path {string}: The full save path where the table was saved.
 
     ext_pattern <- get_ext_pattern(list(exts$txt, exts$phen))
+    logger("DEBUG", "Initial basename: ", quotes(basename), ".")
     if (!ends_with_extension(ext_pattern, basename)) {
         basename <- check_txt_ext(basename)
     }
@@ -1600,7 +1601,7 @@ gwas <- function(qc_data_path) {
                 log_df(bin2_pheno, "Post N/A removal from binary 2 phenotype data")
 
                 # Overwrite path with new data.
-                pheno_path <- wrap_write_table(out_name)
+                pheno_path <- wrap_write_table(bin2_pheno, out_name)
             }
         }
 
