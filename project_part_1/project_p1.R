@@ -497,6 +497,10 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
         logger("WARN", "Number of columns in table alignment ", brackets(align_num_cols), 
                " does not match number of cols in df ", brackets(df_ncol), ".")
     }
+   
+    # Add leading dummy align character for index column.
+    xtable_table_align <- paste0("l", xtable_table_align)
+    logger("DEBUG", "DF num cols: ", df_ncol)
     
     if (hide_row_names) {
         table_align <- sub("A-Z|a-z", "", table_align)
