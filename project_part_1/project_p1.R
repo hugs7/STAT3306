@@ -652,8 +652,8 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     #' at the same path.
     #' @param data {data.frame}: The data to write.
     #' @param basename {string}: The basename excluding the out dir to  write
-    #'                           the file at. Ideally should include extension
-    #'                           but if it doesn't this function will add it.
+    #'                           the file at. Ideally should include extension but if
+    #'                           it doesn't this function will add .txt by default.
     #' @param row.names {boolean}: Whether to include row names. Disabled by default.
     #' @param col.names {boolean}: Whether to include col names. Enabled by default but
     #'                             if the data contains default columns, will not be
@@ -663,7 +663,11 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     #'                         data. Disabled by default.
     #' @return path {string}: The full save path where the table was saved.
 
-    basename <- check_txt_ext(basename)
+    ext_pattern <- get_ext_pattern(list(exts$txt, exts$phen))
+    if (!ends_with_extension(ext_pattern, basename)) {
+        basename <- check_txt_ext(basename)
+    }
+
     path <- construct_out_path(basename)
 
     if (file_exists(path)) {
