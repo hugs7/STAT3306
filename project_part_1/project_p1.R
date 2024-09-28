@@ -1584,12 +1584,24 @@ gwas <- function(qc_data_path) {
 
         if (suffix == "_binary2") {
             # Remove N/A values.
-            logger("Removing N/A Values from binary 2 pheontype data: ", quotes(pheno_path), ".")
-            bin2_pheno <- wrap_read_table(pheno_path, header = FALSE)
-            
-            log_df(bin2_pheno, "Pre N/A removal from binary 2 phenotype data")
-            bin2_pheno <- bin2_pheno[!is.na(bin2_pheno[[2]]), ]
-            log_df(bin2_pheno, "Post N/A removal from binary 2 phenotype data")
+            out_name <- add_extension("bin2_pheno_na_removed", exts$phen)
+            expected_out_path <- construct_out_path(out_name)
+
+            if (file_exists(expected_out_path)) {
+                logger("Binary 2 data with n/a removed already exists at: ",
+                       quotes(expected_out_path), ".")
+                pheno_path <- expected_out_path
+            } else {
+                logger("Removing N/A Values from binary 2 pheontype data: ", quotes(pheno_path), ".")
+                bin2_pheno <- wrap_read_table(pheno_path, header = FALSE)
+                
+                log_df(bin2_pheno, "Pre N/A removal from binary 2 phenotype data")
+                bin2_pheno <- bin2_pheno[!is.na(bin2_pheno[[2]]), ]
+                log_df(bin2_pheno, "Post N/A removal from binary 2 phenotype data")
+
+                # Overwrite path with new data.
+                pheno_path <- wrap_write_table(out_name)
+            }
         }
 
         regression_args <- pheno_suffix == "" ? pl_fgs$linear : pl_fgs$logistic
