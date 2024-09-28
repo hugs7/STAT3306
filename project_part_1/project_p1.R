@@ -1937,10 +1937,11 @@ gwas <- function(qc_data_path) {
         trait_name <- get_trait_name(suffix)
         caption <- paste0("Clumps for ", trait_name, pc ? " with pc" : "")
         col_names <- colnames(clumps)
-        out_name <- add_extension(paste0("clumps", suffix, pc ? "_pc" : "", "_latex_table.tex"), exts$txt)
-        digits <- c(0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0)
-        
-        digits <- c(0, digits)latex_table(clumps, out_name, latex_col_align, caption, col_names,
+        out_name <- add_extension(paste0("clumps", suffix, pc ? "_pc" : "",
+                                         "_latex_table.tex"),
+                                  exts$txt)
+        digits <- c(0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0)
+        latex_table(clumps, out_name, latex_col_align, caption, col_names,
                     digits, line_spacing_factor = 1.0, hide_row_names = TRUE)
 
         return(NULL)
