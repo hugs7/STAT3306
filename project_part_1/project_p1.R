@@ -1827,6 +1827,31 @@ gwas <- function(qc_data_path) {
         out_basename <- add_extension(paste0("clumps", suffix, pc ? "_pc" : ""), exts$txt)
         wrap_write_table(clump_out, out_basename, col.names = TRUE)
     }
+
+    save_lambdas_df <- function(lambdas) {
+        #' Saves the lambdas data.frame to a latex table.
+        #' @param lambdas {data.frame}: Contains the lambda values for each phenotype 
+        #'                              with PC off and on.
+        #' @return {NULL}
+        
+        logger("Saving lambdas data.frame...")
+
+        log_df(lambdas, "Lambdas")
+        latex_col_align <- paste0("|l|", paste(rep("l:l", collapse = "|")), "|")
+        logger("DEBUG", "Latex col align: ", latex_col_align)
+
+        caption <- "Genomic Inflation Values ($\\lambda$) obtained with different covariates"
+        col_names <- c("Covariates Used", sapply(phenotype_suffixes, function(suffix) {
+            trait_name <- get_trait_name(suffix)
+            c(trait_name, paste0(trait_name, " \\Delta"))
+        }))
+
+        out_name <- add_extension("lambdas.tex", exts$txt)
+        latex_table(lambdas, out_name, latex_col_align, caption, col_names,
+                    digits = 3, line_spacing_factor = 1.0, hide_row_names = TRUE)
+
+        return(NULL)
+    }
  
     # Main
     phenotype_suffixes <- list("", "_binary1", "_binary2")
@@ -1892,16 +1917,7 @@ gwas <- function(qc_data_path) {
         lambdas <- rbind(lambdas, lambda_row)
     }
 
-    latex_col_align <- paste0("|l|", paste(rep("l:l", collapse = "|")), "|")
-    caption <- "Genomic Inflation Values ($\\lambda$) obtained with different covariates"
-    col_names <- c("Covariates Used", sapply(phenotype_suffixes, function(suffix) {
-        trait_name <- get_trait_name(suffix)
-        c(trait_name, paste0(trait_name, " \\Delta"))
-    }))
-
-    out_name <- add_extension("lambdas.tex", exts$txt)
-    latex_table(lambdas, out_name, latex_col_align, caption, col_names,
-                digits = 3, line_spacing_factor = 1.0, hide_row_names = TRUE)
+    save_lambdas_df(lambdas)
 }
 
 args <- commandArgs(trailingOnly = TRUE)
