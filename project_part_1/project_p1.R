@@ -1472,12 +1472,12 @@ gwas <- function(qc_data_path) {
     }
 
     get_trait_name <- function(suffix) {
-        #' Maps suffix to trait name. E.g. "_binary1" -> "Binary 1"
+        #' Maps suffix to phenotype / trait name. E.g. "_binary1" -> "Binary 1".
         #' @param suffix {string}: Suffix of the filename corresponding to phenotype.
         #' @return trait_name {string}: Name of the trait.
         
         if (suffix == "") {
-            return("Quantitative trait")
+            return(phenotype)
         }
 
         logger("DEBUG", "Mapping suffix: ", quotes(suffix), " to trait name...")
