@@ -402,7 +402,7 @@ mkdir_if_not_exist <- function(path) {
     #' @return {NULL}
 
     if (!dir.exists(path)) {
-        logger("INFO", "Path ", quotes(path), " does not exist. Creating...")
+        logger("Path ", quotes(path), " does not exist. Creating...")
         dir.create(path, recursive = TRUE)
         logger("DEBUG", "Path ", quotes(path), " created.")
     } else {
@@ -575,7 +575,7 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     data_colnames <- colnames(data)
     logger("DEBUG", "Data colnames: ", to_str(data_colnames), ".")
     if (col.names == TRUE && all(data_colnames == default_colnames)) {
-        logger("INFO", "Data contains default column names (V1, V2, ...).",
+        logger("Data contains default column names (V1, V2, ...).",
                "Supressing column names.")
         col.names <- FALSE
     }
@@ -727,7 +727,7 @@ save_removed_indices <- function(table, ind_to_remove, out_cols, out_name) {
     #' @param out_name {string}: File name to save to.
     #' @return ind_out_path {string}: Path to saved file.
     
-    logger("INFO", "Saving removed indices to ", quotes(to_str(out_name)), ".")
+    logger("Saving removed indices to ", quotes(to_str(out_name)), ".")
     logger("DEBUG", "Selected columns: ", quotes(to_str(out_cols)), ".")
 
     file <- table[ind_to_remove, out_cols, drop = FALSE]
@@ -811,9 +811,9 @@ log_indvs_to_remove <- function(num_indvs) {
     #' @return {NULL}
 
     if (num_indvs == 0) {
-        logger("INFO", "No individuals to remove")
+        logger("No individuals to remove")
     } else {
-        logger("INFO", "There are ", num_indvs, " individuals to remove")
+        logger("There are ", num_indvs, " individuals to remove")
     }
 }
 
@@ -833,8 +833,8 @@ wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height
     out_path <- file.path(plots_out_dir, out_name)
     
     if (file_exists(out_path) && !overwrite_ext_plots) {
-        logger("INFO", "Plot already saved at: ", quotes(out_path), ".")
-        logger("INFO", "Skipping plot")
+        logger("Plot already saved at: ", quotes(out_path), ".")
+        logger("Skipping plot")
     } else {
         logger("DEBUG", "Plotting at: ", quotes(out_path), " ...")
         png(out_path, width, height)
