@@ -1755,20 +1755,39 @@ gwas <- function(qc_data_path) {
         return(pc_combined_covars_path)
     }
 
+    delta_col_name <- function(col_name) {
+        #' Modifies a column name to include a delta suffix.
+        #' @param col_name {string}: The column name to modify.
+        #' @return {string}: The modified column name.
+        
+        paste0(col_name, "_Delta")
+    }
+
     init_lambdas_df <- function() {
         #' Initialises a data.frame to store lambda values in.
         #' @return {data.frame}: Data.frame to store lambda values in.
         
-        lambdas <- data.frame(
-            Covariate_Used = character(),
-            Fasting_Glucose = numeric(),
-            FG_Delta = numeric(),
-            Binary_1 = numeric(),
-            Binary_1_Delta = numeric(),
-            Binary_2 = numeric(),
-            Binary_2_Delta = numeric(),
-            stringAsFactors = FALSE
+        if (is.null(phenotype)) {
+            logger("ERROR", "Phenotype not defined.")
+            stop()
+        }
+
+        logger("Initialising Lambdas data frame")
+
+        phenotype_col_name <- space_to_underscore(title_case(phenotype))
+        delta_phen_col_name <- delta_col_name(phenotype_col_name)
+
+        initial_cols <- c(
+            "Covariate_Used",
+            phenotype_col_name,
+            delta_phen_col_name,
+            sapply(1:2, function(i) {
+                paste0("Binary_1", i, c("", "_Delta"))
+            })
         )
+
+        lambdas <- data.frame(matrix(NA, nrow = 0, ncol = length(initial_cols)), stringsAsFactors = FALSE)
+        names(lambdas) <- initial_cols
         return(lambdas)
     }
 
@@ -1820,9 +1839,6 @@ gwas <- function(qc_data_path) {
     covar_pc_file_path <- add_pc_eigvecs_to_covars(covar_file_path, pc_eigvec_file)
 
     lambdas <- init_lambdas_df()
-    lambda_df_col_map <- list(
-        "Fasting glucose", "Fasting_Glucose"
-    )
     covariate_combs <- list(
         "Age, Gender" = FALSE,
         "Age, Gender + 10 PCs" = TRUE
@@ -1858,15 +1874,18 @@ gwas <- function(qc_data_path) {
             d <- gwas_plots(pheno_full_path, pc, suffix)
             lambda <- compute_lambda(d, suffix, pc)
             lambda_delta <- lambda - 1.0
+            logger("DEBUG", "Lambda delta: ", lambda_delta, ".")
             
-            trait_name <- get_trait_name(suffix)
-            col_name <- lambda_df_col_map[[trait_name]]
+            trait_name <- title_case(get_trait_name(suffix))
+            col_name <- space_to_underscore(trait_name)
+            logger("DEBUG", "Col name: ", quotes(col_name), ".")
             if (is.null(col_name)) {
                 logger("ERROR", "Col name not found from trait: ", quotes(trait_name), ".")
             }
+            delta_col_name <- delta_col_name(col_name)
 
-            row[[col_name]] <- lambda
-            row[[col_name]] <- lambda_delta
+            lambda_row[1, col_name] <- lambda
+            lambda_row[1, delta_col_name] <- lambda_delta
 
             gc()
         }
@@ -1878,8 +1897,8 @@ gwas <- function(qc_data_path) {
     caption <- "Genomic Inflation Values ($\\lambda$) obtained with different covariates"
     col_names <- c("Covariates Used", sapply(phenotype_suffixes, function(suffix) {
         trait_name <- get_trait_name(suffix)
-        c(trait_name, paste0(trait_name, " \\Delta")))
-    }
+        c(trait_name, paste0(trait_name, " \\Delta"))
+    }))
 
     out_name <- add_extension("lambdas.tex", exts$txt)
     latex_table(lambdas, out_name, latex_col_align, caption, col_names,
