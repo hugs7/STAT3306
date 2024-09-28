@@ -1844,6 +1844,28 @@ gwas <- function(qc_data_path) {
         wrap_write_table(clump_out, out_basename, col.names = TRUE)
     }
 
+    save_clumps_df <- function(clumps, suffix, pc) {
+        #' Saves the clump data to a LaTeX table.
+        #' @param clumps {data.frame}: Contains clumping data.
+        #' @param suffix {string}: Suffix mapping to trait,
+        #' @param pc {boolean}: Whether principal components is being used.
+        #' @return {NULL}
+
+        logger("Saving clumps data.frame to LaTeX table...")
+
+        latex_col_align <- paste0("l", paste0(rep("r|", ncol(clumps))))
+        logger("DEBUG", "Latex col align: ", latex_col_align)
+        
+        trait_name <- get_trait_name(suffix)
+        caption <- paste0("Clumps for ", trait_name, pc ? " with pc" : "")
+        col_names <- colnames(clumps)
+        out_name <- add_extension(paste0("clumps", suffix, pc ? "_pc" : "", "_latex_table.tex"), exts$txt)
+        latex_table(lambdas, out_name, latex_col_align, caption, col_names,
+                    digits = 3, line_spacing_factor = 1.0, hide_row_names = TRUE)
+
+        return(NULL)
+    }
+
     save_lambdas_df <- function(lambdas) {
         #' Saves the lambdas data.frame to a LaTeX table.
         #' @param lambdas {data.frame}: Contains the lambda values for each phenotype 
@@ -1909,7 +1931,8 @@ gwas <- function(qc_data_path) {
 
             if (pc) {
                 clump_path <- clumping(pheno_full_path)
-                read_clumps(clump_path, suffix, pc)
+                clumps <- read_clumps(clump_path, suffix, pc)
+                save_clumps_df(clumps, suffix, pc)
             }
 
             d <- gwas_plots(pheno_full_path, pc, suffix)
