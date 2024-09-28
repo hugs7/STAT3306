@@ -1613,16 +1613,16 @@ gwas <- function(qc_data_path) {
             return(file_name)
         }
 
-        title_plot <- function(plot_type, title_case = TRUE) {
+        title_plot <- function(plot_type, use_title_case = TRUE) {
             #' Titles a plot given it's type.
             #' @param plot_type {string}: The type of the plot.
-            #' @param title_case {bool}: Whether to use title case on the plot type.
-            #'                           Defaults to TRUE.
+            #' @param use_title_case {bool}: Whether to use title case on the plot type.
+            #'                               Defaults to TRUE.
             #' @return plot_title {string}: Title of the plot.
  
             logger("DEBUG", "Titling plot for type: ", quotes(plot_type), ".")
 
-            if (title_case) {
+            if (use_title_case) {
                 plot_type <- title_case(plot_type)
             }
 
