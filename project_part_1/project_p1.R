@@ -516,13 +516,13 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
         digits <- c(0, digits)
 
         for (i in seq_along(digits)) {
-            # Scientific notation
-            decimals <- digits [i]
-            if (decimals < 0) {
+            num_decimals <- digits [i]
+            if (num_decimals < 0) {
+                # Scientific notation
                 logger("DEBUG", "Formatting column ", i, " as scientific notation with ",
-                       decimals, " decimal places.")
-                decimals <- decimals * -1
-                data[[i]] <- format(data[[i]], format = "e", digits = decimals)
+                       num_decimals, " decimal places.")
+                num_decimals <- num_decimals * -1
+                data[[i]] <- format(data[[i]], format = "e", digits = num_decimals)
             }
         }
     }
