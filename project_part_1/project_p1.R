@@ -1106,6 +1106,7 @@ quality_control <- function(perform) {
         out_name <- "test_indv_subset"
         if (!perform) {
             plink_path <- construct_plink_out_path(out_name)
+            logger("Using qc path: ", quotes(plink_path), ".")
             return(plink_path)
         }
 
@@ -1333,6 +1334,7 @@ sample_qc <- function(data_subset_path, perform) {
         out_name <-"test_qc_insif_maf"
         if (!perform) {
             plink_path <- construct_plink_out_path(out_name)
+            logger("Using SNP qc path: ", quotes(plink_path), ".")
             return(plink_path)
         }
         
