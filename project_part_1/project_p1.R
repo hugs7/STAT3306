@@ -486,7 +486,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #'                               as the first column in the table. Defaults to FALSE.
     #' @return path {string}: Path to saved LaTeX table.
    
-    xtable_table_align <- gsub(":": "|", table_align)
+    xtable_table_align <- gsub(":", "|", table_align)
 
     table_align_num_cols <- nchar(gsub("\\|", "", xtable_table_align))
     df_ncol <- ncol(df)
@@ -1845,7 +1845,7 @@ gwas <- function(qc_data_path) {
     }
 
     save_lambdas_df <- function(lambdas) {
-        #' Saves the lambdas data.frame to a latex table.
+        #' Saves the lambdas data.frame to a LaTeX table.
         #' @param lambdas {data.frame}: Contains the lambda values for each phenotype 
         #'                              with PC off and on.
         #' @return {NULL}
