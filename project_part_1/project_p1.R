@@ -519,6 +519,36 @@ delete_file <- function(path) {
     return(exists)
 }
 
+wrap_write <- function(content, basename) {
+    #' Writes contents to a file. Output is always placed in out directory.
+    #' @param content {string}: The content to write.
+    #' @param basename {string}: Name of the file to write to.
+    #' @return path {string}: The full save path where the file was saved.
+
+    basename <- check_txt_ext(basename, exts$txt)
+    path <- construct_out_path(basename)
+
+    if (file_exsits(path)) {
+        logger("WARN", "Overwriting file at path ", quotes(path), ".")
+        delete_file(path)
+    }
+
+    if (!is.character(content)) {
+        logger("ERROR", "Cannot write content. Type is not character.")
+        return(path)
+    }
+    
+    logger("DEBUG", "Writing data to ", quotes(path), " ...")
+
+    write(data, path)
+    logger("DEBUG", "Writing complete. Cleaning up...")
+    rm(data)
+    gc()
+    logger("DEBUG", "Cleanup complete.")
+    return(path)
+}
+
+
 wrap_read_table <- function(path, header = TRUE, ...) {
     #' Wrapper for reading a table from a file.
     #' @param path {string}: The path of the file to read the table from.
@@ -580,11 +610,13 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
         col.names <- FALSE
     }
 
-    logger("DEBUG", "Writing table at ", quotes(path), ".")
+    logger("DEBUG", "Writing table at ", quotes(path), "...")
     write.table(data, path, row.names = row.names, col.names = col.names,
                 sep = sep, quote = quote, ...)
+    logger("DEBUG", "Writing table complete. Cleaning up...")
     rm(data)
     gc()
+    logger("DEBUG", "Cleanup complete.")
     return(path)
 }
 
