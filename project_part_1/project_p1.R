@@ -37,7 +37,7 @@ level_colours <- list(
 
 phenotype <- "Fasting Glucose"
 fam_ind_cols <- c("FID", "IID")
-find_related <- FALSE
+find_related <- TRUE
 
 # Thresholds
 genotype_threshold <- 0.05
