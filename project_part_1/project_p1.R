@@ -480,7 +480,11 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #' @param caption {string|NULL}: Optional caption for the table.
     #' @param col.names {vec|NULL}: Optional column names to provide to the table.
     #' @param digits {integer|vector(integer)}: Number of decimal places to display 
-    #'                                          numbers as.
+    #'                                          numbers as. If digits < 0, values
+    #'                                          will be converted to scientific
+    #'                                          notation with the negative of the 
+    #'                                          number of digits prior to passint
+    #'                                          to xtable.
     #' @param line_spacing_factor {integer}: Line spacing factor for LaTeX table.
     #' @param hide_row_names {bool}: Whether to include row names from the data.frame
     #'                               as the first column in the table. Defaults to FALSE.
@@ -510,6 +514,17 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     if (is.vector(digits)) {
         # Prefix leading dummy digit for index column.
         digits <- c(0, digits)
+
+        for (i in seq_along(digits)) {
+            # Scientific notation
+            decimals <- digits [i]
+            if (decimals < 0) {
+                logger("DEBUG", "Formatting column ", i, " as scientific notation with ",
+                       decimals, " decimal places.")
+                decimals <- decimals * -1
+                data[[i]] <- format(data[[i]], format = "e", digits = decimals)
+            }
+        }
     }
 
     table <- xtable(data, align = xtable_table_align, caption = caption, digits = digits)
