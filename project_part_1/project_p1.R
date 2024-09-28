@@ -23,8 +23,9 @@ invisible(lapply(required_packages, require, character.only = TRUE))
 # === Logging Config ===
 
 default_log_level <- "INFO"
-allowed_log_levels <- c("TRACE", "DEBUG", "INFO", "WARN", "ERROR")
+allowed_log_levels <- c("ERROR", "WARN", "INFO", "DEBUG", "TRACE")
 app_log_level <- "DEBUG"
+app_log_index <- which(allowed_log_levels == app_log_level)
 level_colours <- list(
     TRACE = crayon::silver,
     DEBUG = crayon::magenta,
@@ -256,7 +257,7 @@ get_calling_function <- function(ignore_names) {
     return("Global Environment")
 }
 
-log_stack <- function(log_level = "INFO") {
+log_stack <- function(log_level = default_log_level) {
     #' Logs the call stack to the console.
     #' @return {NULL}
    
@@ -275,10 +276,11 @@ log_stack <- function(log_level = "INFO") {
     }
 }
 
-logger <- function(log_level = "INFO", ...) {
+logger <- function(log_level = default_log_level, ...) {
     #' A mini logger function with ansi coloured log levels. Outputs timestamp,
     #' calling function, log level and message to the console. Logs the stack
-    #' trace if log level is ERROR.
+    #' trace if log level is ERROR. Will not log if log_level is higher than
+    #' the application log level.
     #' @param log_level {string}: Optional. The level to log at. If not provided,
     #'                            will default to default_log_level.
     #' @return {NULL}
@@ -286,6 +288,11 @@ logger <- function(log_level = "INFO", ...) {
     if (!is.character(log_level) || !(log_level %in% allowed_log_levels)) {
         logger(default_log_level, log_level, ...)
         return(invisible(NULL))
+    }
+
+    log_index <- which(allowed_log_levels == log_level)
+    if (log_index > app_log_index) {
+        return(NULL)
     }
 
     logger_func_name <- deparse(sys.call()[[1]])
@@ -309,7 +316,7 @@ logger <- function(log_level = "INFO", ...) {
     invisible(NULL)
 }
 
-log_df <- function(df, name, log_level = "INFO") {
+log_df <- function(df, name, log_level = default_log_level) {
     #' Logs the dimension and head of a dataframe at the specified log level,
     #' @param df {data.frame}: The data frame to preview,
     #' @param name {string}: The name of the data frame.
