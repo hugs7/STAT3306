@@ -1813,13 +1813,15 @@ gwas <- function(qc_data_path) {
         return(lambdas)
     }
 
-    clumping <- function(pheno_pc_path) {
+    clumping <- function(pheno_pc_path, suffix, pc) {
         #' Performs clumping to identify most significant SNP in each LD block.
         #' @param pheno_pc_path {string}: Path to phenotype file for the specified trait.
+        #' @param suffix {string}: Suffix mapping to trait,
+        #' @param pc {boolean}: Whether principal components is being used.
         #' @return {string}: Path to clump out file from plink.
 
         logger("Clumping GWAS Results...")
-        out_name <- "gwas_pheno_clump"
+        out_name <- paste0("gwas_pheno_clumps", suffix, pc ? "_pc" : "")
         clump_p1_val <- 0.5
         clump_p2_val <- 0.5
         clump_r2_val <- 0.2
@@ -1945,11 +1947,9 @@ gwas <- function(qc_data_path) {
             pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args, covar_pc_file_path, pc)
             pheno_full_path <- get_pheno_analysis_full_path(pheno_basename, suffix)
 
-            if (pc) {
-                clump_path <- clumping(pheno_full_path)
-                clumps <- read_clumps(clump_path, suffix, pc)
-                save_clumps_df(clumps, suffix, pc, 20)
-            }
+            clump_path <- clumping(pheno_full_path, suffix, pc)
+            clumps <- read_clumps(clump_path, suffix, pc)
+            save_clumps_df(clumps, suffix, pc, 20)
 
             d <- gwas_plots(pheno_full_path, pc, suffix)
             lambda <- compute_lambda(d, suffix, pc)
