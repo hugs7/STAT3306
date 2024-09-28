@@ -548,10 +548,10 @@ ends_with_extension <- function(ext_pattern, path) {
     #' @return {bool}: TRUE if the path contains extension in
     #'                 pattern, FALSE otherwise.
 
-    ends_with_extension <- grepl(ext_pattern, path)
+    ends_with_ext <- grepl(ext_pattern, path)
     logger("TRACE", "Ends with extension: ", quotes(ext_pattern), " ",
-           ends_with_extension, ".")
-    return(ends_with_extension)
+           ends_with_ext, ".")
+    return(ends_with_ext)
 }
 
 match_not_log <- function(path) {
