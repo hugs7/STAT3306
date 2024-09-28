@@ -1844,14 +1844,18 @@ gwas <- function(qc_data_path) {
         wrap_write_table(clump_out, out_basename, col.names = TRUE)
     }
 
-    save_clumps_df <- function(clumps, suffix, pc) {
+    save_clumps_df <- function(clumps, suffix, pc, nrows) {
         #' Saves the clump data to a LaTeX table.
         #' @param clumps {data.frame}: Contains clumping data.
         #' @param suffix {string}: Suffix mapping to trait,
         #' @param pc {boolean}: Whether principal components is being used.
+        #' @param nrows {integer}: The number of rows from the head of the df
+        #'                         to save.
         #' @return {NULL}
 
         logger("Saving clumps data.frame to LaTeX table...")
+        
+        clumps <- head(clumps, nrows)
 
         latex_col_align <- paste0("l", paste0(rep("r|", ncol(clumps))))
         logger("DEBUG", "Latex col align: ", latex_col_align)
@@ -1932,7 +1936,7 @@ gwas <- function(qc_data_path) {
             if (pc) {
                 clump_path <- clumping(pheno_full_path)
                 clumps <- read_clumps(clump_path, suffix, pc)
-                save_clumps_df(clumps, suffix, pc)
+                save_clumps_df(clumps, suffix, pc, 20)
             }
 
             d <- gwas_plots(pheno_full_path, pc, suffix)
