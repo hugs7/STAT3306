@@ -1506,7 +1506,7 @@ gwas <- function(qc_data_path) {
             #' @return file_name {string}: File name of plot.
 
             logger("DEBUG", "Naming plot type: ", quotes(plot_type), ".")
-            file_name <- paste0("gwas_", plot_type, plot_suffix)
+            file_name <- paste0("gwas_", plot_type, plot_suffix, pc ? "_pc" : "")
             file_name <- add_extension(file_name, exts$png)
             logger("DEBUG", "GWAS Plot Name: ", quotes(file_name), ".")
             return(file_name)
