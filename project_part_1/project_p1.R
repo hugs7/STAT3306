@@ -1604,7 +1604,7 @@ gwas <- function(qc_data_path) {
             }
 
             # Overwrite path with new data.
-            pheno_path <- construct_out_path(out_stem)
+            pheno_path <- construct_out_path(out_basename)
         }
 
         regression_args <- pheno_suffix == "" ? pl_fgs$linear : pl_fgs$logistic
