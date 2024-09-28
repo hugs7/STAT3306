@@ -520,8 +520,8 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
                         ),
                   latex,
                   fixed=TRUE)
-
-    latex <- gsub(xtable_table_align, table_align, latex)
+    
+    latex <- sub(regex_escape(xtable_table_align), table_align, latex)
     
     logger("DEBUG", "Writing latex table...")
     latex_path <- wrap_write(latex, out_name)
