@@ -945,7 +945,7 @@ init <- function() {
     #' @return {NULL}
 
     logger("Initialising...")
-    logger("Log level set at ", app_log_level, " (", app_log_index, ").")
+    logger("Log level set at ", app_log_level, " ", brackets(app_log_index), ".")
 
     logger("Initialising directories...")
     mkdir_if_not_exist(plots_out_dir)
