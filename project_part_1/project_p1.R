@@ -1491,11 +1491,11 @@ gwas <- function(qc_data_path) {
         return(pheno_path)
     }
  
-    gwas_plots <- function(pheno_analysis_path, plot_suffix = "", pc) {
+    gwas_plots <- function(pheno_analysis_path, pc, plot_suffix = "") {
         #' Saves Manhattan and QQ plots for the current pheno analysis.
         #' @param pheno_analysis_path {string}: The path to the pheno analysis file
-        #' @param plot_suffix {string}: Suffix mapping to trait.
         #' @param pc {boolean}: Whether principal components is being used.
+        #' @param plot_suffix {string}: Suffix mapping to trait.
         #' @return d {data.frame}: Data.frame from phenotype analysis.
 
         trait_name <- get_trait_name(plot_suffix)
@@ -1758,7 +1758,7 @@ gwas <- function(qc_data_path) {
                 read_clumps(clump_path, suffix, pc)
             }
 
-            d <- gwas_plots(pheno_full_path, suffix, pc)
+            d <- gwas_plots(pheno_full_path, pc, suffix)
             compute_lambda(d, suffix, pc)
 
             gc()
