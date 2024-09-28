@@ -486,6 +486,8 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #'                               as the first column in the table. Defaults to FALSE.
     #' @return path {string}: Path to saved LaTeX table.
    
+    log_df(data, paste("Latex table", out_name))
+
     xtable_table_align <- gsub(":", "|", table_align)
 
     table_align_num_cols <- nchar(gsub("\\|", "", xtable_table_align))
