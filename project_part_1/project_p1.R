@@ -1888,8 +1888,8 @@ gwas <- function(qc_data_path) {
 
             gc()
         }
-
-        lambdas <- rbind(lambdas, row)
+        
+        lambdas <- rbind(lambdas, lambda_row)
     }
 
     latex_col_align <- paste0("|l|", paste(rep("l:l", collapse = "|")), "|")
