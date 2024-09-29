@@ -1982,6 +1982,32 @@ gwas <- function(qc_data_path) {
         return(NULL)
     }
 
+    insert_lambda <- function(lambda_row, lambda, suffix) {
+        #' Inserta a lambda value (and it's Delta) to the current lambda row.
+        #' @param lambda_row {data.frame}: One row data.frame containing lambda
+        #'                                 values for this PC setting.
+        #' @param lambda {double}: The current lambda value.
+        #' @param suffix {string}: The phenotype suffix the lambda value corresponds
+        #'                         to.
+        #' @return {NULL}. lambda_row is passed by reference and updated in-place.
+
+        lambda_delta <- lambda - 1.0
+        logger("DEBUG", "Lambda delta: ", lambda_delta, ".")
+        
+        trait_name <- title_case(get_trait_name(suffix))
+        col_name <- space_to_underscore(trait_name)
+        logger("DEBUG", "Col name: ", quotes(col_name), ".")
+        if (is.null(col_name)) {
+            logger("ERROR", "Col name not found from trait: ", quotes(trait_name), ".")
+        }
+        
+        lambda_row[1, col_name] <- lambda
+        lambda_row[1, delta_col_name(col_name)] <- lambda_delta
+
+        return(NULL)
+    }
+
+
     save_lambdas_df <- function(lambdas) {
         #' Saves the lambdas data.frame to a LaTeX table.
         #' @param lambdas {data.frame}: Contains the lambda values for each phenotype 
@@ -2051,18 +2077,7 @@ gwas <- function(qc_data_path) {
 
             d <- gwas_plots(pheno_full_path, pc, suffix)
             lambda <- compute_lambda(d, suffix, pc)
-            lambda_delta <- lambda - 1.0
-            logger("DEBUG", "Lambda delta: ", lambda_delta, ".")
-            
-            trait_name <- title_case(get_trait_name(suffix))
-            col_name <- space_to_underscore(trait_name)
-            logger("DEBUG", "Col name: ", quotes(col_name), ".")
-            if (is.null(col_name)) {
-                logger("ERROR", "Col name not found from trait: ", quotes(trait_name), ".")
-            }
-            
-            lambda_row[1, col_name] <- lambda
-            lambda_row[1, delta_col_name(col_name)] <- lambda_delta
+            insert_lambda(lambda_row, lambda, suffix)
 
             gc()
         }
