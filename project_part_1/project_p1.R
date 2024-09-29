@@ -483,7 +483,8 @@ file_exists <- function(path, match_pattern = FALSE) {
 }
 
 latex_table <- function(data, out_name, table_align, caption = NULL, col.names = NULL,
-                        digits = 2, line_spacing_factor = 1, hide_row_names = FALSE) {
+                        digits = 2, line_spacing_factor = 1, hide_row_names = FALSE,
+                        size = "normalsize") {
     #' Generates a LaTeX table given a data.frame and saves to a file.
     #' @param data {data.frame}: The data.frame to output as a LaTeX table.
     #' @param out_name {string}: Filename to save the output as.
@@ -499,6 +500,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #' @param line_spacing_factor {integer}: Line spacing factor for LaTeX table.
     #' @param hide_row_names {bool}: Whether to include row names from the data.frame
     #'                               as the first column in the table. Defaults to FALSE.
+    #' @param size {string}: LaTeX size encoding without \. Defaults to normalsize.
     #' @return path {string}: Path to saved LaTeX table.
    
     log_df(data, paste("Latex table", out_name))
@@ -545,7 +547,8 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
                           sanitize.colnames.function = function(x) {paste0("\\textbf{", x, "}")})
 
     latex <- gsub("\\begin{tabular}",
-                  paste0("\\renewcommand{\\arraystretch}{",
+                  paste0(size == "normalsize" ? "" : paste0("\\", size),
+                         "\\renewcommand{\\arraystretch}{",
                          line_spacing_factor, "}\n\\begin{tabular}"
                         ),
                   latex,
@@ -2030,7 +2033,8 @@ gwas <- function(qc_data_path) {
 
         out_name <- add_extension("lambdas", exts$tex)
         latex_table(lambdas, out_name, latex_col_align, caption, col_names,
-                    digits = 3, line_spacing_factor = 1.0, hide_row_names = TRUE)
+                    digits = 3, line_spacing_factor = 1.0, hide_row_names = TRUE,
+                    size = "small")
 
         return(NULL)
     }
