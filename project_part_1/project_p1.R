@@ -16,7 +16,7 @@ install_if_missing <- function(packages) {
 
 # === Packages ===
 
-required_packages <- c("crayon", "qqman")
+required_packages <- c("crayon", "qqman", "xtable")
 install_if_missing(required_packages)
 invisible(lapply(required_packages, require, character.only = TRUE))
 
@@ -116,7 +116,7 @@ to_str <- function(x, collapse = ", ") {
     #'                           or vector. Defaults to ', '.
     #' @return {string}: String representation of list.
     
-    if (is.list(x)) {
+    if (is.list(x) || is.vector(x)) {
         x <- unlist(x)
     }
 
@@ -130,7 +130,7 @@ args_to_string <- function(...) {
 
     args <- list(...)
     string_args <- sapply(args, function(arg) {
-        if (is.list(arg)) {
+        if (is.list(arg) || is.vector(arg)) {
             to_str(arg)
         } else {
             as.character(arg)
@@ -346,16 +346,16 @@ title_case <- function(str) {
     #' @return result {string}: The string in titlecase form.
 
     if (length(str) == 0) {
-        logger("DEBUG", "String is empty")
+        logger("WARN", "String is empty")
         return(str)
     }
 
     logger("TRACE", "Converting ", quotes(str), " to title case...")
     words <- strsplit(str, " ")[[1]]
     titlecased_words <- paste0(toupper(substring(words, 1, 1)), tolower(substring(words, 2)))
-    result <- paste(titlecased_words)
-
-    logger("DEBUG", "Title case version: ", quotes(result), ".")
+    result <- to_str(paste(titlecased_words), " ")
+    
+    logger("TRACE", "Title case version: ", quotes(result), ".")
     return(result)
 }
 
@@ -471,6 +471,127 @@ file_exists <- function(path, match_pattern = FALSE) {
     return(exists)
 }
 
+latex_table <- function(data, out_name, table_align, caption = NULL, col.names = NULL,
+                        digits = 2, line_spacing_factor = 1, hide_row_names = FALSE) {
+    #' Generates a LaTeX table given a data.frame and saves to a file.
+    #' @param data {data.frame}: The data.frame to output as a LaTeX table.
+    #' @param out_name {string}: Filename to save the output as.
+    #' @param table_align {string}: Latex coding for aligning columns.
+    #' @param caption {string|NULL}: Optional caption for the table.
+    #' @param col.names {vec|NULL}: Optional column names to provide to the table.
+    #' @param digits {integer|vector(integer)}: Number of decimal places to display 
+    #'                                          numbers as. If digits < 0, values
+    #'                                          will be converted to scientific
+    #'                                          notation with the negative of the 
+    #'                                          number of digits prior to passint
+    #'                                          to xtable.
+    #' @param line_spacing_factor {integer}: Line spacing factor for LaTeX table.
+    #' @param hide_row_names {bool}: Whether to include row names from the data.frame
+    #'                               as the first column in the table. Defaults to FALSE.
+    #' @return path {string}: Path to saved LaTeX table.
+   
+    log_df(data, paste("Latex table", out_name))
+    
+    xtable_table_align <- gsub(":", "|", table_align)
+    align_num_cols <- nchar(gsub("\\|", "", xtable_table_align))
+    logger("DEBUG", "Table align num cols: ", align_num_cols)
+    df_ncol <- ncol(data)
+   
+    if (align_num_cols != df_ncol) {
+        logger("WARN", "Number of columns in table alignment ", brackets(align_num_cols), 
+               " does not match number of cols in df ", brackets(df_ncol), ".")
+    }
+   
+    # Add leading dummy align character for index column.
+    xtable_table_align <- paste0("l", xtable_table_align)
+    logger("DEBUG", "DF num cols: ", df_ncol)
+    
+    if (hide_row_names) {
+        table_align <- sub("A-Z|a-z", "", table_align)
+        logger("TRACE", "Table align with first col hidden: ", quotes(table_align), ".")
+    }
+
+    if (is.vector(digits)) {
+        # Prefix leading dummy digit for index column.
+        digits <- c(0, digits)
+
+        for (i in seq_along(digits)) {
+            num_decimals <- digits [i]
+            if (num_decimals < 0) {
+                # Scientific notation
+                logger("DEBUG", "Formatting column ", i, " as scientific notation with ",
+                       num_decimals, " decimal places.")
+                num_decimals <- num_decimals * -1
+
+                if (!is.numeric(data[[i]])) {
+                    logger("WARN", "Column ", i, " is not numeric.")
+                }
+
+                data[[i]] <- format(data[[i]], scientific = TRUE, digits = num_decimals)
+            }
+        }
+    } else {
+        if (digits < 0) {
+            # Scientific notation
+            numeric_cols <- sapply(data, is.numeric)
+            num_decimals <- digits * -1
+            logger("DEBUG", "Formatting columns ", to_str(numeric_cols),
+                   " as scientific with ", num_decimals, " decimals.") 
+            data[numeric_cols] <- lapply(data[numeric_cols], function(x) {
+                format(x, scientific = TRUE, digits = num_decimals)
+            })
+        }
+    }
+
+    table <- xtable(data, align = xtable_table_align, caption = caption, digits = digits)
+
+    if (!is.null(col.names)) {
+        colnames(table) <- col.names
+    }
+
+    latex <- print.xtable(table, print.results = FALSE, table.placement = "htb",
+                          comment = FALSE, include.rownames = !hide_row_names)
+
+    latex <- gsub("\\begin{tabular}",
+                  paste0("\\renewcommand{\\arraystretch}{",
+                         line_spacing_factor, "}\n\\begin{tabular}"
+                        ),
+                  latex,
+                  fixed=TRUE)
+    
+    latex <- sub(regex_escape(xtable_table_align), table_align, latex)
+    
+    logger("DEBUG", "Writing latex table...")
+    latex_path <- wrap_write(latex, out_name)
+    return(latex_path)
+}
+
+get_ext_pattern <- function(extensions) {
+    #' Generates a RegEx pattern to match any extension provided
+    #' from a list of extensions
+    #' @param extensions {list{str}}: List of extensions to match
+    #'                                to.
+    #' @return {string}: RegEx pattern matching provided extensions.
+
+    ext_pattern <- paste0("(", to_str(regex_escape(extensions),
+                          collapse = "|"), ")$")
+    logger("TRACE", "Extension pattern: ", quotes(ext_pattern), ".")
+    return(ext_pattern)
+}
+
+ends_with_extension <- function(ext_pattern, path) {
+    #' Checks if a path ends with an extension given in a pattern.
+    #' @param ext_pattern {string}: RegEx pattern to match path to.
+    #' @param path {string}: Path to check extension in.
+    #' @return {bool}: TRUE if the path contains extension in
+    #'                 pattern, FALSE otherwise.
+
+    ends_with_ext <- grepl(ext_pattern, path)
+    logger("TRACE", "Ends with extension: ", quotes(ext_pattern), " ",
+           ends_with_ext, ".")
+    return(ends_with_ext)
+}
+
 match_not_log <- function(path) {
     #' Given an extensionless file path, constructs
     #' a Regex pattern to exclude matching .log files.
@@ -479,12 +600,10 @@ match_not_log <- function(path) {
     #'                   lookahead to log files.
    
     # Check the path does not already contain an extension.
-    ext_pattern <- paste0("(", to_str(regex_escape(exts), collapse = "|"), ")$")
-    logger("TRACE", "Extension pattern: ", quotes(ext_pattern), ".")
-
-    ends_with_extension <- grepl(ext_pattern, path)
-    if (ends_with_extension) {
-        logger("ERROR", "Unexpected! Path ends with extension ", quotes(ext_pattern), ".")
+    ext_pattern <- get_ext_pattern(exts)
+    if (ends_with_extension(ext_pattern, path)) {
+        logger("ERROR", "Unexpected! Path ends with extension ",
+               quotes(ext_pattern), ".")
         return(path)
     }
 
@@ -519,6 +638,35 @@ delete_file <- function(path) {
     return(exists)
 }
 
+wrap_write <- function(content, basename) {
+    #' Writes contents to a file. Output is always placed in out directory.
+    #' @param content {string}: The content to write.
+    #' @param basename {string}: Name of the file to write to.
+    #' @return path {string}: The full save path where the file was saved.
+
+    basename <- check_txt_ext(basename)
+    path <- construct_out_path(basename)
+
+    if (file_exists(path)) {
+        logger("WARN", "Overwriting file at path ", quotes(path), ".")
+        delete_file(path)
+    }
+
+    if (!is.character(content)) {
+        logger("ERROR", "Cannot write content. Type is not character.")
+        return(path)
+    }
+    
+    logger("DEBUG", "Writing data to ", quotes(path), " ...")
+
+    write(content, path)
+    logger("DEBUG", "Writing complete. Cleaning up...")
+    rm(content)
+    gc()
+    logger("DEBUG", "Cleanup complete.")
+    return(path)
+}
+
 wrap_read_table <- function(path, header = TRUE, ...) {
     #' Wrapper for reading a table from a file.
     #' @param path {string}: The path of the file to read the table from.
@@ -538,10 +686,10 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
                              sep = "\t", quote = FALSE, ...) {
     #' Wrapper for writing a table to a file. Will overwrite file if it exists
     #' at the same path.
-    #' @param data {data.frame}: The data to write
+    #' @param data {data.frame}: The data to write.
     #' @param basename {string}: The basename excluding the out dir to  write
-    #'                           the file at. Ideally should include extension
-    #'                           but if it doesn't this function will add it.
+    #'                           the file at. Ideally should include extension but if
+    #'                           it doesn't this function will add .txt by default.
     #' @param row.names {boolean}: Whether to include row names. Disabled by default.
     #' @param col.names {boolean}: Whether to include col names. Enabled by default but
     #'                             if the data contains default columns, will not be
@@ -551,7 +699,12 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     #'                         data. Disabled by default.
     #' @return path {string}: The full save path where the table was saved.
 
-    basename <- check_txt_ext(basename, exts$txt)
+    ext_pattern <- get_ext_pattern(list(exts$txt, exts$phen))
+    logger("DEBUG", "Initial basename: ", quotes(basename), ".")
+    if (!ends_with_extension(ext_pattern, basename)) {
+        basename <- check_txt_ext(basename)
+    }
+
     path <- construct_out_path(basename)
 
     if (file_exists(path)) {
@@ -580,11 +733,13 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
         col.names <- FALSE
     }
 
-    logger("DEBUG", "Writing table at ", quotes(path), ".")
+    logger("DEBUG", "Writing table at ", quotes(path), "...")
     write.table(data, path, row.names = row.names, col.names = col.names,
                 sep = sep, quote = quote, ...)
+    logger("DEBUG", "Writing table complete. Cleaning up...")
     rm(data)
     gc()
+    logger("DEBUG", "Cleanup complete.")
     return(path)
 }
 
@@ -1004,9 +1159,9 @@ quality_control <- function(perform) {
         #' Finds individuals with outlying homozygosity values to remove from the dataset
         #' @param plot {boolean}: If true, will plot a histogram of the frequency of hz
         #'                        freqs and a scatterplot of their distribution across
-        #"                        the geneome.
+        #'                        the geneome.
         #' @return het_ind_file_path {string}: The file path to the file containing
-        #"                                     the individuals to remove.
+        #'                                     the individuals to remove.
 
         logger("Checking for outlying homozygosity values...")
 
@@ -1078,7 +1233,7 @@ quality_control <- function(perform) {
         #'                         individuals to remove. These files are expected
         #'                         to have at least two columns: FID and IID.
         #' @return {string}: File path to the combined output file with individuals
-        #"                   to remove.
+        #'                   to remove.
         
         combined_basename <- add_extension("remove.combined.samples", exts$txt)
         combined_file_out_path <- construct_out_path(combined_basename)
@@ -1131,7 +1286,6 @@ quality_control <- function(perform) {
         #' @param data_subset_path {string}: Path to subset of data with some individuals
         #'                                   already removed.
         #' @return out_path {string}: Path to a further subset of the data
-
         
         out_name <- "test_indv_related"
         if (!perform) {
@@ -1404,12 +1558,12 @@ gwas <- function(qc_data_path) {
     }
 
     get_trait_name <- function(suffix) {
-        #' Maps suffix to trait name. E.g. "_binary1" -> "Binary 1"
+        #' Maps suffix to phenotype / trait name. E.g. "_binary1" -> "Binary 1".
         #' @param suffix {string}: Suffix of the filename corresponding to phenotype.
         #' @return trait_name {string}: Name of the trait.
         
         if (suffix == "") {
-            return("Quantitative trait")
+            return(phenotype)
         }
 
         logger("DEBUG", "Mapping suffix: ", quotes(suffix), " to trait name...")
@@ -1443,7 +1597,7 @@ gwas <- function(qc_data_path) {
     gwas_pheno <- function(pheno_path, pheno_suffix, mpheno_args, covar_file_path, pc) {
         #' Performs association analysis based on the phenotype
         #' defined in the specified file.
-        #' @param pheno_path {string}: Path to pheno file for specified trait.
+        #' @param pheno_path {string}: Path to pheno file for specified trait (no extension).
         #' @param pheno_suffix {string}: Suffix of phenotype.
         #' @param mpheno_args {string}: Flags relating to mpheno in plink.
         #' @param covar_file_path {string}: File path to combined covariates.
@@ -1463,6 +1617,31 @@ gwas <- function(qc_data_path) {
         # No covariates. Compute:
         logger("INFO", "Using covariate file: ", quotes(covar_file_path), ".")
         covar_args <- paste(pl_fgs$covar, covar_file_path)
+
+        if (suffix == "_binary2") {
+            # Remove N/A values.
+            out_stem <- "bin2_pheno_na_removed"
+            out_basename <- add_extension(out_stem, exts$phen)
+            expected_out_path <- construct_out_path(out_basename)
+
+            if (file_exists(expected_out_path)) {
+                logger("Binary 2 data with n/a removed already exists at: ",
+                       quotes(expected_out_path), ".")
+            } else {
+                logger("Removing N/A Values from binary 2 pheontype data: ", quotes(pheno_path), ".")
+                bin2_pheno <- wrap_read_table(pheno_path, header = FALSE)
+                
+                log_df(bin2_pheno, "Pre N/A removal from binary 2 phenotype data")
+                bin2_pheno <- bin2_pheno[!is.na(bin2_pheno[[2]]), ]
+                log_df(bin2_pheno, "Post N/A removal from binary 2 phenotype data")
+
+                wrap_write_table(bin2_pheno, out_basename)
+            }
+
+            # Overwrite path with new data.
+            pheno_path <- construct_out_path(out_basename)
+        }
+
         regression_args <- pheno_suffix == "" ? pl_fgs$linear : pl_fgs$logistic
         plink_args <- paste(regression_args, pl_fgs$pheno, pheno_path, mpheno_args, covar_args)
         plink(qc_data_path, plink_args, out_name)
@@ -1512,16 +1691,16 @@ gwas <- function(qc_data_path) {
             return(file_name)
         }
 
-        title_plot <- function(plot_type, title_case = TRUE) {
+        title_plot <- function(plot_type, use_title_case = TRUE) {
             #' Titles a plot given it's type.
             #' @param plot_type {string}: The type of the plot.
-            #' @param title_case {bool}: Whether to use title case on the plot type.
-            #'                           Defaults to TRUE.
+            #' @param use_title_case {bool}: Whether to use title case on the plot type.
+            #'                               Defaults to TRUE.
             #' @return plot_title {string}: Title of the plot.
  
             logger("DEBUG", "Titling plot for type: ", quotes(plot_type), ".")
 
-            if (title_case) {
+            if (use_title_case) {
                 plot_type <- title_case(plot_type)
             }
 
@@ -1687,13 +1866,53 @@ gwas <- function(qc_data_path) {
         return(pc_combined_covars_path)
     }
 
-    clumping <- function(pheno_pc_path) {
+    delta_col_name <- function(col_name) {
+        #' Modifies a column name to include a delta suffix.
+        #' @param col_name {string}: The column name to modify.
+        #' @return {string}: The modified column name.
+        
+        paste0(col_name, "_Delta")
+    }
+
+    init_lambdas_df <- function() {
+        #' Initialises a data.frame to store lambda values in.
+        #' @return {data.frame}: Data.frame to store lambda values in.
+        
+        if (is.null(phenotype)) {
+            logger("ERROR", "Phenotype not defined.")
+            stop()
+        }
+
+        logger("Initialising Lambdas data frame")
+
+        phenotype_col_name <- space_to_underscore(title_case(phenotype))
+        delta_phen_col_name <- delta_col_name(phenotype_col_name)
+
+        initial_cols <- c(
+            "Covariate_Used",
+            phenotype_col_name,
+            delta_phen_col_name,
+            sapply(1:2, function(i) {
+                paste0("Binary_1", i, c("", "_Delta"))
+            })
+        )
+
+        lambdas <- data.frame(matrix(NA, nrow = 0, ncol = length(initial_cols)), stringsAsFactors = FALSE)
+        names(lambdas) <- initial_cols
+        return(lambdas)
+    }
+
+    clumping <- function(pheno_pc_path, suffix, pc) {
         #' Performs clumping to identify most significant SNP in each LD block.
         #' @param pheno_pc_path {string}: Path to phenotype file for the specified trait.
+        #' @param suffix {string}: Suffix mapping to trait,
+        #' @param pc {boolean}: Whether principal components is being used.
         #' @return {string}: Path to clump out file from plink.
 
-        logger("Clumping GWAS Results...")
-        out_name <- "gwas_pheno_clump"
+        logger("Clumping GWAS Results - phen: ", quotes(suffix), " ",
+               pc ? " with PC": "", "...")
+
+        out_name <- paste0("gwas_pheno_clumps", suffix, pc ? "_pc" : "")
         clump_p1_val <- 0.5
         clump_p2_val <- 0.5
         clump_r2_val <- 0.2
@@ -1723,6 +1942,66 @@ gwas <- function(qc_data_path) {
         out_basename <- add_extension(paste0("clumps", suffix, pc ? "_pc" : ""), exts$txt)
         wrap_write_table(clump_out, out_basename, col.names = TRUE)
     }
+
+    save_clumps_df <- function(clumps_path, suffix, pc, nrows) {
+        #' Saves the clump data to a LaTeX table.
+        #' @param clump_path {string}: Path to clumps file.
+        #' @param suffix {string}: Suffix mapping to trait,
+        #' @param pc {boolean}: Whether principal components is being used.
+        #' @param nrows {integer}: The number of rows from the head of the df
+        #'                         to save.
+        #' @return {NULL}
+
+        logger("Saving clumps data.frame to LaTeX table phen: ", quotes(suffix), " ",
+               pc ? " with PC": "", "...")
+        
+        clumps <- wrap_read_table(clumps_path)
+
+        logger("DEBUG", "Taking top ", nrows, "rows from clumps dataframe")
+        clumps <- head(clumps, nrows)
+
+        num_cols <- ncol(clumps)
+        logger("TRACE", "Num clump cols: ", num_cols)
+        latex_col_align <- paste0("|", paste0(rep("r|", num_cols), collapse = ""))
+        logger("DEBUG", "Latex col align: ", latex_col_align)
+        
+        trait_name <- get_trait_name(suffix)
+        caption <- paste0("Clumps for ", trait_name, pc ? " with pc" : "")
+        col_names <- colnames(clumps)
+        out_name <- add_extension(paste0("clumps", suffix, pc ? "_pc" : "",
+                                         "_latex_table.tex"),
+                                  exts$txt)
+        digits <- c(0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0)
+        latex_table(clumps, out_name, latex_col_align, caption, col_names,
+                    digits, line_spacing_factor = 1.0, hide_row_names = TRUE)
+
+        return(NULL)
+    }
+
+    save_lambdas_df <- function(lambdas) {
+        #' Saves the lambdas data.frame to a LaTeX table.
+        #' @param lambdas {data.frame}: Contains the lambda values for each phenotype 
+        #'                              with PC off and on.
+        #' @return {NULL}
+        
+        logger("Saving lambdas data.frame...")
+
+        log_df(lambdas, "Lambdas")
+        latex_col_align <- paste0("|l|", paste(rep("l:l", 3), collapse = "|"), "|")
+        logger("DEBUG", "Latex col align: ", latex_col_align)
+
+        caption <- "Genomic Inflation Values ($\\lambda$) obtained with different covariates"
+        col_names <- c("Covariates Used", sapply(phenotype_suffixes, function(suffix) {
+            trait_name <- get_trait_name(suffix)
+            c(trait_name, paste0(trait_name, " \\Delta"))
+        }))
+
+        out_name <- add_extension("lambdas.tex", exts$txt)
+        latex_table(lambdas, out_name, latex_col_align, caption, col_names,
+                    digits = 3, line_spacing_factor = 1.0, hide_row_names = TRUE)
+
+        return(NULL)
+    }
  
     # Main
     phenotype_suffixes <- list("", "_binary1", "_binary2")
@@ -1733,10 +2012,19 @@ gwas <- function(qc_data_path) {
     # Compute principal components once
     pc_eigvec_file <- compute_principal_comps(num_pc)
     covar_pc_file_path <- add_pc_eigvecs_to_covars(covar_file_path, pc_eigvec_file)
-    
-    for (pc in list(FALSE, TRUE)) {
+
+    lambdas <- init_lambdas_df()
+    covariate_combs <- list(
+        "Age, Gender" = FALSE,
+        "Age, Gender + 10 PCs" = TRUE
+    )
+   
+    for (covariates in names(covariate_combs)) {
+        pc <- covariate_combs[[covariates]]
         on <- pc == TRUE ? "enabled" : "disabled"
         logger("INFO", "Performing GWAS with Principal Components ", on, ".")
+
+        lambda_row <- data.frame(Covariates_Used = covariates)
 
         # Perform analysis for each of the phenotypes
         for (suffix in phenotype_suffixes) {
@@ -1750,20 +2038,36 @@ gwas <- function(qc_data_path) {
                 covar_file <- covar_file_path
             }
 
-            pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args, covar_pc_file_path, pc)
+            pheno_basename <- gwas_pheno(pheno_path, suffix, mpheno_args, covar_file, pc)
             pheno_full_path <- get_pheno_analysis_full_path(pheno_basename, suffix)
 
-            if (pc) {
-                clump_path <- clumping(pheno_full_path)
-                read_clumps(clump_path, suffix, pc)
-            }
+            clump_path <- clumping(pheno_full_path, suffix, pc)
+            clumps <- read_clumps(clump_path, suffix, pc)
+            save_clumps_df(clumps, suffix, pc, 20)
 
             d <- gwas_plots(pheno_full_path, pc, suffix)
-            compute_lambda(d, suffix, pc)
+            lambda <- compute_lambda(d, suffix, pc)
+            lambda_delta <- lambda - 1.0
+            logger("DEBUG", "Lambda delta: ", lambda_delta, ".")
+            
+            trait_name <- title_case(get_trait_name(suffix))
+            col_name <- space_to_underscore(trait_name)
+            logger("DEBUG", "Col name: ", quotes(col_name), ".")
+            if (is.null(col_name)) {
+                logger("ERROR", "Col name not found from trait: ", quotes(trait_name), ".")
+            }
+            
+            lambda_row[1, col_name] <- lambda
+            lambda_row[1, delta_col_name(col_name)] <- lambda_delta
 
             gc()
         }
+        
+        lambdas <- rbind(lambdas, lambda_row)
     }
+
+    save_lambdas_df(lambdas)
+    invisible(NULL)
 }
 
 args <- commandArgs(trailingOnly = TRUE)
