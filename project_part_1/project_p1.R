@@ -479,10 +479,10 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #' @param table_align {string}: Latex coding for aligning columns.
     #' @param caption {string|NULL}: Optional caption for the table.
     #' @param col.names {vec|NULL}: Optional column names to provide to the table.
-    #' @param digits {integer|vector(integer)}: Number of decimal places to display 
+    #' @param digits {integer|vector(integer)}: Number of decimal places to display
     #'                                          numbers as. If digits < 0, values
     #'                                          will be converted to scientific
-    #'                                          notation with the negative of the 
+    #'                                          notation with the negative of the
     #'                                          number of digits prior to passint
     #'                                          to xtable.
     #' @param line_spacing_factor {integer}: Line spacing factor for LaTeX table.
@@ -495,56 +495,32 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     xtable_table_align <- gsub(":", "|", table_align)
     align_num_cols <- nchar(gsub("\\|", "", xtable_table_align))
     logger("DEBUG", "Table align num cols: ", align_num_cols)
-    df_ncol <- ncol(data)
+    df_ncols <- ncol(data)
    
-    if (align_num_cols != df_ncol) {
-        logger("WARN", "Number of columns in table alignment ", brackets(align_num_cols), 
-               " does not match number of cols in df ", brackets(df_ncol), ".")
+    if (align_num_cols != df_ncols) {
+        logger("WARN", "Number of columns in table alignment ", brackets(align_num_cols),
+               " does not match number of cols in df ", brackets(df_ncols), ".")
     }
    
     # Add leading dummy align character for index column.
     xtable_table_align <- paste0("l", xtable_table_align)
-    logger("DEBUG", "DF num cols: ", df_ncol)
+    logger("DEBUG", "DF num cols: ", df_ncols)
     
     if (hide_row_names) {
         table_align <- sub("A-Z|a-z", "", table_align)
         logger("TRACE", "Table align with first col hidden: ", quotes(table_align), ".")
     }
-    
-    logger("DEBUG", "Digits: ", quotes(digits), " ", brackets(typeof(digits)), ".")
-    if (length(digits) > 1) {
-        # Prefix leading dummy digit for index column.
-        digits <- c(0, digits)
 
-        for (i in seq_along(digits)) {
-            num_decimals <- digits[i]
-            if (num_decimals < 0) {
-                # Scientific notation
-                logger("DEBUG", "Formatting column ", i, " as scientific notation with ",
-                       num_decimals, " decimal places.")
-                num_decimals <- num_decimals * -1
-
-                if (!is.numeric(data[[i]])) {
-                    logger("WARN", "Column ", i, " is not numeric.")
-                }
-
-                data[[i]] <- format(data[[i]], scientific = TRUE, digits = num_decimals)
-            }
-        }
-    } else {
-        if (digits < 0) {
-            # Scientific notation
-            numeric_cols <- sapply(data, is.numeric)
-            num_decimals <- digits * -1
-            logger("DEBUG", "Formatting columns ", to_str(numeric_cols),
-                   " as scientific with ", num_decimals, " decimals.") 
-            data[numeric_cols] <- lapply(data[numeric_cols], function(x) {
-                format(x, scientific = TRUE, digits = num_decimals)
-            })
-        }
+    if (df_ncols == 1) {
+        logger("WARN", "Something seems off. Dataframe has only 1 column.")
     }
 
-    logger("DEBUG", "Digits: ", quotes(digits), " ", length(digits), " ",
+    if (length(digits) > 1 || df_ncols == 1) {
+        # Prefix with dummy digit for index column
+        digits <- c(0, digits)
+    }
+    
+    logger("DEBUG", "Digits: ", quotes(digits), ", length: ", length(digits), ", typeof: ",
            brackets(typeof(digits)), ".")
     
     table <- xtable(data, align = xtable_table_align, caption = caption, digits = digits)
