@@ -1643,8 +1643,15 @@ gwas <- function(qc_data_path) {
             pheno_path <- construct_out_path(out_basename)
         }
 
-        regression_args <- pheno_suffix == "" ? pl_fgs$linear : pl_fgs$logistic
-        plink_args <- paste(regression_args, pl_fgs$pheno, pheno_path, mpheno_args, covar_args)
+        # hide-covar is present to avoid footgun in PLINK v1.9 (pre 2.0). See the following PLINK doc page
+        # https://www.cog-genomics.org/plink/1.9/postproc#clump. This page mentions:
+
+        # Warning (added 22 Aug 2023): When using this command with --linear/--logistic, **all** p-values
+        # are considered, including those of covariates. Thus, you probably want to run --linear/--logistic
+        # with the 'hide-covar' modifier. (This footgun will be removed in PLINK 2.0.)
+        
+        regression_args <- paste(pheno_suffix == "" ? pl_fgs$linear : pl_fgs$logistic, "hide-covar") 
+        plink_args <- paste(regression_args, covar_args, pl_fgs$pheno, pheno_path, mpheno_args)
         plink(qc_data_path, plink_args, out_name)
     }
 
@@ -1717,10 +1724,6 @@ gwas <- function(qc_data_path) {
         d <- wrap_read_table(pheno_analysis_path)
         log_df(d, "D before na omit")
 
-        logger("Retaining ADD tests only...")
-        d <- d[which(d$TEST == "ADD"), ]
-        log_df(d, "D after retaining ADD tests.")
-        
         logger("Removing n/a p-vals...")
         d <- d[!is.na(d$P), ]
         log_df(d, "D after n/a p-val omit")
