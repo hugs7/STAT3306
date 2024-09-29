@@ -1916,7 +1916,12 @@ gwas <- function(qc_data_path) {
         # Exclude column PC2
         logger("Printing Clump Output")
         clump_out <- clump[, 1:11]
-        log_df(clump_out, paste0("Clump output", suffix))
+        log_df(clump_out, paste0("Clump output (pre N/A & removal) ", quotes(suffix)))
+        
+        clump_out <- clump_out[!is.na(clump_out$P), ]
+        clump_out <- clump_out[clump_out$P != 0, ]
+
+        log_df(clump_out, paste0("Clump output (post N/A & 0 removal) ", quotes(suffix)))
         
         # Write to file
         out_basename <- add_extension(paste0("clumps", suffix, pc ? "_pc" : ""), exts$txt)
