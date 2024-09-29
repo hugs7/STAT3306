@@ -87,7 +87,8 @@ pad <- function(width, ...) {
     #' @return padded {string}: The padded string.
 
     # Do not trace log here as logger relies on pad.
-    padded <- sprintf(paste0("%-", width, "s"), paste0(...))
+    clipped <- substr(paste0(...), 1, width - 1)
+    padded <- sprintf(paste0("%-", width, "s"), clipped)
     return(padded)
 }
 
