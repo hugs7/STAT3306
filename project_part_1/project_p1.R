@@ -2022,7 +2022,7 @@ gwas <- function(qc_data_path) {
 
         caption <- "Genomic Inflation Values ($\\lambda$) obtained with different covariates"
         col_names <- c("Covariates Used", sapply(phenotype_suffixes, function(suffix) {
-            trait_name <- get_trait_name(suffix)
+            trait_name <- title_case(get_trait_name(suffix))
             c(trait_name, paste0(trait_name, " ", latex_math("\\Delta")))
         }))
 
