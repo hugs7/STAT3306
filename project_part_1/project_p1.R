@@ -510,13 +510,14 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
         table_align <- sub("A-Z|a-z", "", table_align)
         logger("TRACE", "Table align with first col hidden: ", quotes(table_align), ".")
     }
-
-    if (is.vector(digits)) {
+    
+    logger("DEBUG", "Digits: ", quotes(digits), " ", brackets(typeof(digits)), ".")
+    if (length(digits) > 1) {
         # Prefix leading dummy digit for index column.
         digits <- c(0, digits)
 
         for (i in seq_along(digits)) {
-            num_decimals <- digits [i]
+            num_decimals <- digits[i]
             if (num_decimals < 0) {
                 # Scientific notation
                 logger("DEBUG", "Formatting column ", i, " as scientific notation with ",
@@ -543,6 +544,9 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
         }
     }
 
+    logger("DEBUG", "Digits: ", quotes(digits), " ", length(digits), " ",
+           brackets(typeof(digits)), ".")
+    
     table <- xtable(data, align = xtable_table_align, caption = caption, digits = digits)
 
     if (!is.null(col.names)) {
