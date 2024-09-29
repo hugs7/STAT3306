@@ -2034,7 +2034,7 @@ gwas <- function(qc_data_path) {
         out_name <- add_extension("lambdas", exts$tex)
         latex_table(lambdas, out_name, latex_col_align, caption, col_names,
                     digits = 3, line_spacing_factor = 1.0, hide_row_names = TRUE,
-                    size = "small")
+                    size = "footnotesize")
 
         return(NULL)
     }
