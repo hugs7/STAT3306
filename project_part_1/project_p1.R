@@ -620,11 +620,17 @@ delete_file <- function(path) {
 
 wrap_write <- function(content, basename) {
     #' Writes contents to a file. Output is always placed in out directory.
+    #' Allows writing as .txt or .tex.
     #' @param content {string}: The content to write.
     #' @param basename {string}: Name of the file to write to.
     #' @return path {string}: The full save path where the file was saved.
 
-    basename <- check_txt_ext(basename)
+    ext_pattern <- get_ext_pattern(list(exts$txt, exts$text))
+    logger("DEBUG", "Initial basename: ", quotes(basename), ".")
+    if (!ends_with_extension(ext_pattern, basename)) {
+        basename <- check_txt_ext(basename)
+    }
+    
     path <- construct_out_path(basename)
 
     if (file_exists(path)) {
@@ -1107,7 +1113,7 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
 
 # File extensions
 exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe",
-                           "frq", "txt", "png", "eigenvec", "eigenval",
+                           "frq", "txt", "tex", "png", "eigenvec", "eigenval",
                            "qassoc", "linear", "clumped", "rel", "id", "logistic"),
                       ext)
 
@@ -1954,8 +1960,8 @@ gwas <- function(qc_data_path) {
         caption <- paste0("Clumps for ", trait_name, pc ? " with pc" : "")
         col_names <- colnames(clumps)
         out_name <- add_extension(paste0("clumps", suffix, pc ? "_pc" : "",
-                                         "_latex_table.tex"),
-                                  exts$txt)
+                                         "_latex_table"),
+                                  exts$tex)
         digits <- c(0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0)
         latex_table(clumps, out_name, latex_col_align, caption, col_names,
                     digits, line_spacing_factor = 1.0, hide_row_names = TRUE)
@@ -2007,7 +2013,7 @@ gwas <- function(qc_data_path) {
             c(trait_name, paste0(trait_name, " \\Delta"))
         }))
 
-        out_name <- add_extension("lambdas.tex", exts$txt)
+        out_name <- add_extension("lambdas", exts$tex)
         latex_table(lambdas, out_name, latex_col_align, caption, col_names,
                     digits = 3, line_spacing_factor = 1.0, hide_row_names = TRUE)
 
