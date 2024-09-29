@@ -1658,12 +1658,13 @@ gwas <- function(qc_data_path) {
         logger("DEBUG", "Calculating path for pheno analysis full path from basename ",
                         quotes(pheno_basename), ".")
         
+        ext_to_add <- exts$assoc
         if (phenotype_suffix == "") {
             # Quantitative phenotype
-            ext_to_add <- paste0(exts$assoc, exts$linear)
+            ext_to_add <- paste0(ext_to_add, exts$linear)
         } else {
             # Binary phenotype
-            ext_to_add <- paste0(exts$assoc, exts$logistic)
+            ext_to_add <- paste0(ext_to_add, exts$logistic)
         }
     
         pheno_path <- add_extension(pheno_basename, ext_to_add)
