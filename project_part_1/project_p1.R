@@ -700,7 +700,7 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     #'                         data. Disabled by default.
     #' @return path {string}: The full save path where the table was saved.
 
-    ext_pattern <- get_ext_pattern(list(exts$txt, exts$phen))
+    ext_pattern <- get_ext_pattern(list(exts$txt, exts$phen, exts$cov))
     logger("DEBUG", "Initial basename: ", quotes(basename), ".")
     if (!ends_with_extension(ext_pattern, basename)) {
         basename <- check_txt_ext(basename)
@@ -1127,7 +1127,7 @@ pl_fgs <- create_object(list("remove", "missing", list("mb" = "make-bed"),
                         named_flag)
 
 # File extensions
-exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe",
+exts <- create_object(list("phen", "imiss", "lmiss", "het", "assoc", "hwe", "cov",
                            "frq", "txt", "tex", "png", "eigenvec", "eigenval",
                            "qassoc", "linear", "clumped", "rel", "id", "logistic"),
                       ext)
@@ -1764,7 +1764,7 @@ gwas <- function(qc_data_path) {
 
         covariate_basenames <- c("age", "gender")
         
-        combined_basename <- add_extension("combined_covariates", exts$txt)
+        combined_basename <- add_extension("combined_covariates", exts$cov)
         combined_covar_path <- construct_out_path(combined_basename)
 
         if (file_exists(combined_covar_path)) {
@@ -1835,7 +1835,7 @@ gwas <- function(qc_data_path) {
         #' @return pc_combined_covars_path {string}: Path to combined covars file with
         #'                                           existing and eigvec covars.
 
-        pc_combined_basename <- add_extension("combined_covariates_pc", exts$txt)
+        pc_combined_basename <- add_extension("combined_covariates_pc", exts$cov)
         pc_combined_covars_path <- construct_out_path(pc_combined_basename)
 
         if (file_exists(pc_combined_covars_path)) {
