@@ -109,6 +109,16 @@ brackets <- function(...) {
     paste0("(", str, ")")
 }
 
+latex_math <- function(...) {
+    #' Surrounds a string with LaTeX math mode $...$.
+    #' @param ... {string}: String args to surround with LaTeX 
+    #'                      math mode.
+    #' @return {string}: String surrounded by LaTex math mode.
+    
+    str <- args_to_string(...)
+    paste0("$", str, "$")
+}
+
 to_str <- function(x, collapse = ", ") {
     #' Converts a list or vector to a string separated by commas.
     #' @param x {list|vector}: List or vector to convert to string.
@@ -2010,7 +2020,7 @@ gwas <- function(qc_data_path) {
         caption <- "Genomic Inflation Values ($\\lambda$) obtained with different covariates"
         col_names <- c("Covariates Used", sapply(phenotype_suffixes, function(suffix) {
             trait_name <- get_trait_name(suffix)
-            c(trait_name, paste0(trait_name, " \\Delta"))
+            c(trait_name, paste0(trait_name, " ", latex_math("\\Delta")))
         }))
 
         out_name <- add_extension("lambdas", exts$tex)
