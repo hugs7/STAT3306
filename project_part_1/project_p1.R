@@ -540,7 +540,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
         colnames(table) <- col.names
     }
 
-    latex <- print.xtable(table, print.results = FALSE, table.placement = "htb",
+    latex <- print.xtable(table, print.results = FALSE, table.placement = "H",
                           comment = FALSE, include.rownames = !hide_row_names,
                           sanitize.colnames.function = function(x) {x})
 
