@@ -637,7 +637,7 @@ wrap_write <- function(content, basename) {
     #' @param basename {string}: Name of the file to write to.
     #' @return path {string}: The full save path where the file was saved.
 
-    ext_pattern <- get_ext_pattern(list(exts$txt, exts$text))
+    ext_pattern <- get_ext_pattern(list(exts$txt, exts$tex))
     logger("DEBUG", "Initial basename: ", quotes(basename), ".")
     if (!ends_with_extension(ext_pattern, basename)) {
         basename <- check_txt_ext(basename)
