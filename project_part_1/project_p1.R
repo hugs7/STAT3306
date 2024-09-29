@@ -62,8 +62,8 @@ plots_out_dir <- file.path("./plots")
 plink_out_dir <- file.path("./plink_out")
 out_dir <- file.path("./out")
 
-plot_w <- 700
-plot_h <- 400
+plot_w <- 500
+plot_h <- 300
 
 # Overrides
 overwrite_ext_plots <- FALSE
