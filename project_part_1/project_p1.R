@@ -527,8 +527,19 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
                     logger("WARN", "Column ", i, " is not numeric.")
                 }
 
-                data[[i]] <- format(data[[i]], format = "e", digits = num_decimals)
+                data[[i]] <- format(data[[i]], scientific = TRUE, digits = num_decimals)
             }
+        }
+    } else {
+        if (digits < 0) {
+            # Scientific notation
+            numeric_cols <- sapply(data, is.numeric)
+            num_decimals <- digits * -1
+            logger("DEBUG", "Formatting columns ", to_str(numeric_cols),
+                   " as scientific with ", num_decimals, " decimals.") 
+            data[numeric_cols] <- lapply(data[numeric_cols], function(x) {
+                format(x, scientific = TRUE, digits = num_decimals)
+            })
         }
     }
 
