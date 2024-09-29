@@ -111,7 +111,7 @@ brackets <- function(...) {
 
 latex_math <- function(...) {
     #' Surrounds a string with LaTeX math mode $...$.
-    #' @param ... {string}: String args to surround with LaTeX 
+    #' @param ... {string}: String args to surround with LaTeX
     #'                      math mode.
     #' @return {string}: String surrounded by LaTex math mode.
     
