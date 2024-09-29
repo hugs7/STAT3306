@@ -547,7 +547,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
                           sanitize.colnames.function = function(x) {paste0("\\textbf{", x, "}")})
 
     latex <- gsub("\\begin{tabular}",
-                  paste0(size == "normalsize" ? "" : paste0("\\", size),
+                  paste0(size == "normalsize" ? "" : paste0("\\", size, "\n"),
                          "\\renewcommand{\\arraystretch}{",
                          line_spacing_factor, "}\n\\begin{tabular}"
                         ),
