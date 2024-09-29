@@ -2075,7 +2075,7 @@ gwas <- function(qc_data_path) {
 
             clump_path <- clumping(pheno_full_path, suffix, pc)
             clumps <- read_clumps(clump_path, suffix, pc)
-            save_clumps_df(clumps, suffix, pc, 20)
+            save_clumps_df(clumps, suffix, pc, 10)
 
             d <- gwas_plots(pheno_full_path, pc, suffix)
             lambda <- compute_lambda(d, suffix, pc)
