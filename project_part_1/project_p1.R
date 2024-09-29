@@ -1989,7 +1989,7 @@ gwas <- function(qc_data_path) {
         #' @param lambda {double}: The current lambda value.
         #' @param suffix {string}: The phenotype suffix the lambda value corresponds
         #'                         to.
-        #' @return {NULL}. lambda_row is passed by reference and updated in-place.
+        #' @return lambda_row {data.frame}. Updated lambda_row.
 
         lambda_delta <- lambda - 1.0
         logger("DEBUG", "Lambda delta: ", lambda_delta, ".")
@@ -2004,13 +2004,13 @@ gwas <- function(qc_data_path) {
         lambda_row[1, col_name] <- lambda
         lambda_row[1, delta_col_name(col_name)] <- lambda_delta
 
-        return(NULL)
+        return(lambda_row)
     }
 
 
     save_lambdas_df <- function(lambdas) {
         #' Saves the lambdas data.frame to a LaTeX table.
-        #' @param lambdas {data.frame}: Contains the lambda values for each phenotype 
+        #' @param lambdas {data.frame}: Contains the lambda values for each phenotype
         #'                              with PC off and on.
         #' @return {NULL}
         
@@ -2077,7 +2077,7 @@ gwas <- function(qc_data_path) {
 
             d <- gwas_plots(pheno_full_path, pc, suffix)
             lambda <- compute_lambda(d, suffix, pc)
-            insert_lambda(lambda_row, lambda, suffix)
+            lambda_row <- insert_lambda(lambda_row, lambda, suffix)
 
             gc()
         }
