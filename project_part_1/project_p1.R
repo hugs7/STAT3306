@@ -542,7 +542,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
 
     latex <- print.xtable(table, print.results = FALSE, table.placement = "H",
                           comment = FALSE, include.rownames = !hide_row_names,
-                          sanitize.colnames.function = function(x) {x})
+                          sanitize.colnames.function = function(x) {paste0("\\textbf{", x, "}")})
 
     latex <- gsub("\\begin{tabular}",
                   paste0("\\renewcommand{\\arraystretch}{",
