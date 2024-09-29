@@ -541,7 +541,8 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     }
 
     latex <- print.xtable(table, print.results = FALSE, table.placement = "htb",
-                          comment = FALSE, include.rownames = !hide_row_names)
+                          comment = FALSE, include.rownames = !hide_row_names,
+                          sanitize.colnames.function = function(x) {x})
 
     latex <- gsub("\\begin{tabular}",
                   paste0("\\renewcommand{\\arraystretch}{",
@@ -2005,7 +2006,6 @@ gwas <- function(qc_data_path) {
         return(lambda_row)
     }
 
-
     save_lambdas_df <- function(lambdas) {
         #' Saves the lambdas data.frame to a LaTeX table.
         #' @param lambdas {data.frame}: Contains the lambda values for each phenotype
@@ -2015,7 +2015,9 @@ gwas <- function(qc_data_path) {
         logger("Saving lambdas data.frame...")
 
         log_df(lambdas, "Lambdas")
-        latex_col_align <- paste0("|l|", paste(rep("l:l", 3), collapse = "|"), "|")
+        latex_col_align <- paste0("|l|", paste(rep("l:l", length(phenotype_suffixes)),
+                                               collapse = "|"),
+                                  "|")
         logger("DEBUG", "Latex col align: ", latex_col_align)
 
         caption <- "Genomic Inflation Values ($\\lambda$) obtained with different covariates"
@@ -2023,6 +2025,8 @@ gwas <- function(qc_data_path) {
             trait_name <- get_trait_name(suffix)
             c(trait_name, paste0(trait_name, " ", latex_math("\\Delta")))
         }))
+
+        logger("DEBUG", "Lambda col names: ", quotes(col_names), ".")
 
         out_name <- add_extension("lambdas", exts$tex)
         latex_table(lambdas, out_name, latex_col_align, caption, col_names,
