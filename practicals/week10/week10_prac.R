@@ -129,5 +129,12 @@ grm.off.diag <- grm[upper.tri(grm)]
 wrap_histogram(grm.diag, "grm.diag.png", breaks = 2500, freq = FALSE,
     xlab = "GRM diagonals", xlim = c(0.95, 1.2), main = "GRM Diag")
 
+wrap_histogram(grm.off.diag, "grm.off.diag.png", breaks = 2500,
+               xlab = "GRM off-diagonals", main = "")
 
+wrap_histogram(grm.off.diag[which(grm.off.diag > 0.1)], 
+               "grm.off.diag.0.01.png", breaks = 200,
+               freq  FALSE, xlab = "GRM off-diagonals",
+               xlim = c(0.1, 1.1), main = "")
+               
 
