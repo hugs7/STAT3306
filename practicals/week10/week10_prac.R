@@ -9,8 +9,13 @@ source("Practical_partF.R")
 
 data_folder <- "/data/STAT3306/practical/PartF"
 out_dir <- "./out"
+plots_dir <- "./plots"
+
+plot_w <- 430
+plot_h <- 300
 
 # ==== Functions ====
+
 shell_call <- function(...) {
     system(..., ignore.stdout = TRUE)
     invisible(NULL)
@@ -57,9 +62,28 @@ wrap_read_table <- function(path, header = TRUE, ...) {
     read.table(path, header = header, ...)
 }
 
+wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height = plot_h) {
+    out_path <- file.path(plots_dir, out_name)
+
+    if (file_exists(out_path)) {
+        delete_file(out_path)
+    }
+
+    png(out_path, width, height)
+    plot_callback(data, ...)
+    dev.off()
+
+    return(out_path)
+}
+
+wrap_histogram <- function(...) {
+    wrap_plot(hist, ...)
+}
+
 # === Init ===
 
 mkdir_if_not_exist(out_dir)
+mkdir_if_not_exist(plots_dir)
 
 # ==== Main ====
 
@@ -89,4 +113,18 @@ hsq.2 <- wrap_read_table(qimrx_2, fill = TRUE)
 
 head(hsq.1)
 head(hsq.2)
+
+# Unrelated individuals
+
+names(grm) <- c("IND_1", "IND_2", "SNP_NUM", "REL")
+dim(grm)
+
+grm.diag <- diag(grm)
+length(grm.diag)
+
+head(grm.diag)
+
+grm.off.diag <- grm[upper.tri(grm)]
+
+
 
