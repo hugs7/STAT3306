@@ -16,6 +16,12 @@ shell_call <- function(...) {
     invisible(NULL)
 }
 
+mkdir_if_not_exist <- function(path) {
+    if (!dir.exists(path)) {
+        dir.create(path, recursive = TRUE)
+    }
+}
+
 construct_data_path <- function(basename) {
     file.path(data_folder, basename)
 }
@@ -32,6 +38,9 @@ gcta <- function(args, out_name) {
     shell_call(command)
 }
 
+# === Init ===
+
+mkdir_if_not_exist(out_dir)
 
 # ==== Main ====
 
