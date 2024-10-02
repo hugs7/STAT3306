@@ -58,3 +58,8 @@ ht_t_x_path <- construct_data_path("HT_T_X.pheno")
 
 gcta(paste("--grm", qimrx_no_twin_path, "--pheno", ht_t_x_path, "--mpheno 1", 
            "--reml"), "QIMRX_1")
+
+gcta(paste("--grm", qimrx_no_twin_path, "--pheno", ht_t_x_path, "--mpheno 2",
+           "--reml"), "QIMRX_2")
+
+
