@@ -75,10 +75,18 @@ grm[1:preview, 1:preview]
 qimrx_no_twin_path <- construct_data_path("QIMRX_no_twin")
 ht_t_x_path <- construct_data_path("HT_T_X.pheno")
 
-gcta(paste("--grm", qimrx_no_twin_path, "--pheno", ht_t_x_path, "--mpheno 1", 
-           "--reml"), "QIMRX_1")
+qimrx_1 <- gcta(paste("--grm", qimrx_no_twin_path, "--pheno", ht_t_x_path, "--mpheno 1", 
+                      "--reml"), "QIMRX_1")
 
-gcta(paste("--grm", qimrx_no_twin_path, "--pheno", ht_t_x_path, "--mpheno 2",
-           "--reml"), "QIMRX_2")
+qimrx_2 <- gcta(paste("--grm", qimrx_no_twin_path, "--pheno", ht_t_x_path, "--mpheno 2",
+                      "--reml"), "QIMRX_2")
 
+qimrx_1 <- paste0(qimrx_1, ".hsq")
+qimrx_2 <- paste0(qimrx_2, ".hsq")
+
+hsq.1 <- wrap_read_table(qimrx_1, fill = TRUE)
+hsq.2 <- wrap_read_table(qimrx_2, fill = TRUE)
+
+head(hsq.1)
+head(hsq.2)
 
