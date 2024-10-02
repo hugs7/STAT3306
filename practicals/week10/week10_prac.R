@@ -36,6 +36,25 @@ gcta <- function(args, out_name) {
     command <- paste("gcta", full_args)
     cat(paste0("Executing '", command, "'."))
     shell_call(command)
+
+    return(full_path)
+}
+
+file_exists <- function(path) {
+    if (length(path) == 0) {
+        return(FALSE)
+    }
+
+    exists <- file.exists(path)
+    return(exists)
+}
+
+wrap_read_table <- function(path, header = TRUE, ...) {
+    if (!file_exists(path)) {
+        return(NULL)
+    }
+
+    read.table(path, header = header, ...)
 }
 
 # === Init ===
