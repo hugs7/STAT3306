@@ -126,7 +126,7 @@ head(grm.diag)
 
 grm.off.diag <- grm[upper.tri(grm)]
 
-wrap_histogram(grm.diag, "grm.diag", breaks = 2500, freq = FALSE,
+wrap_histogram(grm.diag, "grm.diag.png", breaks = 2500, freq = FALSE,
     xlab = "GRM diagonals", xlim = c(0.95, 1.2), main = "GRM Diag")
 
 
