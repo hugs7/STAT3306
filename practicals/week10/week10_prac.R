@@ -5,9 +5,37 @@
 
 source("Practical_partF.R")
 
-data_folder <- "/data/STAT3306/practical/PartF"
+# ==== Globals ====
 
-grmBinPath <- file.path(data_folder, "QIMRX_no_twin.grm")
+data_folder <- "/data/STAT3306/practical/PartF"
+out_dir <- "./out"
+
+# ==== Functions ====
+shell_call <- function(...) {
+    system(..., ignore.stdout = TRUE)
+    invisible(NULL)
+}
+
+construct_data_path <- function(basename) {
+    file.path(data_folder, basename)
+}
+
+construct_out_path <- function(basename) {
+    file.path(out_dir, basename)
+}
+
+gcta <- function(args, out_name) {
+    full_path <- construct_out_path(out_name)
+    full_args <- paste(args, "--out", full_path)
+    command <- paste("gcta", full_args)
+    cat(paste0("Executing '", command, "'."))
+    shell_call(command)
+}
+
+
+# ==== Main ====
+
+grmBinPath <- construct_data_path("QIMRX_no_twin.grm")
 cat("Data path ", grmBinPath)
 
 grm <- read_GRMBin(grmBinPath)
@@ -15,3 +43,9 @@ grm <- read_GRMBin(grmBinPath)
 preview <- 5
 
 grm[1:preview, 1:preview]
+
+qimrx_no_twin_path <- construct_data_path("QIMRX_no_twin")
+ht_t_x_path <- construct_data_path("HT_T_X.pheno")
+
+gcta(paste("--grm", qimrx_no_twin_path, "--pheno", ht_t_x_path, "--mpheno 1", 
+           "--reml"), "QIMRX_1")
