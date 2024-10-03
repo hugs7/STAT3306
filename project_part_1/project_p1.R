@@ -1701,7 +1701,7 @@ gwas <- function(qc_data_path) {
         }
 
         title_plot <- function(plot_type, use_title_case = TRUE) {
-            #' Titles a plot given it's type.
+            #' Titles a plot given its type.
             #' @param plot_type {string}: The type of the plot.
             #' @param use_title_case {bool}: Whether to use title case on the plot type.
             #'                               Defaults to TRUE.
