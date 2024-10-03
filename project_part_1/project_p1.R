@@ -1989,7 +1989,7 @@ gwas <- function(qc_data_path) {
     }
 
     insert_lambda <- function(lambda_row, lambda, suffix) {
-        #' Inserta a lambda value (and it's Delta) to the current lambda row.
+        #' Inserta a lambda value (and its Delta) to the current lambda row.
         #' @param lambda_row {data.frame}: One row data.frame containing lambda
         #'                                 values for this PC setting.
         #' @param lambda {double}: The current lambda value.
