@@ -1361,7 +1361,8 @@ sample_qc <- function(data_subset_path, perform) {
         hwe <- wrap_read_table(hwe_path)
         
         if (histogram) {
-            wrap_histogram(hwe$P, "hwe_deviations.png", xlab = "p-values of HWE test on SNPs",
+            hist_out_name <- add_extension("hwe_deviations", exts$png)
+            wrap_histogram(hwe$P, hist_out_name, xlab = "p-values of HWE test on SNPs",
                            main = "Distribution of HWE p-values")
         }
 
