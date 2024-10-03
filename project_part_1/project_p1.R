@@ -48,6 +48,12 @@ hwe_threshold <- 0.001
 freq_threshold <- 0.01
 maf_threshold <- 0.1
 
+# Clumping
+clump_p1_val <- 0.5
+clump_p2_val <- 0.5
+clump_r2_val <- 0.2
+clump_kb_val <- 500
+
 # Data Paths
 course_shared_data_path <- file.path("/data/STAT3306")
 project_data <- file.path(course_shared_data_path, "Project")
@@ -1919,10 +1925,6 @@ gwas <- function(qc_data_path) {
                pc ? " with PC": "", "...")
 
         out_name <- paste0("gwas_pheno_clumps", suffix, pc ? "_pc" : "")
-        clump_p1_val <- 0.5
-        clump_p2_val <- 0.5
-        clump_r2_val <- 0.2
-        clump_kb_val <- 500
         plink_args <- paste(pl_fgs$clump, pheno_pc_path, pl_fgs$cp1, clump_p1_val, pl_fgs$cp2,
                             clump_p2_val, pl_fgs$cr2, clump_r2_val, pl_fgs$ckb, clump_kb_val)
         plink(qc_data_path, plink_args, out_name)
