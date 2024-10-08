@@ -46,7 +46,7 @@ data_path <- file.path(project_data, "Data_QC")
 phenotypes <- file.path(project_data, "Phenotypes_QC")
 
 # Plink
-gcta_datafile_basename <- "test"
+gcta_datafile_basename <- "testFiltered"
 
 # Out Paths
 plots_out_dir <- file.path("./plots")
