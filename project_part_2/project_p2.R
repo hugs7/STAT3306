@@ -1008,9 +1008,26 @@ exts <- create_object(list("phen", "txt", "png", "cov", "eigenvec", "eigenval" "
 grm_build <- function() {
     #' Builds the GRM with GCTA from the QC dataset.
     
-    gcta_qc_data()
-
+    gcta_args <- paste(gcta_fgs$mgrm, gcta_fgs$autosome)
+    out_name <- "QIMRX"
+    gcta_qc_data(gcta_args, out_name)
 }
 
+estimate_greml_var <- function(bfile, pheno_path) {
+    gcta_args <- paste(gcta_fgs$pheno, pheno_path, gcta_fgs$mpheno, 1, gcta_fgs$reml)
+    out_name <- "greml_var"
+    gcta(bfile, gcta_args, out_name)
+}
+
+read_greml_res <- function(greml_out_path) {
+    hsq <- wrap_read_table(greml_out_path)
+
+    log_df(hsq, "Greml Results")
+}
+
+unrelated_indvs <- function() {
+    names_grm <- NULL
+
+}
 
 
