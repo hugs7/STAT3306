@@ -735,7 +735,25 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     return(path)
 }
 
-gcta <- function(bfile, gcta_args, out_name) {
+gcta_qc_data <- function(gcta_args, out_name = NULL) {
+    #' Makes a GCTA call with the QC'd dataset and specific arguments.
+    #' Serves as a wrapper to gcta function.
+    #' @param gcta_args {string}: Arguments provided to GCTA
+    #' @param out_name {string}: Basename for GCTA to output to. Should exclude
+    #'                           gcta out directory. If NULL, output is piped to
+    #'                           the console.
+    #' @return gcta_out_path {string}: Relative path from script to gcta output.
+    #'                                 Notable, this path does not contain
+    #'                                 extension added by GCTA as this differs
+    #'                                 depending upon arguments provided to GCTA.
+
+    data_files_pattern <- file.path(data_path, gcta_datafile_basename)
+    logger("TRACE", "GCTA data files pattern: ", quotes(data_files_pattern), ".")
+
+    gcta(data_files_pattern, gcta_args, out_name)
+}
+
+gcta <- function(bfile, gcta_args, out_name = NULL) {
     #' Runs a GCTA call with the given dataset and specified arguments.
     #' @param bfile {string}: Path to the binary dataset. Should not 
     #'                        include extension.
