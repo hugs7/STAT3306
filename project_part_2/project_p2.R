@@ -735,6 +735,64 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     return(path)
 }
 
+gcta <- function(bfile, gcta_args, out_name) {
+    #' Runs a GCTA call with the given dataset and specified arguments.
+    #' @param bfile {string}: Path to the binary dataset. Should not 
+    #'                        include extension.
+    #' @param gcta_args {string}: Arguments provided to GCTA
+    #' @param out_name {string}: Basename for GCTA to output to. Should exclude
+    #'                           gcta out directory. If NULL, output is piped to
+    #'                           the console.
+    #' @return gcta_out_path {string}: Relative path from script to gcta output.
+    #'                                 Notable, this path does not contain
+    #'                                 extension added by GCTA as this differs
+    #'                                 depending upon arguments provided to GCTA.
+
+    logger("DEBUG", "Using data file: ", quotes(bfile), ".")
+
+    gcta_base_cmd <- paste0("gcta", gcta_fgs$bfile, bfile, gcta_args)
+    logger("TRACE", "GCTA base command: ", quotes(gcta_base_cmd), ".")
+
+    
+    if (is.null(out_name)) {
+        # Output to console.
+        gcta_cmd <- gcta_base_cmd
+        std_out <- TRUE
+    } else {
+        # Outputs to file.
+        gcta_out_path <- construct_gcta_out_path(out_name)
+        logger("TRACE", "GCTA out path: ", quotes(gcta_out_path), ".")
+        gcta_cmd <- paste(gcta_base_cmd, gcta_fgs$out, gcta_out_path)
+        std_out <- FALSE
+    }
+
+    # Check double space - indicates missing param
+    if (grepl(" ", gcta_cmd)) {
+        logger("ERROR", "Possible missing argument in gcta command.")
+        logger("ERROR", "You were trying to run ", quotes(gcta_cmd))
+    }
+
+    if (stdout) {
+        logger("Running: ", quotes(gcta_cmd))
+        system(gcta_cmd)
+    } else {
+        # Search for partial matching file
+        logger("DEBUG", "Checking for existing match: ", quotes(gcta_out_path), ".")
+        gcta_pattern <- match_not_log(gcta_out_path)
+        if (file_exists(gcta_pattern< TRUE) && !overwrite_gcta_out) {
+            logger("Matching file(s) already exist at: ", quotes(gcta_out_path), ".")
+            return(gcta_out_path)
+        }
+
+        logger("Running: ", quotes(gcta_cmd))
+        shell_call(gcta_cmd)
+        logger("GCTA results directed to ", quotes(gcta_out_path), ".")
+    }
+
+    gc()
+    return(gcta_out_path)
+}
+
 add_extension <- function(basename, ...) {
     #' Adds extension(s) to a given basename. The basename can by a file
     #' path or just a file basename.
