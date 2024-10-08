@@ -766,7 +766,12 @@ gcta <- function(bfile, gcta_args, out_name = NULL) {
     #'                                 extension added by GCTA as this differs
     #'                                 depending upon arguments provided to GCTA.
 
-    logger("DEBUG", "Using data file: ", quotes(bfile), ".")
+    if (is.null(bfile)) {
+        logger("DEBUG", "Using qc'd data")
+        return(gcta_qc_data(gcta_args, out_name))
+    } else {
+        logger("DEBUG", "Using data file: ", quotes(bfile), ".")
+    }
 
     gcta_base_cmd <- paste0("gcta", gcta_fgs$bfile, bfile, gcta_args)
     logger("TRACE", "GCTA base command: ", quotes(gcta_base_cmd), ".")
