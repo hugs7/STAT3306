@@ -38,21 +38,6 @@ level_colours <- list(
 
 phenotype <- "Fasting Glucose"
 fam_ind_cols <- c("FID", "IID")
-find_related <- TRUE
-
-# Thresholds
-genotype_threshold <- 0.05
-het_threshold <- 0.2
-related_threshold <- 0.025  # Plink Default
-hwe_threshold <- 0.001
-freq_threshold <- 0.01
-maf_threshold <- 0.1
-
-# Clumping
-clump_p1_val <- 0.5
-clump_p2_val <- 0.5
-clump_r2_val <- 0.2
-clump_kb_val <- 500
 
 # Data Paths
 course_shared_data_path <- file.path("/data/STAT3306")
