@@ -46,11 +46,11 @@ data_path <- file.path(project_data, "Data_QC")
 phenotypes <- file.path(project_data, "Phenotypes_QC")
 
 # Plink
-plink_datafile_basename <- "test"
+gcta_datafile_basename <- "test"
 
 # Out Paths
 plots_out_dir <- file.path("./plots")
-plink_out_dir <- file.path("./plink_out")
+gcta_out_dir <- file.path("./gcta_out")
 out_dir <- file.path("./out")
 
 plot_w <- 500
@@ -58,7 +58,7 @@ plot_h <- 300
 
 # Overrides
 overwrite_ext_plots <- FALSE
-overwrite_plink_out <- FALSE
+overwrite_gcta_out <- FALSE
 
 # === Functions ===
 
@@ -751,18 +751,18 @@ add_extension <- function(basename, ...) {
 
     logger("TRACE", "Adding extensions: ", ..., " to basename ", quotes(basename), ".")
     path <- paste0(basename, ...)
-    logger("TRACE", "Constructed plink out path: ", path, ".")
+    logger("TRACE", "Constructed out path: ", path, ".")
     return(path)
 }
 
-construct_plink_out_path <- function(...) {
-    #' Constructs a file path in the plink out directory given a basename.
+construct_gcta_out_path <- function(...) {
+    #' Constructs a file path in the gcta out directory given a basename.
     #' @param ... {string}: The name of the file (potentially split) without
-    #'                      the plink out directory prefixed.
+    #'                      the gcta out directory prefixed.
     #' @return path {string}: The relative path to the file.
 
     basename <- paste0(...)
-    file.path(plink_out_dir, basename)
+    file.path(gcta_out_dir, basename)
 }
 
 
