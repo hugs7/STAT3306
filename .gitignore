@@ -48,6 +48,10 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
+# VIM Swap Files
+*.swp
+
+# User Gitignores
 
 **/out
 **/data
@@ -55,7 +59,6 @@ rsconnect/
 **/results
 *.log
 */plink_out
+**/phenotypes
 
-# VIM Swap Files
-*.swp
 
