@@ -993,13 +993,14 @@ init <- function() {
 init()
 
 # GCTA Flags
-gcta_fgs <- create_object(list("bfile", list("mgrm" = "make-grm"), "out", list("tnum" = "thread-num")),
+gcta_fgs <- create_object(list("bfile", list("mgrm" = "make-grm"), "out", list("tnum" = "thread-num"),
+                               "autosome", "pheno", "mpheno", "reml"),
                           named_flag)
 
 
 # File extensions
 exts <- create_object(list("phen", "txt", "png", "cov", "eigenvec", "eigenval" "grm", "bed",
-                           "bim", "fam"),
+                           "bim", "bin", "fam", "gz", "id"),
                       ext)
 
 # === Main ===
