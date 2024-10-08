@@ -984,10 +984,32 @@ init <- function() {
 
     logger("Initialising directories...")
     mkdir_if_not_exist(plots_out_dir)
-    mkdir_if_not_exist(plink_out_dir)
+    mkdir_if_not_exist(gcta_out_dir)
     mkdir_if_not_exist(out_dir)
 
     logger("Initialisation complete!")
 }
 
 init()
+
+# GCTA Flags
+gcta_fgs <- create_object(list("bfile", list("mgrm" = "make-grm"), "out", list("tnum" = "thread-num")),
+                          named_flag)
+
+
+# File extensions
+exts <- create_object(list("phen", "txt", "png", "cov", "eigenvec", "eigenval" "grm", "bed",
+                           "bim", "fam"),
+                      ext)
+
+# === Main ===
+
+grm_build <- function() {
+    #' Builds the GRM with GCTA from the QC dataset.
+    
+    gcta_qc_data()
+
+}
+
+
+
