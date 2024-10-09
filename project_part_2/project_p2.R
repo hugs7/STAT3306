@@ -1084,7 +1084,7 @@ remove_relatedness <- function() {
                   gcta_fgs$mkgrm)
     out_name <- "grm_rel_rmvd"
 
-    gcta_orig_data(gcta_args, out_name)
+    gcta_qc_data(gcta_args, out_name)
 }
 
 partition_variance <- function(qimrx_cleaned_path) {
