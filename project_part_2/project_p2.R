@@ -43,6 +43,7 @@ level_colours <- list(
 
 cat("Initialising globals...\n")
 phenotype <- "Fasting Glucose"
+phenotype_suffixes <- list("", "_binary1", "_binary2")
 fam_ind_cols <- c("FID", "IID")
 
 # Data Paths
@@ -1530,7 +1531,6 @@ partition_variance <- function(grm_qc_basepath) {
 
     # Main
     logger(">>> Begin Variance Partition")
-    phenotype_suffixes <- list("", "_binary1", "_binary2")
     
     covar_paths <- split_covars()
     antd_snp_paths <- split_snps()
