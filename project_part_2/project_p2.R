@@ -63,7 +63,7 @@ plot_w <- 500
 plot_h <- 300
 
 # Thresholds
-grm_relatedness_threshold <- 0.05
+gcta_rr_thresold <- 0.05
 
 # Overrides
 overwrite_ext_plots <- FALSE
@@ -1179,23 +1179,6 @@ unrelated_indvs <- function(grm_basepath) {
     #' Investigates properties of the GRM.
     #' @param grm_basepath {string}: Basepath (no extenision) to the GRM file.
     
-    remove_relatedness <- function(grm_path) {
-        #' Removes relatness between individuals who may have an affect
-        #' on the estimate of heritability. This reduces the maximum
-        #' relatedness coefficient via GCTA with --grm-cutoff.
-        #' @param grm_path {string}: Path to grm file.
-        #' @return grm_path_rr {string}: Path to new grm file with individuals
-        #'                               not meeting the relatedness threshold
-        #'                               removed from the dataset.
-
-        gcta_args <- paste(gcta_fgs$grm, grm_path, gcta_fgs$grm_cutoff,
-                           grm_relatedness_threshold, gcta_fgs$mkgrm)
-        out_name <- "grm_rel_rmvd"
-
-        grm_path_rr <- gcta_qc_data(gcta_args, out_name)
-        return(grm_path_rr)
-    }
-
     read_grml <- function(grm_basepath, show_df_preview = TRUE) {
         #' Reads a grm file given its basepath.
         #' @param grm_basepath {string}: The GRM path without extension.
@@ -1207,9 +1190,11 @@ unrelated_indvs <- function(grm_basepath) {
 
         names_grm <- c("IND_1", "IND_2", "SNP_NUM", "REL")
         names(grm) <- names_grm
+        
         if (show_df_preview) {
             log_df(grm, paste("GRM from", quotes(grm_path)))
         }
+
         return(grm)
     }
 
@@ -1248,15 +1233,43 @@ unrelated_indvs <- function(grm_basepath) {
                   xlab = "GRM Off-Diagonals", xlim = c(0.1, 1.1),
                   main = "GRM Off-Diag Distribution")
     }
+    
+    remove_relatedness <- function(grm_path) {
+        #' Removes relatness between individuals who may have an affect
+        #' on the estimate of heritability. This reduces the maximum
+        #' relatedness coefficient via GCTA with --grm-cutoff.
+        #' @param grm_path {string}: Path to grm file.
+        #' @return grm_path_rr {string}: Path to new grm file with individuals
+        #'                               not meeting the relatedness threshold
+        #'                               removed from the dataset.
 
-    rr_threshold <- 0.1
-    logger("Removing related individuals with threshold ", rr_threshold, "...")
-    grm_rr_basepath <- remove_relatedness(grm_basepath)
-    grm_nr <- read_grml(grm_rr_basepath)
-    
-    plot_grm_diag(grm)
-    plot_grm_off_diag(grm)
-    
+        logger("Removing related individuals with threshold ",
+               gcta_rr_threshold, "...")
+
+        gcta_args <- paste(gcta_fgs$grm, grm_path, gcta_fgs$grm_cutoff,
+                           gcta_rr_thresold, gcta_fgs$mkgrm)
+        out_name <- "grm_rel_rmvd"
+
+        grm_path_rr <- gcta_qc_data(gcta_args, out_name)
+        return(grm_path_rr)
+    }
+
+    for (remove in [FALSE, TRUE]) {
+        logger("Estimating Proportion of Phenotypic Variance",
+               remove ? " with threshold removal" : "", "...")
+
+        if (remove) {
+            grm_basepath <- remove_relatedness(grm_basepath)
+        } else {
+            grm_basepath <- grm_path
+        }
+
+        grm <- read_grml(grm_basepath)
+        
+        plot_grm_diag(grm)
+        plot_grm_off_diag(grm)
+    }
+
     logger("Completed relatedness computation!")
 }
 
