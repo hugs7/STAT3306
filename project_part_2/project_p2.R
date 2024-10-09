@@ -1079,11 +1079,42 @@ grm_build <- function() {
     return(grm_basepath)
 }
 
-estimate_greml_var <- function(bfile, pheno_path) {
-    gcta_args <- paste(gcta_fgs$bile, bfile, gcta_fgs$pheno, pheno_path, gcta_fgs$mpheno, 1, gcta_fgs$reml)
-    out_name <- "greml_var"
-    gcta(gcta_args, out_name)
-}
+estimate_greml_var <- function(qimrx_basepath) {
+    #' Estimates the proportion of phenotypic variance due to genome-wide
+    #' SNPs using GCTA.
+    #' @param qimrx_basepath {string}: Basepath to qimrx file to estimate from.
+    
+    estimate_phen_var_prop <- function(suffix, mpheno) {
+        #' Given a suffix and mpheno value, estimates the phenotypic variance
+        #' explained by additive genome-wide SNPs for the given phenotype.
+        #' @param suffix {string}: The suffix of the phenotype file name which in
+        #'                         turn, encodes the phenotype variant.
+        #' @param mpheno {integer}: Specifies which coviarate to use by the (n+2)th
+        #'                          column in the phen file.
+        #' @return hsq_basepath {string}: Base path to the hsq output from GCTA.
+
+        pheno_path <- construct_phenotypes_path(suffix)
+
+        gcta_args <- paste(gcta_fgs$bfile, bfile, gcta_fgs$pheno, pheno_path, gcta_fgs$mpheno, mpheno, gcta_fgs$reml)
+        out_name <- paste0("greml_var", suffix, "_", mpheno)
+        hsq_basepath <- gcta(gcta_args, out_name)
+        logger("DEBUG", "HSQ Basepath: ", quotes(hsq_basepath), ".")
+        return(hsq_basepath)
+    }
+    
+    read_hsq_res <- function(hsq_basepath) {
+        #' Reads a greml file containing the hsq result from GCTA.
+        #' @param hsq_basepath {string}: Base path to the hsq output from GCTA.
+        #' @return hsq {data.frame}: Data.frame containing the hsq result.
+        
+        hsq_path <- add_extension(hsq_basepath, exts$hsq)
+        logger("Reading HSQ result from: ", quotes(hsq_path), ".")
+
+        hsq <- wrap_read_table(hsq_path, fill = TRUE)
+
+        log_df(hsq, "HSQ Results")
+        return(hsq)
+    }
 
 read_greml_res <- function(greml_out_path) {
     hsq <- wrap_read_table(greml_out_path)
