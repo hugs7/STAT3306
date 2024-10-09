@@ -1063,11 +1063,42 @@ remove_relatedness <- function() {
     #' on the estimate of heritability. This reduces the maximum
     #' relatedness coefficient via GCTA with --grm-cutoff.
 
-    gcta_args <- (gcta_fgs$grm, grm_path, gcta_fgs$grm_cutoff, grm_relatedness_threshold,
+    gcta_args <- paste(gcta_fgs$grm, grm_path, gcta_fgs$grm_cutoff, grm_relatedness_threshold,
                   gcta_fgs$mgrm)
     out_name <- "grm_rel_rmvd"
 
     gcta_orig_data(gcta_args, out_name)
+}
+
+partition_variance <- function(qimrx_cleaned_path) {
+    maf_snps_path <- file.path()
+
+    get_gcta_args <- function(snps_path) {
+        gcta_args <- paste(gcta_fgs$bfile, qimrx_cleaned_path, gcta_fgs$extract,
+                           snps_path, gcta_fgs$autosome, gcta_fgs$mgrm,
+                           gcta_fgs$keep, qimrx_nr_id_path, gcta_fgs$tn, 2)
+        logger("DEBUG", "GCTA Args: ", quotes(gcta_args), ".")
+        return(gcta_args)
+    }
+
+    out_name <- "qimrx_nr_maf_snps"
+
+    gcta_args <- get_gcta_args(maf_snps_path)
+    gcta(gcta_args, out_name)
+    
+    gcta_args <- get_gcta_args(top_snps_path)
+    gcta(gcta_args, out_name)
+}
+
+estimate_phen_var <- function(mgrm_path) {
+    logger("Estimating Phenotypic Variance Proportion...")
+
+    gcta_args <- paste(gcta_fgs$mgrm, mgrm_path, gcta_fgs$pheno,
+                       ht_t_x_pheno_path, gcta_fgs$mpheno, 1,
+                       gcta_fgs$reml)
+    out_name <- "qimrx_multi_nr"
+    
+    gcta(gcta_args, out_name)
 }
 
 # === Main ===
