@@ -1027,6 +1027,23 @@ get_thread_args <- function(num_threads = gcta_default_tnum) {
     return(thread_args)
 }
 
+get_trait_name <- function(suffix) {
+    #' Maps suffix to phenotype / trait name. E.g. "_binary1 -> "Binary 1".
+    #' @param suffix {string}: Suffix of the filename corresponding to the phenotype.
+    #' @return trait_name {string}: Name of the trait in a friendly format.
+
+    if (suffix == "") {
+        logger("DEBUG", "Quantitative phenotype ", phenotype, ".")
+        return(phenotype)
+    }
+
+    logger("DEBUG", "Mapping suffix: ", quotes(suffix), " to trait name...")
+    binary_pattern <- "^_?([A-Za-z]+)(\\d+)$"
+    trait_name <- gsub(binary_pattern, "\\1 \\2", suffix)
+    logger("INFO", "Trait name: ", quotes(trait_name), ".")
+    return(trait_name)
+}
+
 get_pheno_path <- function(pheno_suffix) {
     #' Gets the phenotype file path for a given trait. the possible traits are:
     #'   1. "": the original, quantitative trait.
