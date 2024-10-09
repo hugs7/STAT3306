@@ -1116,10 +1116,15 @@ estimate_greml_var <- function(qimrx_basepath) {
         return(hsq)
     }
 
-read_greml_res <- function(greml_out_path) {
-    hsq <- wrap_read_table(greml_out_path)
+    for (mpheno in [1, 2]) {
+        logger("Mpheno ", mpheno, ".")
 
-    log_df(hsq, "Greml Results")
+        for (suffix in phenotype_suffixes) {
+            logger("Inspecting phenotype: ", quotes(suffix), ".")
+            hsq_basepath <- estimate_phen_var_prop(suffix, mpheno)
+            hsq <- read_hsq_res(hsq_basepath)
+        }
+    }
 }
 
 unrelated_indvs <- function() {
