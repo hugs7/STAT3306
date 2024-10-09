@@ -1196,9 +1196,21 @@ unrelated_indvs <- function(grm_basepath) {
         return(grm_path_rr)
     }
 
+    read_grml <- function(grm_basepath, show_df_preview = TRUE) {
+        #' Reads a grm file given its basepath.
+        #' @param grm_basepath {string}: The GRM path without extension.
+        #' @param grm {data.frame}: The data.frame containing the grm data.
 
-    read_grml_no_rel <- function() {
-        grm.nr <- read_GRMBin(qimrx_nr_path)
+        grm_path <- add_extension(grm_basepath, exts$grm)
+        logger("Reading GRM binary file from: ", quotes(grm_path), "...")
+        grm <- read_GRMBin(grm_path)
+
+        names_grm <- c("IND_1", "IND_2", "SNP_NUM", "REL")
+        names(grm) <- names_grm
+        if (show_df_preview) {
+            log_df(grm, paste("GRM from", quotes(grm_path)))
+        }
+        return(grm)
     }
 
 
