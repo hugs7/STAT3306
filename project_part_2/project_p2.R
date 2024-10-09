@@ -1185,7 +1185,7 @@ estimate_greml_var <- function(grm_basepath) {
         mpheno_args <- get_mpheno_args(mpheno)
         gcta_args <- paste(gcta_fgs$grm, grm_basepath, gcta_fgs$pheno, pheno_path,
                            mpheno_args, gcta_fgs$reml)
-        out_name <- paste0("greml_var", suffix, "_", mpheno)
+        out_name <- paste0("greml_var", suffix)
         hsq_basepath <- gcta(gcta_args, out_name)
         logger("DEBUG", "HSQ Basepath: ", quotes(hsq_basepath), ".")
         return(hsq_basepath)
@@ -1325,12 +1325,12 @@ unrelated_individuals <- function(grm_basepath) {
     return(grm_rr_basepath)
 }
 
-partition_variance <- function(grm_basepath) {
+partition_variance <- function(grm_qc_basepath) {
     #' Partitions variance components by creating two GRM matrices.
     #' One for lower and the other for higher minor allele frequencies
     #' (or MAFs), allowing investigation of the genetic architecture of
     #' of the trait.
-    #' @param grm_basepath {string}: Basepath to the QC'd grm data.
+    #' @param grm_qc_basepath {string}: Basepath to the QC'd grm data.
 
     split_generic <- function(combined_path, split_names, extension,
                               process_callback) {
@@ -1469,14 +1469,15 @@ partition_variance <- function(grm_basepath) {
         return(split_annotations)
     }
 
-    prep_grm <- function(maf_snps_path) {
+    prep_grm <- function(maf_snps_path, keep_ids_basepath) {
         #' Prepares the GRMs for variance partitioning.
         #' @param maf_snps_path {string}: Path to the SNPs to extract.
         #' @return {string}: Path to prepared grm output.
         
         logger("Preparing GRM for MAF: ", quotes(basename(maf_snps_path)), "...")
+        keep_ids_path <- add_extension(keep_ids_basepath, exts$grm, exts$id)
         thread_args <- get_thread_args()
-        gcta_args <- paste(gcta_fgs$bfile, qimrx_cleaned_path, gcta_fgs$extract,
+        gcta_args <- paste(gcta_fgs$bfile, grm_qc_basepath, gcta_fgs$extract,
                            maf_snps_path, gcta_fgs$autosome, gcta_fgs$mkgrm,
                            gcta_fgs$keep, keep_ids_path, thread_args)
 
@@ -1521,10 +1522,10 @@ partition_variance <- function(grm_basepath) {
 
         for (annotation in names(antd_snp_paths)) {
             logger("Partitioning SNPs labelled: ", quotes(annotation), ".")
-            snps_path <- antd_snp_paths[[annotation]]
+            snps_basepath <- antd_snp_paths[[annotation]]
             pheno_path <- get_pheno_path(suffix)
             
-            prep_grm(snps_path)
+            prep_grm(snps_path, snps_basepath)
             partition_comp(suffix, annotation, pheno_path)
         }
     }
