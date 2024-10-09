@@ -1005,7 +1005,18 @@ off_diag <- function(df) {
     return(upper_tri)
 }
 
-get_thread_args <- function(num_threads = gcta_default-tnum) {
+get_mpheno_args <- function(mpheno = 1) {
+    #' Generates mpheno arguments for GCTA given a (n+2) mpheno column number.
+    #' @param mpheno {number}: The (n+2)th column to look at in the covariate
+    #'                         file. Defaults to 1
+    #' @return mpheno_args {string}: GCTA mpheno arguments.
+    
+    logger("DEBUG", "Generating mpheno number args with mpheno = ", mpheno, ".")
+    mpheno_args <- paste(gcta_fgs$mpheno, mpheno)
+    return(mpheno_args)
+}
+
+get_thread_args <- function(num_threads = gcta_default_tnum) {
     #' Generates thread number arguments for GCTA given a number of threads.
     #' @param num_threads {number}: How many threads for GCTA to use. Defaults
     #'                              to 2.
