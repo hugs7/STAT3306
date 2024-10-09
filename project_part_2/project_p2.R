@@ -1282,8 +1282,13 @@ unrelated_indvs <- function(grm_basepath) {
 }
 
 partition_variance <- function(qimrx_cleaned_path) {
-    prep_grm <- function() {
-        thread_args <- get_thread_args
+    prep_grm <- function(maf_snps_path) {
+        #' Prepares the GRMs for variance partitioning.
+        #' @param maf_snps_path {string}: Path to the SNPs to extract.
+        #' @return {string}: Path to prepared grm output.
+        
+        logger("Preparing GRM for MAF: ", quotes(basename(maf_snps_path)), "...")
+        thread_args <- get_thread_args()
         gcta_args <- paste(gcta_fgs$bfile, qimrx_cleaned_path, gcta_fgs$extract,
                            maf_snps_path, gcta_fgs$autosome, gcta_fgs$mkgrm,
                            gcta_fgs$keep, keep_ids_path, thread_args)
