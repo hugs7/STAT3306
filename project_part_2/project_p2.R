@@ -47,6 +47,7 @@ phenotypes <- file.path(project_data, "Phenotypes_QC")
 
 # GCTA
 gcta_datafile_basename <- "testFiltered"
+gcta_default_tnum <- 2
 
 # Out Paths
 plots_out_dir <- file.path("./plots")
@@ -979,6 +980,17 @@ off_diag <- function(df) {
     return(upper_tri)
 }
 
+get_thread_args <- function(num_threads = gcta_default-tnum) {
+    #' Generates thread number arguments for GCTA given a number of threads.
+    #' @param num_threads {number}: How many threads for GCTA to use. Defaults
+    #'                              to 2.
+    #' @return thread_args {string}: GCTA thread num arguments.
+    
+    logger("DEBUG", "Generating thread number args with ", num_threads, " threads.")
+    thread_args <- paste(gcta_fgs$tnum, num_threads)
+    return(thread_args)
+}
+
 ####
 
 init <- function() {
@@ -999,24 +1011,29 @@ init <- function() {
 init()
 
 # GCTA Flags
-gcta_fgs <- create_object(list("bfile", "mgrm", list("mkgrm" = "make-grm"), "out", list("tnum" = "thread-num"),
-                               "autosome", "pheno", "mpheno", "reml"),
+gcta_fgs <- create_object(list("bfile", "mgrm", list("mkgrm" = "make-grm"), "out",
+                               list("tnum" = "thread-num"), "autosome", "pheno",
+                               "mpheno", "reml"),
                           named_flag)
 
 
 # File extensions
-exts <- create_object(list("phen", "txt", "png", "cov", "eigenvec", "eigenval" "grm", "bed",
-                           "bim", "bin", "fam", "gz", "id"),
+exts <- create_object(list("phen", "txt", "png", "cov", "eigenvec", "eigenval",
+                           "grm", "bed", "bim", "bin", "fam", "gz", "id"),
                       ext)
 
 # === Main ===
 
 grm_build <- function() {
     #' Builds the GRM with GCTA from the QC dataset.
+    #' @return grm_basepath {string}: Base path to grm files generated.
     
-    gcta_args <- paste(gcta_fgs$mkgrm, gcta_fgs$autosome)
+    tnum_args <- get_thread_args()
+    gcta_args <- paste(gcta_fgs$mkgrm, gcta_fgs$autosome, tnum_args)
     out_name <- "QIMRX"
-    gcta_qc_data(gcta_args, out_name)
+    grm_basepath <- gcta_qc_data(gcta_args, out_name)
+    logger("DEBUG", "GRM Basepath: ", quotes(grm_basepath), ".")
+    return(grm_basepath)
 }
 
 estimate_greml_var <- function(bfile, pheno_path) {
