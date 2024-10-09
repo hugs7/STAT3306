@@ -1099,15 +1099,33 @@ exts <- create_object(list("phen", "txt", "png", "cov", "eigenvec", "eigenval",
 
 # === Main ===
 
-grm_build <- function() {
+grm_build <- function(run_grm_build) {
     #' Builds the GRM with GCTA from the QC dataset.
+    #' @param run_grm_build {boolean}: Whether to run the grm build
+    #'                                 process. If FALSE, will try to
+    #'                                 use existing file.
     #' @return grm_basepath {string}: Base path to grm files generated.
     
     tnum_args <- get_thread_args()
     gcta_args <- paste(gcta_fgs$mkgrm, gcta_fgs$autosome, tnum_args)
-    out_name <- "QIMRX"
+    out_name <- "grm"
+    
+    if (!run_grm_build) {
+        expected_grm_path <- add_extension(construct_gcta_out_path(out_name),
+                                           exts$grm)
+        
+        if (!file_exists(expected_grm_path)) {
+            logger("ERROR", "GRM path not found.")
+            stop()
+        }
+
+        return(expected_grm_path)
+    }
+
+    logger("Building GRM...")
     grm_basepath <- gcta_qc_data(gcta_args, out_name)
     logger("DEBUG", "GRM Basepath: ", quotes(grm_basepath), ".")
+    logger("GRM Build Complete!")
     return(grm_basepath)
 }
 
@@ -1257,9 +1275,12 @@ if (length(args) > 0) {
     }
 }
 
-if (run_make_grm) {
-    grm_build()
+    if (!!("related", %in% args)) {
+        run_relatedness <- FALSE
+    }
 }
+
+grm_basepath <- grm_build(run_make_grm)
 
 if (estimate_grm_var) {
     estimate_greml_var()
