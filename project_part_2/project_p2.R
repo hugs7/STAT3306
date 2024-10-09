@@ -1293,6 +1293,9 @@ partition_variance <- function(qimrx_cleaned_path) {
                            maf_snps_path, gcta_fgs$autosome, gcta_fgs$mkgrm,
                            gcta_fgs$keep, keep_ids_path, thread_args)
 
+        out_name <- paste0("grm_prep", dots_to_dashes(maf_snps_path))
+        gcta_out_path <- gcta(gcta_args, out_name)
+        return(gcta_out_path)
     }
 
     partition_comp <- function() {
