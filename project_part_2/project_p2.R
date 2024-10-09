@@ -1315,7 +1315,7 @@ partition_variance <- function(grm_basepath) {
     #' @param grm_basepath {string}: Basepath to the QC'd grm data.
 
     split_generic <- function(combined_path, split_names, extension,
-                              process_callback, retain_cols) {
+                              process_callback) {
         #' Generic function to handle split of data.frames into a number of
         #' sub data.frames by cases based on a callback function. This
         #' function handles any number of cases specified in split_names.
@@ -1326,7 +1326,6 @@ partition_variance <- function(grm_basepath) {
         #'                               and output files.
         #' @param callback {function}: A callback function defining the
         #'                             splitting logic.
-        #' @param retain_cols {vector}: Columns to retain when splitting
         #' @return {list}: Contains paths to each split file, with names
         #'                 corresponding to entries in split_names.
         
@@ -1336,6 +1335,8 @@ partition_variance <- function(grm_basepath) {
         combined_df <- wrap_read_table(combined_path)
 
         for (name in split_names) {
+            logger("DEBUG", "Name: ", quotes(name), ".")
+
             output_name <- add_extension(name, extension)
             output_path <- construct_out_path(output_name)
 
@@ -1344,13 +1345,13 @@ partition_variance <- function(grm_basepath) {
                 output_paths[[name]] <- output_path
             } else {
                 logger("Output for ", quotes(name), " doesn't exist. Computing...")
-
-                split_data <- combined_df[, retain_cols,
-                                                drop = FALSE]
-                split_data <- callback(combined_df, split_data)
-
-                output_paths[[name]] <- wrap_write_table(split_data
+                
+                output_data <- process_callback(combined_df, name)
+                
+                output_path <- wrap_write_table(split_data
                                         output_filename, header = FALSE)
+                logger("DEBUG", "Output path: ", quotes(output_path), ".")
+                output_paths[[name]] <- output_path
             }
         }
 
@@ -1366,15 +1367,17 @@ partition_variance <- function(grm_basepath) {
         #'                   - discrete: Path to discrete covars file.
         #'                   - continuous: Path to continuous covars file.
 
-        split_covars_callback <- function(combined_covars, split_data) {
+        split_covars_callback <- function(combined_covars, name) {
             #' Callback function to separate discrete and continuous covariates.
             #' @param combined_covars {data.frame}: Combined covariates data.frame.
-            #' @param split_data {data.frame}: Cumulative data.frame containing
-            #'                                 split covariates.
+            #' @param name {character}: The name of the split type (discrete or
+            #'                          (continuous)
             #' @return split_data {data.frame}: Updated data.frame with the
             #'                                  appropriate covariates.
             
             logger("DEBUG", "  >>> Begin split covars callback.")
+            split_data <- combined_df[, fam_ind_cols, drop = FALSE]
+
             for (i in 3:ncol(combined_covars)) {
                 column <- combined_covars[[i]]
 
@@ -1383,11 +1386,9 @@ partition_variance <- function(grm_basepath) {
                         # Ensure binary data is encoded as 0s and 1s
                         column <- ifelse(column == 1, 0, 1)
                     }
-                    
-                    discrete_covars[[names(combined_covars)[i]]] <- column
-                } else {
-                    continuous_covars[[names(combined_covars)[i]]] <- column
-                }
+                }    
+                
+                split_data[[names(combined_covars)[i]]] <- column
             }
 
             logger("DEBUG", "  <<< End split covars callback.")
