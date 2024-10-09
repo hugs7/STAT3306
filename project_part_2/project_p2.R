@@ -1261,6 +1261,23 @@ unrelated_indvs <- function(grm_basepath) {
 }
 
 partition_variance <- function(qimrx_cleaned_path) {
+    prep_grm <- function() {
+        thread_args <- get_thread_args
+        gcta_args <- paste(gcta_fgs$bfile, qimrx_cleaned_path, gcta_fgs$extract,
+                           maf_snps_path, gcta_fgs$autosome, gcta_fgs$mkgrm,
+                           gcta_fgs$keep, keep_ids_path, thread_args)
+
+    }
+
+    partition_comp <- function() {
+        mpheno <- 1
+        mpheno_args <- get_mpheno_args(mpheno)
+        gcta_args <- paste(gcta_fgs$mgrm, mgrm_path, gcta_fgs$pheno, pheno_path,
+                           mpheno_args)
+        out_name <- "multi_nr_partition"
+        gcta(gcta_args, out_name)
+    }
+
     maf_snps_path <- file.path()
 
     get_gcta_args <- function(snps_path) {
