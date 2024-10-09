@@ -1345,7 +1345,7 @@ partition_variance <- function(grm_basepath) {
             } else {
                 logger("Output for ", quotes(name), " doesn't exist. Computing...")
 
-                split_data <- combined_covars[, retain_cols,
+                split_data <- combined_df[, retain_cols,
                                                 drop = FALSE]
                 split_data <- callback(combined_df, split_data)
 
