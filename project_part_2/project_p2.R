@@ -1314,16 +1314,19 @@ partition_variance <- function(grm_basepath) {
     #' of the trait.
     #' @param grm_basepath {string}: Basepath to the QC'd grm data.
 
-    split_covars <- function(combined_covars_path) {
+    split_covars <- function() {
         #' Splits the combined covariates into two files: one disctrete
         #' and one continuous, so they can be used by GCTA. Note the
         #' headers of the files are stripped as per GCTA requirements.
-        #' @param combined_covars_path {string}: Path to combined
-        #'                                       covariates file.
         #' @return {list}: Contains paths to each covariate file with keys
         #'                   - discrete: Path to discrete covars file.
         #'                   - continuous: Path to continuous covars file.
-        
+       
+        combined_basename <- add_extension("covariateFiltered", exts$cov)
+        combined_covars_path <- construct_data_path(combined_basename)
+        logger("DEBUG", "Combined covars path: ", quotes(combined_covars_path),
+               ".")
+
         discrete_name <- add_extension("covars_discrete", exts$cov)
         continuous_name <- add_extension("covars_continuous", exts$cov)
 
@@ -1370,7 +1373,6 @@ partition_variance <- function(grm_basepath) {
             continuous_path <- wrap_write_table(combined_covars, continuous_name,
                                                 header = FALSE)
         }
-
 
         split_covars <- list(discrete = discrete_path,
                              continuous = continuous_path)
@@ -1419,6 +1421,8 @@ partition_variance <- function(grm_basepath) {
 
     # Main
     phenotype_suffixes <- list("";, "_binary1", "_binary2")
+    
+    covar_paths <- split_covars()
 
     maf_snps_path <- file.path()
 
