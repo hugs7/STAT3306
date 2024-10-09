@@ -999,7 +999,7 @@ init <- function() {
 init()
 
 # GCTA Flags
-gcta_fgs <- create_object(list("bfile", list("mgrm" = "make-grm"), "out", list("tnum" = "thread-num"),
+gcta_fgs <- create_object(list("bfile", "mgrm", list("mkgrm" = "make-grm"), "out", list("tnum" = "thread-num"),
                                "autosome", "pheno", "mpheno", "reml"),
                           named_flag)
 
@@ -1014,7 +1014,7 @@ exts <- create_object(list("phen", "txt", "png", "cov", "eigenvec", "eigenval" "
 grm_build <- function() {
     #' Builds the GRM with GCTA from the QC dataset.
     
-    gcta_args <- paste(gcta_fgs$mgrm, gcta_fgs$autosome)
+    gcta_args <- paste(gcta_fgs$mkgrm, gcta_fgs$autosome)
     out_name <- "QIMRX"
     gcta_qc_data(gcta_args, out_name)
 }
@@ -1064,7 +1064,7 @@ remove_relatedness <- function() {
     #' relatedness coefficient via GCTA with --grm-cutoff.
 
     gcta_args <- paste(gcta_fgs$grm, grm_path, gcta_fgs$grm_cutoff, grm_relatedness_threshold,
-                  gcta_fgs$mgrm)
+                  gcta_fgs$mkgrm)
     out_name <- "grm_rel_rmvd"
 
     gcta_orig_data(gcta_args, out_name)
@@ -1075,7 +1075,7 @@ partition_variance <- function(qimrx_cleaned_path) {
 
     get_gcta_args <- function(snps_path) {
         gcta_args <- paste(gcta_fgs$bfile, qimrx_cleaned_path, gcta_fgs$extract,
-                           snps_path, gcta_fgs$autosome, gcta_fgs$mgrm,
+                           snps_path, gcta_fgs$autosome, gcta_fgs$mkgrm,
                            gcta_fgs$keep, qimrx_nr_id_path, gcta_fgs$tn, 2)
         logger("DEBUG", "GCTA Args: ", quotes(gcta_args), ".")
         return(gcta_args)
