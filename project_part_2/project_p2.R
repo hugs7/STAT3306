@@ -973,6 +973,15 @@ wrap_scatter <- function(abline_h, abline_col, abline_name, ...) {
     wrap_plot(plot_with_abline, ...)
 }
 
+off_diag <- function(df) {
+    #' Returns the off diagonal elements of a data.frame. Returns the upper triangle
+    #' @param df {data.frame}: A data.frame to get the off diagonal elements from.
+    #' @return {data.frame}: Data.frame containing only the off diagonal elements.
+
+    upper_tri <- df[upper.tri(df)]
+    return(upper_tri)
+}
+
 ####
 
 init <- function() {
