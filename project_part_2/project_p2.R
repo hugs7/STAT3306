@@ -1402,13 +1402,53 @@ partition_variance <- function(grm_basepath) {
 
         split_names <- paste0("covars_", c("discrete", "continuous"))
         split_paths <- split_generic(combined_covars_path, split_names,
-                                     exts$cov, split_covars_callback,
-                                     fam_ind_cols)
+                                     exts$cov, split_covars_callback)
 
         return(split_paths)
     }
 
-        return(split_covars)
+    split_snps <- function() {
+        #' Splits SNPs by the label from the annotation file into two files.
+        #' One for top MAFs and one for bottom.
+        #' @return {list}: Contains paths to each SNP id file with keys
+        #'                   - top: Path to SNP id file for bottom MAFs.
+        #'                   - bottom: Path to SNP id file for top MAFs.
+
+        top <- "top"
+        bottom <- "bottom"
+        
+        split_snp_ids_callback <- function(data, name) {
+            #" Callback function to split SNP IDs based on Annotated status.
+            #' @param data {data.frame}: Input data containing combined SNP
+            #'                           annotations.
+            #' @param name {character}: The name of the split (top or
+            #'                          bottom).
+            #' @return {data.frame}: The subset of SNP IDs based on the
+            #'                       annotation column.
+
+            snp_id_col <- "ID"
+            drop = FALSE
+
+            if (name == top) {
+                match <- 1
+            } else if (name == bottom) {
+                match <- 0
+            } else {
+                logger("ERROR", "Invalid split name: ", quotes(name), ".")
+                stop()
+            }
+            
+            subset <- data[data$Annotated == match, snp_id_col, drop = drop]
+            return(subset)
+        }
+
+        comb_annotation_basename <- add_extension("annotation", exts$txt)
+        combined_annotation_path <- construct_data_path(comb_annotation_basename)
+        split_names <- c(top, bottom)
+        split_annotations <- split_generic(combined_annotation_path, split_names,
+                                           exts$txt, split_snp_ids_callback)
+
+        return(split_annotations)
     }
 
     prep_grm <- function(maf_snps_path) {
