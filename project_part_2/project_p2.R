@@ -45,7 +45,7 @@ project_data <- file.path(course_shared_data_path, "Project")
 data_path <- file.path(project_data, "Data_QC")
 phenotypes <- file.path(project_data, "Phenotypes_QC")
 
-# Plink
+# GCTA
 gcta_datafile_basename <- "testFiltered"
 
 # Out Paths
@@ -53,8 +53,12 @@ plots_out_dir <- file.path("./plots")
 gcta_out_dir <- file.path("./gcta_out")
 out_dir <- file.path("./out")
 
+# Plotting
 plot_w <- 500
 plot_h <- 300
+
+# Thresholds
+grm_relatedness_threshold <- 0.05
 
 # Overrides
 overwrite_ext_plots <- FALSE
@@ -1052,6 +1056,18 @@ unrelated_indvs <- function() {
     wrap_hist(grm.off.diag.clipped, hist_name, breaks = 200, freq = FALSE,
               xlab = "GRM Off-Diagonals", xlim = c(0.1, 1.1),
               main = "GRM Off-Diag Distribution")
+}
+
+remove_relatedness <- function() {
+    #' Removes relatness between individuals who may have an affect
+    #' on the estimate of heritability. This reduces the maximum
+    #' relatedness coefficient via GCTA with --grm-cutoff.
+
+    gcta_args <- (gcta_fgs$grm, grm_path, gcta_fgs$grm_cutoff, grm_relatedness_threshold,
+                  gcta_fgs$mgrm)
+    out_name <- "grm_rel_rmvd"
+
+    gcta_orig_data(gcta_args, out_name)
 }
 
 # === Main ===
