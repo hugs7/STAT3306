@@ -1035,10 +1035,31 @@ read_greml_res <- function(greml_out_path) {
 }
 
 unrelated_indvs <- function() {
-    names_grm <- NULL
+    names_grm <- c("IND_1", "IND_2", "SNP_NUM", "REL")
+    names(grm) <- names_grm
+    log_df(grm, "GRM (named)")
+    
+    grm.diag <- diag(grm)
+    logger("GRM diag length: ", length(grm.diag), ".")
 
+    log_df(grm.diag, "GRM (diag)")
+
+    grm.off.diag <- off_diag(grm)
+
+    hist_name <- add_extension("grm.diag", exts$png)
+    wrap_hist(grm.diag, hist_name, breaks = 2500, freq = FALSE, xlab = "GRM Diagonals",
+              xlim = c(0.95, 1.2), main = "GRM Diag Distribution")
+
+    hist_name <- add_extension("grm.off.diag", exts$png)
+    wrap_hist(grm.off.diag, hist_name, breaks = 200, freq = FALSE, xlab = "GRM Off-Diagonals",
+              xlim = c(0.1, 1.1), main = "GRM Off-Diag Distribution")
+
+    threshold <- 0.1
+    grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > threshold)]
+    wrap_hist(grm.off.diag.clipped, hist_name, breaks = 200, freq = FALSE,
+              xlab = "GRM Off-Diagonals", xlim = c(0.1, 1.1),
+              main = "GRM Off-Diag Distribution")
 }
-
 
 # === Main ===
 
@@ -1046,16 +1067,24 @@ args <- commandArgs(trailingOnly = TRUE)
 
 # Run all by default
 run_make_grm <- TRUE
+estimate_grm_var <- TRUE
 
 if (length(args) > 0) {
     if (!("grm" %in% args)) {
         run_make_grm <- FALSE
     }
 
+    if (!("grm_estimate" %in% args)) {
+        estimate_grm_var <- FALSE
+    }
 }
 
 if (run_make_grm) {
     grm_build()
+}
+
+if (estimate_grm_var) {
+    estimate_greml_var()
 }
 
 logger("DONE!")
