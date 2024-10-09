@@ -1506,24 +1506,21 @@ partition_variance <- function(grm_basepath) {
     phenotype_suffixes <- list("", "_binary1", "_binary2")
     
     covar_paths <- split_covars()
+    antd_snp_paths <- split_snps()
 
-    maf_snps_path <- file.path()
+    for (suffix in phenotype_suffixes) {
+        trait_name <- get_trait_name(suffix)
+        logger("Partitioning varaince components for trait: ", quotes(trait_name), ".")
 
-    get_gcta_args <- function(snps_path) {
-        gcta_args <- paste(gcta_fgs$bfile, qimrx_cleaned_path, gcta_fgs$extract,
-                           snps_path, gcta_fgs$autosome, gcta_fgs$mkgrm,
-                           gcta_fgs$keep, qimrx_nr_id_path, gcta_fgs$tn, 2)
-        logger("DEBUG", "GCTA Args: ", quotes(gcta_args), ".")
-        return(gcta_args)
+        for (annotation in names(antd_snp_paths)) {
+            logger("Partitioning SNPs labelled: ", quotes(annotation), ".")
+            snps_path <- antd_snp_paths[[annotation]]
+            pheno_path <- get_pheno_path(suffix)
+            
+            prep_grm(snps_path)
+            partition_comp(suffix, annotation, pheno_path)
+        }
     }
-
-    out_name <- "qimrx_nr_maf_snps"
-
-    gcta_args <- get_gcta_args(maf_snps_path)
-    gcta(gcta_args, out_name)
-    
-    gcta_args <- get_gcta_args(top_snps_path)
-    gcta(gcta_args, out_name)
 }
 
 # === Main ===
@@ -1534,6 +1531,7 @@ args <- commandArgs(trailingOnly = TRUE)
 run_make_grm <- TRUE
 estimate_grm_var <- TRUE
 run_relatedness <- TRUE
+run_partition <- TRUE
 
 if (length(args) > 0) {
     if (!("grm" %in% args)) {
@@ -1547,6 +1545,10 @@ if (length(args) > 0) {
     if (!("related" %in% args)) {
         run_relatedness <- FALSE
     }
+
+    if (!("partition" %in% args)) {
+        run_partition <- FALSE
+    }
 }
 
 grm_basepath <- grm_build(run_make_grm)
@@ -1556,7 +1558,11 @@ if (estimate_grm_var) {
 }
 
 if (run_relatedness) {
-    unrelated_indvs(grm_basepath)
+    grm_rr_basepath <- unrelated_indvs(grm_basepath)
+
+    if (run_partition) {
+        partition_variance(grm_rr_basepath)
+    }
 }
 
 logger("DONE!")
