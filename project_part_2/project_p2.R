@@ -1146,7 +1146,7 @@ estimate_greml_var <- function(grm_basepath) {
         pheno_path <- construct_phenotypes_path(suffix)
         mpheno <- 1
         mpheno_args <- get_mpheno_args(mpheno)
-        gcta_args <- paste(gcta_fgs$bfile, bfile, gcta_fgs$pheno, pheno_path,
+        gcta_args <- paste(gcta_fgs$grm, grm_basepath, gcta_fgs$pheno, pheno_path,
                            mpheno_args, gcta_fgs$reml)
         out_name <- paste0("greml_var", suffix, "_", mpheno)
         hsq_basepath <- gcta(gcta_args, out_name)
