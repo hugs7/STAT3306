@@ -748,15 +748,15 @@ gcta_qc_data <- function(gcta_args, out_name = NULL) {
     #'                                 depending upon arguments provided to GCTA.
 
     data_files_pattern <- file.path(data_path, gcta_datafile_basename)
-    logger("TRACE", "GCTA data files pattern: ", quotes(data_files_pattern), ".")
-
-    gcta(data_files_pattern, gcta_args, out_name)
+    logger("DEBUG", "GCTA data files pattern: ", quotes(data_files_pattern), ".")
+    
+    gcta_args <- paste(gcta_fgs$bfile, data_files_pattern, gcta_args
+    
+    gcta(gcta_args, out_name)
 }
 
-gcta <- function(bfile, gcta_args, out_name = NULL) {
+gcta <- function(gcta_args, out_name = NULL) {
     #' Runs a GCTA call with the given dataset and specified arguments.
-    #' @param bfile {string}: Path to the binary dataset. Should not 
-    #'                        include extension.
     #' @param gcta_args {string}: Arguments provided to GCTA
     #' @param out_name {string}: Basename for GCTA to output to. Should exclude
     #'                           gcta out directory. If NULL, output is piped to
@@ -766,15 +766,8 @@ gcta <- function(bfile, gcta_args, out_name = NULL) {
     #'                                 extension added by GCTA as this differs
     #'                                 depending upon arguments provided to GCTA.
 
-    if (is.null(bfile)) {
-        logger("DEBUG", "Using qc'd data")
-        return(gcta_qc_data(gcta_args, out_name))
-    } else {
-        logger("DEBUG", "Using data file: ", quotes(bfile), ".")
-    }
-
-    gcta_base_cmd <- paste0("gcta", gcta_fgs$bfile, bfile, gcta_args)
-    logger("TRACE", "GCTA base command: ", quotes(gcta_base_cmd), ".")
+    gcta_base_cmd <- paste("gcta", gcta_args)
+    logger("DEBUG", "GCTA base command: ", quotes(gcta_base_cmd), ".")
 
     
     if (is.null(out_name)) {
@@ -1023,9 +1016,9 @@ grm_build <- function() {
 }
 
 estimate_greml_var <- function(bfile, pheno_path) {
-    gcta_args <- paste(gcta_fgs$pheno, pheno_path, gcta_fgs$mpheno, 1, gcta_fgs$reml)
+    gcta_args <- paste(gcta_fgs$bile, bfile, gcta_fgs$pheno, pheno_path, gcta_fgs$mpheno, 1, gcta_fgs$reml)
     out_name <- "greml_var"
-    gcta(bfile, gcta_args, out_name)
+    gcta(gcta_args, out_name)
 }
 
 read_greml_res <- function(greml_out_path) {
