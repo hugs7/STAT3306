@@ -671,11 +671,14 @@ delete_file <- function(path) {
     return(exists)
 }
 
-wrap_write <- function(content, basename) {
+wrap_write <- function(content, basename, append = FALSE, ...) {
     #' Writes contents to a file. Output is always placed in out directory.
     #' Allows writing as .txt or .tex.
     #' @param content {string}: The content to write.
     #' @param basename {string}: Name of the file to write to.
+    #' @param append {boolean}: Appends to the file if it already exists.
+    #'                          Defaults to FALSE.
+    #' @param ... {character}: Extra arguments to provide to write callback.
     #' @return path {string}: The full save path where the file was saved.
 
     ext_pattern <- get_ext_pattern(list(exts$txt, exts$tex))
@@ -686,7 +689,7 @@ wrap_write <- function(content, basename) {
     
     path <- construct_out_path(basename)
 
-    if (file_exists(path)) {
+    if (file_exists(path) && !append) {
         logger("WARN", "Overwriting file at path ", quotes(path), ".")
         delete_file(path)
     }
@@ -698,7 +701,7 @@ wrap_write <- function(content, basename) {
     
     logger("DEBUG", "Writing data to ", quotes(path), " ...")
 
-    write(content, path)
+    write(content, path, append = append, ...)
     logger("DEBUG", "Writing complete. Cleaning up...")
     rm(content)
     gc()
@@ -710,6 +713,7 @@ wrap_read_table <- function(path, header = TRUE, ...) {
     #' Wrapper for reading a table from a file.
     #' @param path {string}: The path of the file to read the table from.
     #' @param header {boolean}. Defaults to true. If true, expects header to exist in file.
+    #' @param ... {character}: Extra arguments to provide to read.table callback.
     #' @return {data.frame}: Dataframe containing the table data. NULL if file does not exist.
 
     if (!file_exists(path)) {
@@ -736,6 +740,7 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     #' @param sep {string}: The separator to delimit between columns in the table.
     #' @param quote {boolean}: Whether to include quotes for strings in the table
     #'                         data. Disabled by default.
+    #' @param ... {character}: Extra arguments to provide to write.table callback.
     #' @return path {string}: The full save path where the table was saved.
 
     ext_pattern <- get_ext_pattern(list(exts$txt, exts$phen, exts$cov))
