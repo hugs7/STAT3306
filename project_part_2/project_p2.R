@@ -1503,7 +1503,7 @@ partition_variance <- function(grm_basepath) {
     }
 
     # Main
-    phenotype_suffixes <- list("";, "_binary1", "_binary2")
+    phenotype_suffixes <- list("", "_binary1", "_binary2")
     
     covar_paths <- split_covars()
 
@@ -1544,7 +1544,7 @@ if (length(args) > 0) {
         estimate_grm_var <- FALSE
     }
 
-    if (!!("related", %in% args)) {
+    if (!("related" %in% args)) {
         run_relatedness <- FALSE
     }
 }
