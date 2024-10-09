@@ -829,19 +829,19 @@ gcta <- function(gcta_args, out_name = NULL) {
     }
 
     # Check double space - indicates missing param
-    if (grepl(" ", gcta_cmd)) {
+    if (grepl("  ", gcta_cmd)) {
         logger("ERROR", "Possible missing argument in gcta command.")
         logger("ERROR", "You were trying to run ", quotes(gcta_cmd), ".")
     }
 
-    if (stdout) {
+    if (std_out) {
         logger("Running: ", quotes(gcta_cmd))
         system(gcta_cmd)
     } else {
         # Search for partial matching file
         logger("DEBUG", "Checking for existing match: ", quotes(gcta_out_path), ".")
         gcta_pattern <- match_not_log(gcta_out_path)
-        if (file_exists(gcta_pattern< TRUE) && !overwrite_gcta_out) {
+        if (file_exists(gcta_pattern, TRUE) && !overwrite_gcta_out) {
             logger("Matching file(s) already exist at: ", quotes(gcta_out_path), ".")
             return(gcta_out_path)
         }
