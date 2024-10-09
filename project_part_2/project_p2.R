@@ -1096,7 +1096,7 @@ init()
 # GCTA Flags
 gcta_fgs <- create_object(list("bfile", "mgrm", list("mkgrm" = "make-grm"), "out",
                                list("tnum" = "thread-num"), "autosome", "pheno",
-                               "mpheno", "reml", "covar"),
+                               "mpheno", "reml", "covar", "keep", "extract"),
                           named_flag)
 
 
