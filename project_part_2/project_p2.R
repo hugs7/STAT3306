@@ -752,7 +752,7 @@ gcta_qc_data <- function(gcta_args, out_name = NULL) {
     #'                                 extension added by GCTA as this differs
     #'                                 depending upon arguments provided to GCTA.
 
-    data_files_pattern <- file.path(data_path, gcta_datafile_basename)
+    data_files_pattern <- construct_data_path(gcta_datafile_basename)
     logger("DEBUG", "GCTA data files pattern: ", quotes(data_files_pattern), ".")
     
     gcta_args <- paste(gcta_fgs$bfile, data_files_pattern, gcta_args
@@ -949,7 +949,7 @@ wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height
     #' @return out_path {string}: Path to saved plot file.
 
     out_name <- check_png_ext(out_name, TRUE)
-    out_path <- file.path(plots_out_dir, out_name)
+    out_path <- construct_plot_path(out_name)
     
     if (file_exists(out_path) && !overwrite_ext_plots) {
         logger("Plot already saved at: ", quotes(out_path), ".")
