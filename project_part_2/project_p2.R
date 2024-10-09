@@ -43,7 +43,7 @@ fam_ind_cols <- c("FID", "IID")
 course_shared_data_path <- file.path("/data/STAT3306")
 project_data <- file.path(course_shared_data_path, "Project")
 data_path <- file.path(project_data, "Data_QC")
-phenotypes <- file.path(project_data, "Phenotypes_QC")
+phenotypes_path <- file.path(project_data, "Phenotypes_QC")
 
 # GCTA
 gcta_datafile_basename <- "testFiltered"
@@ -833,6 +833,27 @@ add_extension <- function(basename, ...) {
     logger("TRACE", "Constructed out path: ", path, ".")
     return(path)
 }
+
+construct_phenotypes_path <- function(...) {
+    #' Constructs a file base to the phenotypes directory given a basename.
+    #' @param ... {string}: The name of the file (potentially split) without
+    #'                      the parent directory prefixed.
+    #' @return path {string}: The relative path to the file.
+
+    basename <- paste0(...)
+    file.path(phenotypes_path, basename)
+}
+
+construct_data_path <- function(...) {
+    #' Constructs a file base to the data directory given a basename.
+    #' @param ... {string}: The name of the file (potentially split) without
+    #'                      the parent directory prefixed.
+    #' @return path {string}: The relative path to the file.
+
+    basename <- paste0(...)
+    file.path(data_path, basename)
+}
+
 
 construct_gcta_out_path <- function(...) {
     #' Constructs a file path in the gcta out directory given a basename.
