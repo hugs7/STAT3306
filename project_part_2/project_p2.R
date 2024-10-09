@@ -1127,7 +1127,33 @@ estimate_greml_var <- function(qimrx_basepath) {
     }
 }
 
-unrelated_indvs <- function() {
+unrelated_indvs <- function(grm_basepath) {
+    #' Investigates properties of the GRM.
+    #' @param grm_basepath {string}: Basepath (no extenision) to the GRM file.
+    
+    remove_relatedness <- function(grm_path) {
+        #' Removes relatness between individuals who may have an affect
+        #' on the estimate of heritability. This reduces the maximum
+        #' relatedness coefficient via GCTA with --grm-cutoff.
+        #' @param grm_path {string}: Path to grm file.
+        #' @return grm_path_rr {string}: Path to new grm file with individuals
+        #'                               not meeting the relatedness threshold
+        #'                               removed from the dataset.
+
+        gcta_args <- paste(gcta_fgs$grm, grm_path, gcta_fgs$grm_cutoff,
+                           grm_relatedness_threshold, gcta_fgs$mkgrm)
+        out_name <- "grm_rel_rmvd"
+
+        grm_path_rr <- gcta_qc_data(gcta_args, out_name)
+        return(grm_path_rr)
+    }
+
+
+    read_grml_no_rel <- function() {
+        grm.nr <- read_GRMBin(qimrx_nr_path)
+    }
+
+
     names_grm <- c("IND_1", "IND_2", "SNP_NUM", "REL")
     names(grm) <- names_grm
     log_df(grm, "GRM (named)")
@@ -1152,18 +1178,6 @@ unrelated_indvs <- function() {
     wrap_hist(grm.off.diag.clipped, hist_name, breaks = 200, freq = FALSE,
               xlab = "GRM Off-Diagonals", xlim = c(0.1, 1.1),
               main = "GRM Off-Diag Distribution")
-}
-
-remove_relatedness <- function() {
-    #' Removes relatness between individuals who may have an affect
-    #' on the estimate of heritability. This reduces the maximum
-    #' relatedness coefficient via GCTA with --grm-cutoff.
-
-    gcta_args <- paste(gcta_fgs$grm, grm_path, gcta_fgs$grm_cutoff, grm_relatedness_threshold,
-                  gcta_fgs$mkgrm)
-    out_name <- "grm_rel_rmvd"
-
-    gcta_qc_data(gcta_args, out_name)
 }
 
 partition_variance <- function(qimrx_cleaned_path) {
