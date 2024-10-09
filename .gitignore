@@ -60,5 +60,5 @@ rsconnect/
 *.log
 */plink_out
 **/phenotypes
-
+**/gcta_out
 
