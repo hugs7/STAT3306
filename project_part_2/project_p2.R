@@ -1281,7 +1281,13 @@ unrelated_indvs <- function(grm_basepath) {
     logger("Completed relatedness computation!")
 }
 
-partition_variance <- function(qimrx_cleaned_path) {
+partition_variance <- function(grm_basepath) {
+    #' Partitions variance components by creating two GRM matrices.
+    #' One for lower and the other for higher minor allele frequencies
+    #' (or MAFs), allowing investigation of the genetic architecture of
+    #' of the trait.
+    #' @param grm_basepath {string}: Basepath to the QC'd grm data.
+
     prep_grm <- function(maf_snps_path) {
         #' Prepares the GRMs for variance partitioning.
         #' @param maf_snps_path {string}: Path to the SNPs to extract.
