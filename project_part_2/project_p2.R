@@ -490,6 +490,32 @@ file_exists <- function(path, match_pattern = FALSE) {
     return(exists)
 }
 
+is_discrete_col <- function(column) {
+    #' Determines if a column of a data.frame is discrete.
+    #' @param column {data.frame}: Column of a data frame to check.
+    #' @return {boolean}: TRUE if column is discrete, FALSE otherwise.
+
+    is_integer <- is.integer(col)
+    is_factor <- is.factor(col)
+    is_numeric <- is.numeric(col)
+
+    return (is_integer || is_factor || is_numeric)
+}
+
+is_binary_col <- function(column) {
+    #' Determines if a column of a data.frame is binary.
+    #' @param column {data.frame}: Column of a data frame to check.
+    #' @return {boolean}: TRUE if column is binary, FALSE otherwise.
+    
+    if (is.factor(column) || is.numeric(column)) {
+        unique_values <- unique(column)
+
+        return(length(unique_values) == 2)
+    }
+
+    return(FALSE)
+}
+
 latex_table <- function(data, out_name, table_align, caption = NULL, col.names = NULL,
                         digits = 2, line_spacing_factor = 1, hide_row_names = FALSE,
                         size = "normalsize") {
@@ -1287,6 +1313,70 @@ partition_variance <- function(grm_basepath) {
     #' (or MAFs), allowing investigation of the genetic architecture of
     #' of the trait.
     #' @param grm_basepath {string}: Basepath to the QC'd grm data.
+
+    split_covars <- function(combined_covars_path) {
+        #' Splits the combined covariates into two files: one disctrete
+        #' and one continuous, so they can be used by GCTA. Note the
+        #' headers of the files are stripped as per GCTA requirements.
+        #' @param combined_covars_path {string}: Path to combined
+        #'                                       covariates file.
+        #' @return {list}: Contains paths to each covariate file with keys
+        #'                   - discrete: Path to discrete covars file.
+        #'                   - continuous: Path to continuous covars file.
+        
+        discrete_name <- add_extension("covars_discrete", exts$cov)
+        continuous_name <- add_extension("covars_continuous", exts$cov)
+
+        # Determine if both covar files exist
+        exp_discrete_path <- construct_out_path(discrete_name)
+        exp_continuous_path <- construct_out_path(continuous_name)
+    
+        discrete_exists <- file_exists(exp_discrete_path)
+        continuous_exists <- file_exists(exp_continuous_path)
+        if (!(discrete_exists && continuous_exists)) {
+            if (!discrete_exists) {
+                logger("DEBUG", "Discrete covars don't exist. Computing...")
+            }
+            
+            if (!continuous_exists) {
+                logger("DEBUG", "Continuous covars don't exist. Computing...")
+            }
+
+            logger("Splitting covars...")
+
+            combined_covars <- wrap_read_table(combined_covars_path)
+
+            discrete_covars <- combined_covars[, fam_ind_cols]
+            continuous_covars <- combined_covars[, fam_ind_cols]
+
+            for (i in 3:ncol(combined_covars)) {
+                column <- combined_covars[[i]]
+
+                if (is_discrete_col(column)) {
+                    if (is_binary_col(column)) {
+                        # Ensure binary data is encoded as 0s and 1s
+                        column <- ifelse(column == 1, 0, 1)
+                    }
+                    
+                    discrete_covars[[names(combined_covars)[i]]] <- column
+                } else {
+                    continuous_covars[[names(combined_covars)[i]]] <- column
+                }
+            }
+
+            logger("Writing covar tables...")
+            discrete_path <- wrap_write_table(combined_covars, discrete_name,
+                                              header = FALSE)
+            continuous_path <- wrap_write_table(combined_covars, continuous_name,
+                                                header = FALSE)
+        }
+
+
+        split_covars <- list(discrete = discrete_path,
+                             continuous = continuous_path)
+
+        return(split_covars)
+    }
 
     prep_grm <- function(maf_snps_path) {
         #' Prepares the GRMs for variance partitioning.
