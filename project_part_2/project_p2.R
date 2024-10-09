@@ -1491,11 +1491,14 @@ partition_variance <- function(grm_qc_basepath) {
         return(gcta_out_path)
     }
 
-    partition_comp <- function(suffix, annotation, pheno_path) {
+    partition_comp <- function(suffix, annotation, pheno_path, prep_path) {
         #' Computes the partitioned variance components via GREML.
         #' @param suffix {string}: Suffix of the phenotype file name, encoding
         #'                         the phenotype variant.
+        #' @param annotation {character}: Top or bottom MAFs.
         #' @param pheno_path {string}: Path to the phenotype file.
+        #' @param prep_path {chatacter}: Path to prep file contaning paths to
+        #'                               SNP id files.
         #' @return part_comp_out {string}: Path to parition variance output.
 
         trait_name <- get_trait_name(suffix)
@@ -1504,7 +1507,7 @@ partition_variance <- function(grm_qc_basepath) {
 
         mpheno <- 1
         mpheno_args <- get_mpheno_args(mpheno)
-        gcta_args <- paste(gcta_fgs$mgrm, mgrm_path, gcta_fgs$pheno, pheno_path,
+        gcta_args <- paste(gcta_fgs$mgrm, prep_path, gcta_fgs$pheno, pheno_path,
                            mpheno_args, gcta_fga$reml)
         out_name <- paste0("nr_partition", suffix, "_", annotation)
         logger("DEBUG", "Saving partitioning result to filename: ",
@@ -1514,6 +1517,17 @@ partition_variance <- function(grm_qc_basepath) {
         return(part_comp_out)
     }
 
+    append_to_prep_file <- function(grm_prep_path) {
+        #' Appends a file path to the grm prep path list.
+        #' @param grm_prep_path {chatacter}: Path to grm prep datafile.
+        #' @return prep_path {character}: Path to file containing grm prep paths.
+
+        logger("DEBUG", "Appending ", quotes(grm_prep_path), " to prep file.")
+        content <- paste0(grm_prep_path, "\n")
+        prep_path <- wrap_write(content, prep_basepath, append = TRUE)
+        return(prep_path)
+    }
+
     # Main
     logger(">>> Begin Variance Partition")
     phenotype_suffixes <- list("", "_binary1", "_binary2")
@@ -1521,17 +1535,26 @@ partition_variance <- function(grm_qc_basepath) {
     covar_paths <- split_covars()
     antd_snp_paths <- split_snps()
 
+    prep_basepath <- add_extension("prep_snps", exts$txt) 
+    prep_path <- construct_out_path(prep_basepath)
+    delete_file(prep_path)
+
     for (suffix in phenotype_suffixes) {
         trait_name <- get_trait_name(suffix)
         logger("Partitioning varaince components for trait: ", quotes(trait_name), ".")
 
         for (annotation in names(antd_snp_paths)) {
-            logger("Partitioning SNPs labelled: ", quotes(annotation), ".")
+            logger("Prepping SNPs labelled: ", quotes(annotation), ".")
             snps_basepath <- antd_snp_paths[[annotation]]
             pheno_path <- get_pheno_path(suffix)
             
-            prep_grm(snps_path, snps_basepath)
-            partition_comp(suffix, annotation, pheno_path)
+            grm_prep_path <- prep_grm(snps_path, snps_basepath)
+            prep_path <- append_to_prep_file(grm_prep_path)
+        }
+            
+        for (annotation in names(antd_snp_paths)) {
+            logger("Partitioning SNPs labelled: ", quotes(annotation), ".")
+            partition_comp(suffix, annotation, pheno_path, prep_path)
         }
     }
     
