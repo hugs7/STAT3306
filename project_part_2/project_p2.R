@@ -26,6 +26,7 @@ source("./grm_bin.R")
 
 # === Logging Config ===
 
+cat("Initialising logging...\n")
 default_log_level <- "INFO"
 allowed_log_levels <- c("ERROR", "WARN", "INFO", "DEBUG", "TRACE")
 app_log_level <- "DEBUG"
@@ -40,6 +41,7 @@ level_colours <- list(
 
 # === Globals ===
 
+cat("Initialising globals...\n")
 phenotype <- "Fasting Glucose"
 fam_ind_cols <- c("FID", "IID")
 
@@ -51,7 +53,7 @@ phenotypes_path <- file.path(project_data, "Phenotypes_QC")
 
 # GCTA
 gcta_datafile_basename <- "testFiltered"
-gcta_default_tnum <- 2
+gcta_default_tnum <- 4
 
 # Out Paths
 plots_out_dir <- file.path("./plots")
@@ -79,6 +81,8 @@ cat0 <- function(...) {
     msg <- paste0(...)
     cat(msg, "\n")
 }
+
+cat0("Initialising functions...")
 
 pad <- function(width, ...) {
     #' Pads string args to a given width
@@ -793,7 +797,7 @@ gcta_qc_data <- function(gcta_args, out_name = NULL) {
     data_files_pattern <- construct_data_path(gcta_datafile_basename)
     logger("DEBUG", "GCTA data files pattern: ", quotes(data_files_pattern), ".")
     
-    gcta_args <- paste(gcta_fgs$bfile, data_files_pattern, gcta_args
+    gcta_args <- paste(gcta_fgs$bfile, data_files_pattern, gcta_args)
     
     gcta(gcta_args, out_name)
 }
@@ -808,11 +812,10 @@ gcta <- function(gcta_args, out_name = NULL) {
     #'                                 Notable, this path does not contain
     #'                                 extension added by GCTA as this differs
     #'                                 depending upon arguments provided to GCTA.
-
+   
     gcta_base_cmd <- paste("gcta", gcta_args)
     logger("DEBUG", "GCTA base command: ", quotes(gcta_base_cmd), ".")
 
-    
     if (is.null(out_name)) {
         # Output to console.
         gcta_cmd <- gcta_base_cmd
@@ -828,7 +831,7 @@ gcta <- function(gcta_args, out_name = NULL) {
     # Check double space - indicates missing param
     if (grepl(" ", gcta_cmd)) {
         logger("ERROR", "Possible missing argument in gcta command.")
-        logger("ERROR", "You were trying to run ", quotes(gcta_cmd))
+        logger("ERROR", "You were trying to run ", quotes(gcta_cmd), ".")
     }
 
     if (stdout) {
@@ -1301,7 +1304,7 @@ unrelated_individuals <- function(grm_basepath) {
     
     logger(">>> Begin Unrelated Individuals")
     
-    for (remove in [FALSE, TRUE]) {
+    for (remove in c(FALSE, TRUE)) {
         logger("Estimating Proportion of Phenotypic Variance",
                remove ? " with threshold removal" : "", "...")
 
@@ -1363,7 +1366,7 @@ partition_variance <- function(grm_basepath) {
                 
                 output_data <- process_callback(combined_df, name)
                 
-                output_path <- wrap_write_table(split_data
+                output_path <- wrap_write_table(split_data,
                                         output_filename, header = FALSE)
                 logger("DEBUG", "Output path: ", quotes(output_path), ".")
                 output_paths[[name]] <- output_path
