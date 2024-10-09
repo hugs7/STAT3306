@@ -1312,9 +1312,13 @@ partition_variance <- function(qimrx_cleaned_path) {
         mpheno <- 1
         mpheno_args <- get_mpheno_args(mpheno)
         gcta_args <- paste(gcta_fgs$mgrm, mgrm_path, gcta_fgs$pheno, pheno_path,
-                           mpheno_args)
-        out_name <- "multi_nr_partition"
-        gcta(gcta_args, out_name)
+                           mpheno_args, gcta_fga$reml)
+        out_name <- paste0("multi_nr_partition", suffix)
+        logger("DEBUG", "Saving partitioning result to filename: ",
+               quotes(out_name), ".")
+        part_comp_out <- gcta(gcta_args, out_name)
+        logger("DEBUG", "GCTA variance partitioning complete!")
+        return(part_comp_out)
     }
 
     maf_snps_path <- file.path()
