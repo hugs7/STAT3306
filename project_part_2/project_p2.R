@@ -1314,6 +1314,51 @@ partition_variance <- function(grm_basepath) {
     #' of the trait.
     #' @param grm_basepath {string}: Basepath to the QC'd grm data.
 
+    split_generic <- function(combined_oath, split_names, extension,
+                              process_callback, retain_cols) {
+        #' Generic function to handle split of data.frames into a number of
+        #' sub data.frames by cases based on a callback function. This
+        #' function handles any number of cases specified in split_names.
+        #' @param combined_path {character}: The path to the combined file.
+        #' @param split_names {character vector}: A vector of names for the
+        #'                                        output files.
+        #' @param extension {character}: The file extension for the input
+        #'                               and output files.
+        #' @param callback {function}: A callback function defining the
+        #'                             splitting logic.
+        #' @param retain_cols {vector}: Columns to retain when splitting
+        #' @return {list}: Contains paths to each split file, with names
+        #'                 corresponding to entries in split_names.
+        
+        logger("DEBUG", ">>> Begin split generic")
+        
+        output_paths <- list()
+
+        for (name in split_names) {
+            output_name <- add_extension(name, extension)
+            output_path <- construct_out_path(output_name)
+
+            if (file_exists(output_path)) {
+                logger("Output for ", quotes(name), " already exists.")
+                output_paths[[name]] <- output_path
+            } else {
+                logger("Output for ", quotes(name), " doesn't exist. Computing...")
+
+                combined_df <- wrap_read_table(combined_filename)
+
+                split_data <- combined_covars[, retain_cols,
+                                                drop = FALSE]
+                split_data <- callback(combined_df, split_data)
+
+                output_paths[[name]] <- wrap_write_table(split_data
+                                        output_filename, header = FALSE)
+            }
+        }
+
+        logger("DEBUG", "<<< End split generic")
+        return(output_paths)
+    }
+
     split_covars <- function() {
         #' Splits the combined covariates into two files: one disctrete
         #' and one continuous, so they can be used by GCTA. Note the
@@ -1321,37 +1366,16 @@ partition_variance <- function(grm_basepath) {
         #' @return {list}: Contains paths to each covariate file with keys
         #'                   - discrete: Path to discrete covars file.
         #'                   - continuous: Path to continuous covars file.
-       
-        combined_basename <- add_extension("covariateFiltered", exts$cov)
-        combined_covars_path <- construct_data_path(combined_basename)
-        logger("DEBUG", "Combined covars path: ", quotes(combined_covars_path),
-               ".")
 
-        discrete_name <- add_extension("covars_discrete", exts$cov)
-        continuous_name <- add_extension("covars_continuous", exts$cov)
-
-        # Determine if both covar files exist
-        exp_discrete_path <- construct_out_path(discrete_name)
-        exp_continuous_path <- construct_out_path(continuous_name)
-    
-        discrete_exists <- file_exists(exp_discrete_path)
-        continuous_exists <- file_exists(exp_continuous_path)
-        if (!(discrete_exists && continuous_exists)) {
-            if (!discrete_exists) {
-                logger("DEBUG", "Discrete covars don't exist. Computing...")
-            }
+        split_covars_callback <- function(combined_covars, split_data) {
+            #' Callback function to separate discrete and continuous covariates.
+            #' @param combined_covars {data.frame}: Combined covariates data.frame.
+            #' @param split_data {data.frame}: Cumulative data.frame containing
+            #'                                 split covariates.
+            #' @return split_data {data.frame}: Updated data.frame with the
+            #'                                  appropriate covariates.
             
-            if (!continuous_exists) {
-                logger("DEBUG", "Continuous covars don't exist. Computing...")
-            }
-
-            logger("Splitting covars...")
-
-            combined_covars <- wrap_read_table(combined_covars_path)
-
-            discrete_covars <- combined_covars[, fam_ind_cols]
-            continuous_covars <- combined_covars[, fam_ind_cols]
-
+            logger("DEBUG", "  >>> Begin split covars callback.")
             for (i in 3:ncol(combined_covars)) {
                 column <- combined_covars[[i]]
 
@@ -1367,15 +1391,22 @@ partition_variance <- function(grm_basepath) {
                 }
             }
 
-            logger("Writing covar tables...")
-            discrete_path <- wrap_write_table(combined_covars, discrete_name,
-                                              header = FALSE)
-            continuous_path <- wrap_write_table(combined_covars, continuous_name,
-                                                header = FALSE)
+            logger("DEBUG", "  <<< End split covars callback.")
+            return(split_data)
         }
+       
+        combined_basename <- add_extension("covariateFiltered", exts$cov)
+        combined_covars_path <- construct_data_path(combined_basename)
+        logger("DEBUG", "Combined covars path: ", quotes(combined_covars_path),
+               ".")
 
-        split_covars <- list(discrete = discrete_path,
-                             continuous = continuous_path)
+        split_names <- paste0("covars_", c("discrete", "continuous"))
+        split_paths <- split_generic(combined_covars_path, split_names,
+                                     exts$cov, split_covars_callback,
+                                     fam_ind_cols)
+
+        return(split_paths)
+    }
 
         return(split_covars)
     }
