@@ -1125,7 +1125,6 @@ gcta_fgs <- create_object(list("bfile", "mgrm", list("mkgrm" = "make-grm"), "out
                                "mpheno", "reml", "covar", "keep", "extract"),
                           named_flag)
 
-
 # File extensions
 exts <- create_object(list("phen", "txt", "png", "cov", "eigenvec", "eigenval",
                            "grm", "bed", "bim", "bin", "fam", "gz", "id"),
@@ -1156,10 +1155,10 @@ grm_build <- function(run_grm_build) {
         return(expected_grm_path)
     }
 
-    logger("Building GRM...")
+    logger(">>> Begin Building GRM.")
     grm_basepath <- gcta_qc_data(gcta_args, out_name)
     logger("DEBUG", "GRM Basepath: ", quotes(grm_basepath), ".")
-    logger("GRM Build Complete!")
+    logger("<<< End Building GRM.")
     return(grm_basepath)
 }
 
@@ -1202,17 +1201,19 @@ estimate_greml_var <- function(grm_basepath) {
         log_df(hsq, "HSQ Results")
         return(hsq)
     }
-
+    
+    logger(">>> Begin Estimate of Proportion of Phenotypic Variance.")
     for (suffix in phenotype_suffixes) {
         logger("Inspecting phenotype: ", quotes(suffix), ".")
         hsq_basepath <- estimate_phen_var_prop(suffix)
         hsq <- read_hsq_res(hsq_basepath)
     }
 
+    logger("<<< End Estimate of Proportion of Phenotypic Variance.")
     return(NULL)
 }
 
-unrelated_indvs <- function(grm_basepath) {
+unrelated_individuals <- function(grm_basepath) {
     #' Investigates properties of the GRM.
     #' @param grm_basepath {string}: Basepath (no extenision) to the GRM file.
     #' @return grm_rr_basepath {chatacter}: Basepath to GRM with related
@@ -1297,7 +1298,9 @@ unrelated_indvs <- function(grm_basepath) {
         grm_path_rr <- gcta_qc_data(gcta_args, out_name)
         return(grm_path_rr)
     }
-
+    
+    logger(">>> Begin Unrelated Individuals")
+    
     for (remove in [FALSE, TRUE]) {
         logger("Estimating Proportion of Phenotypic Variance",
                remove ? " with threshold removal" : "", "...")
@@ -1315,7 +1318,7 @@ unrelated_indvs <- function(grm_basepath) {
         plot_grm_off_diag(grm)
     }
     
-    logger("Completed relatedness computation!")
+    logger("<<< End unrelated indivduals")
     return(grm_rr_basepath)
 }
 
@@ -1503,6 +1506,7 @@ partition_variance <- function(grm_basepath) {
     }
 
     # Main
+    logger(">>> Begin Variance Partition")
     phenotype_suffixes <- list("", "_binary1", "_binary2")
     
     covar_paths <- split_covars()
@@ -1521,6 +1525,9 @@ partition_variance <- function(grm_basepath) {
             partition_comp(suffix, annotation, pheno_path)
         }
     }
+    
+    logger("<<< End Variance Partition")
+    return(NULL)
 }
 
 # === Main ===
@@ -1558,7 +1565,7 @@ if (estimate_grm_var) {
 }
 
 if (run_relatedness) {
-    grm_rr_basepath <- unrelated_indvs(grm_basepath)
+    grm_rr_basepath <- unrelated_individuals(grm_basepath)
 
     if (run_partition) {
         partition_variance(grm_rr_basepath)
