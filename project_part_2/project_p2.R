@@ -1140,7 +1140,9 @@ estimate_greml_var <- function(grm_basepath) {
         #' @param suffix {string}: The suffix of the phenotype file name which in
         #'                         turn, encodes the phenotype variant.
         #' @return hsq_basepath {string}: Base path to the hsq output from GCTA.
-
+        
+        trait_name <- get_trait_name(suffix)
+        logger("Estimating Phenotyping Variance Proportion for phenotype: ", trait_name)
         pheno_path <- construct_phenotypes_path(suffix)
         mpheno <- 1
         mpheno_args <- get_mpheno_args(mpheno)
