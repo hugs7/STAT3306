@@ -1099,18 +1099,18 @@ estimate_greml_var <- function(qimrx_basepath) {
     #' SNPs using GCTA.
     #' @param qimrx_basepath {string}: Basepath to qimrx file to estimate from.
     
-    estimate_phen_var_prop <- function(suffix, mpheno) {
+    estimate_phen_var_prop <- function(suffix) {
         #' Given a suffix and mpheno value, estimates the phenotypic variance
         #' explained by additive genome-wide SNPs for the given phenotype.
         #' @param suffix {string}: The suffix of the phenotype file name which in
         #'                         turn, encodes the phenotype variant.
-        #' @param mpheno {integer}: Specifies which coviarate to use by the (n+2)th
-        #'                          column in the phen file.
         #' @return hsq_basepath {string}: Base path to the hsq output from GCTA.
 
         pheno_path <- construct_phenotypes_path(suffix)
-
-        gcta_args <- paste(gcta_fgs$bfile, bfile, gcta_fgs$pheno, pheno_path, gcta_fgs$mpheno, mpheno, gcta_fgs$reml)
+        mpheno <- 1
+        mpheno_args <- get_mpheno_args(mpheno)
+        gcta_args <- paste(gcta_fgs$bfile, bfile, gcta_fgs$pheno, pheno_path,
+                           mpheno_args, gcta_fgs$reml)
         out_name <- paste0("greml_var", suffix, "_", mpheno)
         hsq_basepath <- gcta(gcta_args, out_name)
         logger("DEBUG", "HSQ Basepath: ", quotes(hsq_basepath), ".")
@@ -1131,14 +1131,10 @@ estimate_greml_var <- function(qimrx_basepath) {
         return(hsq)
     }
 
-    for (mpheno in [1, 2]) {
-        logger("Mpheno ", mpheno, ".")
-
-        for (suffix in phenotype_suffixes) {
-            logger("Inspecting phenotype: ", quotes(suffix), ".")
-            hsq_basepath <- estimate_phen_var_prop(suffix, mpheno)
-            hsq <- read_hsq_res(hsq_basepath)
-        }
+    for (suffix in phenotype_suffixes) {
+        logger("Inspecting phenotype: ", quotes(suffix), ".")
+        hsq_basepath <- estimate_phen_var_prop(suffix)
+        hsq <- read_hsq_res(hsq_basepath)
     }
 }
 
@@ -1217,10 +1213,10 @@ partition_variance <- function(qimrx_cleaned_path) {
 
 estimate_phen_var <- function(mgrm_path) {
     logger("Estimating Phenotypic Variance Proportion...")
-
+    mpheno <- 1
+    mpheno_args <- get_mpheno_args(mpheno)
     gcta_args <- paste(gcta_fgs$mgrm, mgrm_path, gcta_fgs$pheno,
-                       ht_t_x_pheno_path, gcta_fgs$mpheno, 1,
-                       gcta_fgs$reml)
+                       ht_t_x_pheno_path, mpheno_args, gcta_fgs$reml)
     out_name <- "qimrx_multi_nr"
     
     gcta(gcta_args, out_name)
