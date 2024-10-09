@@ -20,6 +20,10 @@ required_packages <- c("crayon", "xtable")
 install_if_missing(required_packages)
 invisible(lapply(required_packages, require, character.only = TRUE))
 
+# === Modules ===
+
+source("./grm_bin.R")
+
 # === Logging Config ===
 
 default_log_level <- "INFO"
