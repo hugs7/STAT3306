@@ -1417,6 +1417,9 @@ partition_variance <- function(grm_basepath) {
         return(part_comp_out)
     }
 
+    # Main
+    phenotype_suffixes <- list("";, "_binary1", "_binary2")
+
     maf_snps_path <- file.path()
 
     get_gcta_args <- function(snps_path) {
