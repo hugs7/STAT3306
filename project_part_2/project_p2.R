@@ -1249,11 +1249,15 @@ unrelated_indvs <- function(grm_basepath) {
                   main = "GRM Off-Diag Distribution")
     }
 
-    threshold <- 0.1
-    grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > threshold)]
-    wrap_hist(grm.off.diag.clipped, hist_name, breaks = 200, freq = FALSE,
-              xlab = "GRM Off-Diagonals", xlim = c(0.1, 1.1),
-              main = "GRM Off-Diag Distribution")
+    rr_threshold <- 0.1
+    logger("Removing related individuals with threshold ", rr_threshold, "...")
+    grm_rr_basepath <- remove_relatedness(grm_basepath)
+    grm_nr <- read_grml(grm_rr_basepath)
+    
+    plot_grm_diag(grm)
+    plot_grm_off_diag(grm)
+    
+    logger("Completed relatedness computation!")
 }
 
 partition_variance <- function(qimrx_cleaned_path) {
@@ -1294,6 +1298,7 @@ args <- commandArgs(trailingOnly = TRUE)
 # Run all by default
 run_make_grm <- TRUE
 estimate_grm_var <- TRUE
+run_relatedness <- TRUE
 
 if (length(args) > 0) {
     if (!("grm" %in% args)) {
@@ -1303,7 +1308,6 @@ if (length(args) > 0) {
     if (!("grm_estimate" %in% args)) {
         estimate_grm_var <- FALSE
     }
-}
 
     if (!!("related", %in% args)) {
         run_relatedness <- FALSE
@@ -1313,7 +1317,11 @@ if (length(args) > 0) {
 grm_basepath <- grm_build(run_make_grm)
 
 if (estimate_grm_var) {
-    estimate_greml_var()
+    estimate_greml_var(grm_basepath)
+}
+
+if (run_relatedness) {
+    unrelated_indvs(grm_basepath)
 }
 
 logger("DONE!")
