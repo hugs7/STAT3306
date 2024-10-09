@@ -1167,6 +1167,7 @@ estimate_greml_var <- function(grm_basepath) {
     #' Estimates the proportion of phenotypic variance due to genome-wide
     #' SNPs using GCTA.
     #' @param grm_basepath {string}: Basepath to the grm file to estimate from.
+    #' @return {NULL}
     
     estimate_phen_var_prop <- function(suffix) {
         #' Given a suffix and mpheno value, estimates the phenotypic variance
@@ -1207,17 +1208,24 @@ estimate_greml_var <- function(grm_basepath) {
         hsq_basepath <- estimate_phen_var_prop(suffix)
         hsq <- read_hsq_res(hsq_basepath)
     }
+
+    return(NULL)
 }
 
 unrelated_indvs <- function(grm_basepath) {
     #' Investigates properties of the GRM.
     #' @param grm_basepath {string}: Basepath (no extenision) to the GRM file.
+    #' @return grm_rr_basepath {chatacter}: Basepath to GRM with related
+    #'                                      individuals removed.
     
     read_grml <- function(grm_basepath, show_df_preview = TRUE) {
         #' Reads a grm file given its basepath.
         #' @param grm_basepath {string}: The GRM path without extension.
-        #' @param grm {data.frame}: The data.frame containing the grm data.
-
+        #' @param show_df_preview {boolean}: Whether to show a preview of
+        #'                                   the greml data.frame. Defaults
+        #'                                   to TRUE.
+        #' @return grm {data.frame}: The data.frame containing the grm data.
+        
         grm_path <- add_extension(grm_basepath, exts$grm)
         logger("Reading GRM binary file from: ", quotes(grm_path), "...")
         grm <- read_GRMBin(grm_path)
@@ -1235,6 +1243,7 @@ unrelated_indvs <- function(grm_basepath) {
     plot_grm_diag <- function(grm) {
         #' Plots the distribution of the GRM diagonals.
         #' @param grm {data.frame}: The data.frame containing the grm data.
+        #' @return {NULL}
         
         logger("Plotting GRM Diagonals...")
         grm.diag <- diag(grm)
@@ -1253,6 +1262,7 @@ unrelated_indvs <- function(grm_basepath) {
         #' Plots the distribution of the GRM off-diagonals, both unclipped
         #' and clipped.
         #' @param grm {data.frame}: The data.frame containing the grm data.
+        #' @return {NULL}
         
         logger("Plotting GRM Off-Diagonals...")
         grm.off.diag <- off_diag(grm)
@@ -1294,6 +1304,7 @@ unrelated_indvs <- function(grm_basepath) {
 
         if (remove) {
             grm_basepath <- remove_relatedness(grm_basepath)
+            grm_rr_basepath <- grm_basepath
         } else {
             grm_basepath <- grm_path
         }
@@ -1303,8 +1314,9 @@ unrelated_indvs <- function(grm_basepath) {
         plot_grm_diag(grm)
         plot_grm_off_diag(grm)
     }
-
+    
     logger("Completed relatedness computation!")
+    return(grm_rr_basepath)
 }
 
 partition_variance <- function(grm_basepath) {
