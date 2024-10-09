@@ -1314,7 +1314,7 @@ partition_variance <- function(grm_basepath) {
     #' of the trait.
     #' @param grm_basepath {string}: Basepath to the QC'd grm data.
 
-    split_generic <- function(combined_oath, split_names, extension,
+    split_generic <- function(combined_path, split_names, extension,
                               process_callback, retain_cols) {
         #' Generic function to handle split of data.frames into a number of
         #' sub data.frames by cases based on a callback function. This
@@ -1333,6 +1333,7 @@ partition_variance <- function(grm_basepath) {
         logger("DEBUG", ">>> Begin split generic")
         
         output_paths <- list()
+        combined_df <- wrap_read_table(combined_path)
 
         for (name in split_names) {
             output_name <- add_extension(name, extension)
@@ -1343,8 +1344,6 @@ partition_variance <- function(grm_basepath) {
                 output_paths[[name]] <- output_path
             } else {
                 logger("Output for ", quotes(name), " doesn't exist. Computing...")
-
-                combined_df <- wrap_read_table(combined_filename)
 
                 split_data <- combined_covars[, retain_cols,
                                                 drop = FALSE]
