@@ -1129,10 +1129,10 @@ grm_build <- function(run_grm_build) {
     return(grm_basepath)
 }
 
-estimate_greml_var <- function(qimrx_basepath) {
+estimate_greml_var <- function(grm_basepath) {
     #' Estimates the proportion of phenotypic variance due to genome-wide
     #' SNPs using GCTA.
-    #' @param qimrx_basepath {string}: Basepath to qimrx file to estimate from.
+    #' @param grm_basepath {string}: Basepath to the grm file to estimate from.
     
     estimate_phen_var_prop <- function(suffix) {
         #' Given a suffix and mpheno value, estimates the phenotypic variance
