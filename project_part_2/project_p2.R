@@ -1298,7 +1298,17 @@ partition_variance <- function(qimrx_cleaned_path) {
         return(gcta_out_path)
     }
 
-    partition_comp <- function() {
+    partition_comp <- function(suffix, pheno_path) {
+        #' Computes the partitioned variance components via GREML.
+        #' @param suffix {string}: Suffix of the phenotype file name, encoding
+        #'                         the phenotype variant.
+        #' @param pheno_path {string}: Path to the phenotype file.
+        #' @return part_comp_out {string}: Path to parition variance output.
+
+        trait_name <- get_trait_name(suffix)
+        logger("Partitioning variance components for phenotype: ",
+               quotes(trait_name), ".")
+
         mpheno <- 1
         mpheno_args <- get_mpheno_args(mpheno)
         gcta_args <- paste(gcta_fgs$mgrm, mgrm_path, gcta_fgs$pheno, pheno_path,
