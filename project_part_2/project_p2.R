@@ -1213,25 +1213,41 @@ unrelated_indvs <- function(grm_basepath) {
         return(grm)
     }
 
+    plot_grm_diag <- function(grm) {
+        #' Plots the distribution of the GRM diagonals.
+        #' @param grm {data.frame}: The data.frame containing the grm data.
+        
+        logger("Plotting GRM Diagonals...")
+        grm.diag <- diag(grm)
+        logger("GRM diag length: ", length(grm.diag), ".")
 
-    names_grm <- c("IND_1", "IND_2", "SNP_NUM", "REL")
-    names(grm) <- names_grm
-    log_df(grm, "GRM (named)")
-    
-    grm.diag <- diag(grm)
-    logger("GRM diag length: ", length(grm.diag), ".")
+        log_df(grm.diag, "GRM (diag)")
 
-    log_df(grm.diag, "GRM (diag)")
+     
+        hist_name <- add_extension("grm.diag", exts$png)
+        wrap_hist(grm.diag, hist_name, breaks = 2500, freq = FALSE, 
+                  xlab = "GRM Diagonals", xlim = c(0.95, 1.2),
+                  main = "GRM Diag Distribution")  
+    }
 
-    grm.off.diag <- off_diag(grm)
+    plot_grm_off_diag <- function(grm) {
+        #' Plots the distribution of the GRM off-diagonals, both unclipped
+        #' and clipped.
+        #' @param grm {data.frame}: The data.frame containing the grm data.
+        
+        logger("Plotting GRM Off-Diagonals...")
+        grm.off.diag <- off_diag(grm)
+        
+        hist_name <- add_extension("grm.off.diag", exts$png)
+        wrap_hist(grm.off.diag, hist_name, breaks = 200, freq = FALSE,
+                  xlab = "GRM Off-Diagonals", xlim = c(0.1, 1.1),
+                  main = "GRM Off-Diag Distribution")
 
-    hist_name <- add_extension("grm.diag", exts$png)
-    wrap_hist(grm.diag, hist_name, breaks = 2500, freq = FALSE, xlab = "GRM Diagonals",
-              xlim = c(0.95, 1.2), main = "GRM Diag Distribution")
-
-    hist_name <- add_extension("grm.off.diag", exts$png)
-    wrap_hist(grm.off.diag, hist_name, breaks = 200, freq = FALSE, xlab = "GRM Off-Diagonals",
-              xlim = c(0.1, 1.1), main = "GRM Off-Diag Distribution")
+        grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > rr_threshold)]
+        wrap_hist(grm.off.diag.clipped, hist_name, breaks = 200, freq = FALSE,
+                  xlab = "GRM Off-Diagonals", xlim = c(0.1, 1.1),
+                  main = "GRM Off-Diag Distribution")
+    }
 
     threshold <- 0.1
     grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > threshold)]
