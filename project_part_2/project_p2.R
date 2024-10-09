@@ -1318,17 +1318,6 @@ partition_variance <- function(qimrx_cleaned_path) {
     gcta(gcta_args, out_name)
 }
 
-estimate_phen_var <- function(mgrm_path) {
-    logger("Estimating Phenotypic Variance Proportion...")
-    mpheno <- 1
-    mpheno_args <- get_mpheno_args(mpheno)
-    gcta_args <- paste(gcta_fgs$mgrm, mgrm_path, gcta_fgs$pheno,
-                       ht_t_x_pheno_path, mpheno_args, gcta_fgs$reml)
-    out_name <- "qimrx_multi_nr"
-    
-    gcta(gcta_args, out_name)
-}
-
 # === Main ===
 
 args <- commandArgs(trailingOnly = TRUE)
