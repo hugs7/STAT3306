@@ -351,6 +351,14 @@ space_to_underscore <- function(str) {
     gsub(" ", "_", str)
 }
 
+dots_to_dashes <- function(str) {
+    #' Replaces all instances of dots (.) in a string with underscores.
+    #' @param str {string}: String to replace from.
+    #' @return {string}: String with '.'s as '_'s.
+
+    gsub(".", "_", str)
+}
+
 title_case <- function(str) {
     #' Converts a string to titlecase.
     #' @param str {string}: The string to convert to title case.
