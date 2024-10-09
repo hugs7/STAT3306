@@ -1479,7 +1479,7 @@ partition_variance <- function(grm_basepath) {
         return(gcta_out_path)
     }
 
-    partition_comp <- function(suffix, pheno_path) {
+    partition_comp <- function(suffix, annotation, pheno_path) {
         #' Computes the partitioned variance components via GREML.
         #' @param suffix {string}: Suffix of the phenotype file name, encoding
         #'                         the phenotype variant.
@@ -1494,7 +1494,7 @@ partition_variance <- function(grm_basepath) {
         mpheno_args <- get_mpheno_args(mpheno)
         gcta_args <- paste(gcta_fgs$mgrm, mgrm_path, gcta_fgs$pheno, pheno_path,
                            mpheno_args, gcta_fga$reml)
-        out_name <- paste0("multi_nr_partition", suffix)
+        out_name <- paste0("nr_partition", suffix, "_", annotation)
         logger("DEBUG", "Saving partitioning result to filename: ",
                quotes(out_name), ".")
         part_comp_out <- gcta(gcta_args, out_name)
