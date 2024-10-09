@@ -1012,6 +1012,28 @@ get_thread_args <- function(num_threads = gcta_default-tnum) {
     return(thread_args)
 }
 
+get_pheno_path <- function(pheno_suffix) {
+    #' Gets the phenotype file path for a given trait. the possible traits are:
+    #'   1. "": the original, quantitative trait.
+    #'   2. "_binary1": The binary derivative in which those scoring in the top 20%
+    #'                  of the phenotype are scored 1 = case and the remainder
+    #'                  0 = control.
+    #'   2. "_binary2": The binary derivative in which those scoring in the top 20%
+    #'                  of the phenotype are scored 1 = case and those scoring in
+    #'                  the bottom 30% of the phenotype are scored 0 = control. The
+    #'                  remainder are scored N/A.
+    #' @param pheno_suffix {string}: The suffix corresponding to the phenotype file
+    #'                               to compute a filepath for.
+    #' @return pheno_path {string}: The complete file path of the phenotype file.
+
+    logger("DEBUG", "Retrieving pheno path for suffix: ", quotes(pheno_suffix), ".")
+    phenotype_file_prefix <- space_to_underscore(phenotype)
+    pheno_file_name <- paste0(phenotype_file_prefix, pheno_suffix, exts$phen)
+    pheno_path <- construct_phenotypes_path(pheno_file_name)
+    logger("DEBUG", "Phenotype path: ", quotes(pheno_path), ".")
+    return(pheno_path)
+}
+
 ####
 
 init <- function() {
