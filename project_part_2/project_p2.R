@@ -1031,3 +1031,22 @@ unrelated_indvs <- function() {
 }
 
 
+# === Main ===
+
+args <- commandArgs(trailingOnly = TRUE)
+
+# Run all by default
+run_make_grm <- TRUE
+
+if (length(args) > 0) {
+    if (!("grm" %in% args)) {
+        run_make_grm <- FALSE
+    }
+
+}
+
+if (run_make_grm) {
+    grm_build()
+}
+
+logger("DONE!")
