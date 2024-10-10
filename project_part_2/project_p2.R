@@ -1139,7 +1139,7 @@ init()
 gcta_fgs <- create_object(list("bfile", "mgrm", list("mkgrm" = "make-grm"), "out",
                                list("tnum" = "thread-num"), "autosome", "pheno",
                                "mpheno", "reml", "covar", "keep", "extract",
-                               "grm"),
+                               "grm", list("grm_cutoff" = "grm-cutoff")),
                           named_flag)
 
 # File extensions
