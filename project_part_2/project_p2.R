@@ -1347,7 +1347,7 @@ partition_variance <- function(grm_qc_basepath) {
     #' of the trait.
     #' @param grm_qc_basepath {string}: Basepath to the QC'd grm data.
 
-    split_generic <- function(combined_path, split_names, extension,
+    split_generic <- function(combined_path, split_names, extension, save_prefix,
                               process_callback) {
         #' Generic function to handle split of data.frames into a number of
         #' sub data.frames by cases based on a callback function. This
@@ -1357,8 +1357,9 @@ partition_variance <- function(grm_qc_basepath) {
         #'                                        output files.
         #' @param extension {character}: The file extension for the input
         #'                               and output files.
-        #' @param callback {function}: A callback function defining the
-        #'                             splitting logic.
+        #' @param save_prefix {character}: Prefix to add on split files.
+        #' @param process_callback {function}: A callback function defining
+        #'                                     the splitting logic.
         #' @return {list}: Contains paths to each split file, with names
         #'                 corresponding to entries in split_names.
         
@@ -1370,8 +1371,9 @@ partition_variance <- function(grm_qc_basepath) {
         for (name in split_names) {
             logger("DEBUG", "Name: ", quotes(name), ".")
 
-            output_name <- add_extension(name, extension)
-            output_path <- construct_out_path(output_name)
+            basename <- paste0(save_prefix, "_", name)
+            output_filename <- add_extension(basename, extension)
+            output_path <- construct_out_path(output_filename)
 
             if (file_exists(output_path)) {
                 logger("Output for ", quotes(name), " already exists.")
@@ -1435,7 +1437,7 @@ partition_variance <- function(grm_qc_basepath) {
 
         split_names <- paste0("covars_", c("discrete", "continuous"))
         split_paths <- split_generic(combined_covars_path, split_names,
-                                     exts$cov, split_covars_callback)
+                                     exts$cov, "covars", split_covars_callback)
 
         return(split_paths)
     }
@@ -1479,7 +1481,8 @@ partition_variance <- function(grm_qc_basepath) {
         combined_annotation_path <- construct_data_path(comb_annotation_basename)
         split_names <- c(top, bottom)
         split_annotations <- split_generic(combined_annotation_path, split_names,
-                                           exts$txt, split_snp_ids_callback)
+                                           exts$txt, "snp_ids",
+                                           split_snp_ids_callback)
 
         return(split_annotations)
     }
