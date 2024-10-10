@@ -1253,7 +1253,7 @@ unrelated_individuals <- function(grm_basepath) {
         names(grm) <- names_grm
         
         if (show_df_preview) {
-            log_df(grm, paste("GRM from", quotes(grm_path)))
+            log_df(grm[, 1:5], paste("GRM from", quotes(grm_path)))
         }
 
         return(grm)
