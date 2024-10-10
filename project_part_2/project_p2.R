@@ -1228,7 +1228,7 @@ estimate_greml_var <- function(grm_basepath) {
     }
 
     logger("<<< End Estimate of Proportion of Phenotypic Variance.")
-    return(NULL)
+    invisible(NULL)
 }
 
 unrelated_individuals <- function(grm_basepath) {
