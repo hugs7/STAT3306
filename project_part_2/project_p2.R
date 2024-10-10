@@ -1272,7 +1272,7 @@ unrelated_individuals <- function(grm_basepath) {
 
      
         hist_name <- add_extension("grm.diag", exts$png)
-        wrap_hist(grm.diag, hist_name, breaks = 2500, freq = FALSE, 
+        wrap_histogram(grm.diag, hist_name, breaks = 2500, freq = FALSE, 
                   xlab = "GRM Diagonals", xlim = c(0.95, 1.2),
                   main = "GRM Diag Distribution")  
     }
@@ -1287,7 +1287,7 @@ unrelated_individuals <- function(grm_basepath) {
         grm.off.diag <- off_diag(grm)
         
         hist_name <- add_extension("grm.off.diag", exts$png)
-        wrap_hist(grm.off.diag, hist_name, breaks = 200, freq = FALSE,
+        wrap_histogram(grm.off.diag, hist_name, breaks = 200, freq = FALSE,
                   xlab = "GRM Off-Diagonals", xlim = c(0.1, 1.1),
                   main = "GRM Off-Diag Distribution")
 
