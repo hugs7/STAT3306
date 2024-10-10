@@ -1310,7 +1310,7 @@ unrelated_individuals <- function(grm_basepath) {
                gcta_rr_threshold, "...")
 
         gcta_args <- paste(gcta_fgs$grm, grm_path, gcta_fgs$grm_cutoff,
-                           gcta_rr_thresold, gcta_fgs$mkgrm)
+                           gcta_rr_threshold, gcta_fgs$mkgrm)
         out_name <- "grm_rel_rmvd"
 
         grm_path_rr <- gcta_qc_data(gcta_args, out_name)
