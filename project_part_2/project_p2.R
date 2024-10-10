@@ -66,7 +66,7 @@ plot_w <- 500
 plot_h <- 300
 
 # Thresholds
-gcta_rr_thresold <- 0.05
+gcta_rr_threshold <- 0.05
 
 # Overrides
 overwrite_ext_plots <- FALSE
@@ -1291,8 +1291,8 @@ unrelated_individuals <- function(grm_basepath) {
                   xlab = "GRM Off-Diagonals", xlim = c(0.1, 1.1),
                   main = "GRM Off-Diag Distribution")
 
-        grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > rr_threshold)]
-        wrap_hist(grm.off.diag.clipped, hist_name, breaks = 200, freq = FALSE,
+        grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > gcta_rr_threshold)]
+        wrap_histogram(grm.off.diag.clipped, hist_name, breaks = 200, freq = FALSE,
                   xlab = "GRM Off-Diagonals", xlim = c(0.1, 1.1),
                   main = "GRM Off-Diag Distribution")
     }
