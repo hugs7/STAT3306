@@ -1302,7 +1302,7 @@ unrelated_individuals <- function(grm_basepath) {
         #'                        off-diagonal.
         #' @param remove {boolean}: Whether we are removing indivdiuals.
     
-        hist_name <- add_extension(paste0("grm.diag", exts$png)
+        hist_name <- add_extension(paste0("grm.diag", exts$png))
          
         logger("DEBUG", "Hist name for remove = ", remove, ": ",
                quotes(hist_name), ".")
