@@ -1381,7 +1381,7 @@ partition_variance <- function(grm_qc_basepath) {
             } else {
                 logger("Output for ", quotes(name), " doesn't exist. Computing...")
                 
-                output_data <- process_callback(combined_df, name)
+                split_data <- process_callback(combined_df, name)
                 
                 output_path <- wrap_write_table(split_data,
                                         output_filename, header = FALSE)
