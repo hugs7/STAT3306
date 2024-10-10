@@ -1261,7 +1261,6 @@ unrelated_individuals <- function(grm_basepath) {
     
     plots_required <- function(remove) {
         #' Determines if plots are required for given remove setting.
-        #'                        off-diagonal.
         #' @param remove {boolean}: Whether we are removing indivdiuals.
         #' @return {boolean}: TRUE if at least one plot is required,
         #'                    FALSE otherwise.
