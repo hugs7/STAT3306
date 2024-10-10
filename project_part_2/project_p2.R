@@ -1324,13 +1324,13 @@ unrelated_individuals <- function(grm_basepath) {
                remove ? " with threshold removal" : "", "...")
 
         if (remove) {
-            grm_basepath <- remove_relatedness(grm_basepath)
-            grm_rr_basepath <- grm_basepath
+            loop_grm_basepath <- remove_relatedness(grm_basepath)
+            grm_rr_basepath <- loop_grm_basepath
         } else {
-            grm_basepath <- grm_path
+            loop_grm_basepath <- grm_basepath
         }
 
-        grm <- read_grml(grm_basepath)
+        grm <- read_grml(loop_grm_basepath)
         
         plot_grm_diag(grm)
         plot_grm_off_diag(grm)
