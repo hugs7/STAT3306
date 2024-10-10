@@ -1197,8 +1197,9 @@ estimate_greml_var <- function(grm_basepath) {
         pheno_path <- get_pheno_path(suffix)
         mpheno <- 1
         mpheno_args <- get_mpheno_args(mpheno)
+        thread_args <- get_thread_args()
         gcta_args <- paste(gcta_fgs$grm, grm_basepath, gcta_fgs$pheno, pheno_path,
-                           mpheno_args, gcta_fgs$reml)
+                           mpheno_args, gcta_fgs$reml, thread_args)
         out_name <- paste0("greml_var", suffix)
         hsq_basepath <- gcta(gcta_args, out_name)
         logger("DEBUG", "HSQ Basepath: ", quotes(hsq_basepath), ".")
