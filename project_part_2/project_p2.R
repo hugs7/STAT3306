@@ -1258,8 +1258,59 @@ unrelated_individuals <- function(grm_basepath) {
 
         return(grm)
     }
+    
+    plots_required <- function(remove) {
+        #' Determines if plots are required for given remove setting.
+        #'                        off-diagonal.
+        #' @param remove {boolean}: Whether we are removing indivdiuals.
+        #' @return {boolean}: TRUE if at least one plot is required,
+        #'                    FALSE otherwise.
+    
+        logger("Checking plot requirements for remove = ", remove, "...")
+        diag_plot_required <- plot_required(TRUE, remove)
+        off_diag_plot_required <- plot_required(FALSE, remove)
 
-    plot_grm_diag <- function(grm) {
+        return(diag_plot_required || off_diag_plot_required)
+    }
+
+    plot_required <- function(diag, remove) {
+        #' Determines if plot is required for given diag, remove
+        #' combination.
+        #' @param diag {boolean}: If TRUE, plot is diagonal, else
+        #'                        off-diagonal.
+        #' @param remove {boolean}: Whether we are removing indivdiuals.
+        #' @return {boolean}: TRUE if plot is required, FALSE otherwise.
+
+        logger("Checking if diag plot required, diag = ", diag,
+               ", remove = ", remove, ".")
+
+        hist_name <- get_plot_name(diag, remove)
+        plot_required <- !file_exists(hist_name)
+
+        prefix <- paste0(diag ? "Diag p" : "P", "lot ")
+        if (plot_required) {
+            logger(prefix, "required.")
+        } else {
+            logger(prefix, "not required.")
+        }
+
+        return(plot_required)
+    }
+
+    get_plot_name <- function(diag, remove) {
+        #' Calculates the name of the diag plot
+        #' @param diag {boolean}: If TRUE, plot is diagonal, else
+        #'                        off-diagonal.
+        #' @param remove {boolean}: Whether we are removing indivdiuals.
+    
+        hist_name <- add_extension(paste0("grm.diag", exts$png)
+         
+        logger("DEBUG", "Hist name for remove = ", remove, ": ",
+               quotes(hist_name), ".")
+        return(hist_name)
+    }
+
+    plot_grm_diag <- function(grm, remove) {
         #' Plots the distribution of the GRM diagonals.
         #' @param grm {data.frame}: The data.frame containing the grm data.
         #' @return {NULL}
