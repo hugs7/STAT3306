@@ -1284,7 +1284,8 @@ unrelated_individuals <- function(grm_basepath) {
                ", remove = ", remove, ".")
 
         hist_name <- get_plot_name(diag, remove)
-        plot_required <- !file_exists(hist_name)
+        exp_plot_path <- get_plot_path(hist_name)
+        plot_required <- !file_exists(exp_plot_path)
 
         prefix <- paste0(diag ? "Diag p" : "P", "lot ")
         if (plot_required) {
