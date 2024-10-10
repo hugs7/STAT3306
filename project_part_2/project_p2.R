@@ -887,7 +887,7 @@ add_extension <- function(basename, ...) {
     return(path)
 }
 
-construct_phenotypes_path <- function(...) {
+construct_phenotype_path <- function(...) {
     #' Constructs a file base to the phenotypes directory given a basename.
     #' @param ... {string}: The name of the file (potentially split) without
     #'                      the parent directory prefixed.
@@ -1108,9 +1108,10 @@ get_pheno_path <- function(pheno_suffix) {
     #' @return pheno_path {string}: The complete file path of the phenotype file.
 
     logger("DEBUG", "Retrieving pheno path for suffix: ", quotes(pheno_suffix), ".")
-    phenotype_file_prefix <- space_to_underscore(phenotype)
+    phenotype_file_prefix <- paste0(space_to_underscore(phenotype),
+                                    pheno_suffix == "" ? "_QC" : "")
     pheno_file_name <- paste0(phenotype_file_prefix, pheno_suffix, exts$phen)
-    pheno_path <- construct_phenotypes_path(pheno_file_name)
+    pheno_path <- construct_phenotype_path(pheno_file_name)
     logger("DEBUG", "Phenotype path: ", quotes(pheno_path), ".")
     return(pheno_path)
 }
@@ -1193,7 +1194,7 @@ estimate_greml_var <- function(grm_basepath) {
         
         trait_name <- get_trait_name(suffix)
         logger("Estimating Phenotyping Variance Proportion for phenotype: ", trait_name)
-        pheno_path <- construct_phenotypes_path(suffix)
+        pheno_path <- get_pheno_path(suffix)
         mpheno <- 1
         mpheno_args <- get_mpheno_args(mpheno)
         gcta_args <- paste(gcta_fgs$grm, grm_basepath, gcta_fgs$pheno, pheno_path,
