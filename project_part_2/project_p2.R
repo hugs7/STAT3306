@@ -1304,8 +1304,9 @@ unrelated_individuals <- function(grm_basepath) {
     
         hist_name <- add_extension(paste0("grm.diag", exts$png))
          
-        logger("DEBUG", "Hist name for remove = ", remove, ": ",
-               quotes(hist_name), ".")
+        logger("DEBUG", "Hist name for remove = ", remove,
+               "diag = ", diag, ": ",
+                quotes(hist_name), ".")
         return(hist_name)
     }
 
