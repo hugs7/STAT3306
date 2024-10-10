@@ -1313,6 +1313,7 @@ unrelated_individuals <- function(grm_basepath) {
     plot_grm_diag <- function(grm, remove) {
         #' Plots the distribution of the GRM diagonals.
         #' @param grm {data.frame}: The data.frame containing the grm data.
+        #' @param remove {boolean}: Whether we are removing indivdiuals.
         #' @return {NULL}
         
         logger("Plotting GRM Diagonals...")
@@ -1321,23 +1322,23 @@ unrelated_individuals <- function(grm_basepath) {
 
         log_df(grm.diag, "GRM (diag)")
 
-     
-        hist_name <- add_extension("grm.diag", exts$png)
+        hist_name <- get_plot_name(TRUE, remove)
         wrap_histogram(grm.diag, hist_name, breaks = 2500, freq = FALSE, 
                   xlab = "GRM Diagonals", xlim = c(0.95, 1.2),
                   main = "GRM Diag Distribution")  
     }
 
-    plot_grm_off_diag <- function(grm) {
+    plot_grm_off_diag <- function(grm, remove) {
         #' Plots the distribution of the GRM off-diagonals, both unclipped
         #' and clipped.
         #' @param grm {data.frame}: The data.frame containing the grm data.
+        #' @param remove {boolean}: Whether we are removing indivdiuals.
         #' @return {NULL}
         
         logger("Plotting GRM Off-Diagonals...")
         grm.off.diag <- off_diag(grm)
         
-        hist_name <- add_extension("grm.off.diag", exts$png)
+        hist_name <- get_plot_name(FALSE, remove)
         wrap_histogram(grm.off.diag, hist_name, breaks = 200, freq = FALSE,
                   xlab = "GRM Off-Diagonals", xlim = c(0.1, 1.1),
                   main = "GRM Off-Diag Distribution")
@@ -1380,11 +1381,15 @@ unrelated_individuals <- function(grm_basepath) {
         } else {
             loop_grm_basepath <- grm_basepath
         }
-
-        grm <- read_grml(loop_grm_basepath)
         
-        plot_grm_diag(grm)
-        plot_grm_off_diag(grm)
+        if (plots_required(remove)) {
+            grm <- read_grml(loop_grm_basepath)
+            
+            plot_grm_diag(grm, remove)
+            plot_grm_off_diag(grm, remove)
+        } else {
+            logger("Skipping greml - plots already generated.")
+        }
     }
     
     logger("<<< End unrelated indivduals")
