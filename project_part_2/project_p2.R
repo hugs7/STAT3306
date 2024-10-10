@@ -1144,7 +1144,7 @@ gcta_fgs <- create_object(list("bfile", "mgrm", list("mkgrm" = "make-grm"), "out
 
 # File extensions
 exts <- create_object(list("phen", "txt", "png", "cov", "eigenvec", "eigenval",
-                           "grm", "bed", "bim", "bin", "fam", "gz", "id"),
+                           "grm", "bed", "bim", "bin", "fam", "gz", "id", "hsq"),
                       ext)
 
 # === Main ===
