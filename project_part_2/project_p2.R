@@ -653,7 +653,7 @@ check_any_empty <- function(...) {
 
     args <- list(...)
     logger("DEBUG", "Checking if empty: ", quotes(to_str(args)))
-    any(lapply(args, function(x) {
+    any(sapply(args, function(x) {
         logger("TRACE", "Checking x = ", x, ", type: ", typeof(x), ".")
         if (is.null(x)) {
             return(TRUE)
