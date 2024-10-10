@@ -1409,7 +1409,7 @@ partition_variance <- function(grm_qc_basepath) {
             #'                                  appropriate covariates.
             
             logger("DEBUG", "  >>> Begin split covars callback.")
-            split_data <- combined_df[, fam_ind_cols, drop = FALSE]
+            split_data <- combined_covars[, fam_ind_cols, drop = FALSE]
 
             for (i in 3:ncol(combined_covars)) {
                 column <- combined_covars[[i]]
