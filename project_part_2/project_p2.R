@@ -1436,7 +1436,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         logger("DEBUG", "Combined covars path: ", quotes(combined_covars_path),
                ".")
 
-        split_names <- paste0("covars_", c("discrete", "continuous"))
+        split_names <- c("discrete", "continuous")
         split_paths <- split_generic(combined_covars_path, split_names,
                                      exts$cov, "covars", split_covars_callback)
 
