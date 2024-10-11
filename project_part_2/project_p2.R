@@ -1473,18 +1473,35 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
             
             logger("DEBUG", "  >>> Begin split covars callback.")
             split_data <- combined_covars[, fam_ind_cols, drop = FALSE]
-
-            for (i in 3:ncol(combined_covars)) {
+            is_discrete <- name == discrete
+            is_continuous <- name == continuous
+            
+            start_index <- length(fam_ind_cols) + 1
+            i_cum <- start_index
+            for (i in start_index:ncol(combined_covars)) {
                 column <- combined_covars[[i]]
 
                 if (is_discrete_col(column)) {
+                    logger("DEBUG", "Column ", i, " is discrete.")
+                    if (!is_discrete) {
+                        next
+                    }
+
                     if (is_binary_col(column)) {
+                        logger("DEBUG", "Column ", i, " is binary.")
                         # Ensure binary data is encoded as 0s and 1s
                         column <- ifelse(column == 1, 0, 1)
                     }
-                }    
+                } else {
+                    if (!is_continuous) {
+                        next
+                    }
+                    
+                    logger("DEBUG", "Column ", i, " is continuous.")
+                }
                 
-                split_data[[names(combined_covars)[i]]] <- column
+                split_data[[names(combined_covars)[i_cum]]] <- column
+                i_cum <- i_cum + 1
             }
 
             logger("DEBUG", "  <<< End split covars callback.")
@@ -1496,7 +1513,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         logger("DEBUG", "Combined covars path: ", quotes(combined_covars_path),
                ".")
 
-        split_names <- c("discrete", "continuous")
+        split_names <- c(discrete, continuous)
         split_paths <- split_generic(combined_covars_path, split_names,
                                      exts$cov, "covars", split_covars_callback)
 
