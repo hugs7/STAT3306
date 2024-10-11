@@ -1459,6 +1459,9 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         #' @return {list}: Contains paths to each covariate file with keys
         #'                   - discrete: Path to discrete covars file.
         #'                   - continuous: Path to continuous covars file.
+        
+        discrete <- "discrete"
+        continuous <- "continuous"
 
         split_covars_callback <- function(combined_covars, name) {
             #' Callback function to separate discrete and continuous covariates.
