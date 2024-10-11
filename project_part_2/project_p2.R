@@ -500,9 +500,9 @@ is_discrete_col <- function(column) {
     #' @param column {data.frame}: Column of a data frame to check.
     #' @return {boolean}: TRUE if column is discrete, FALSE otherwise.
 
-    is_numeric <- is.numeric(col)
-    is_integer <- is.integer(col)
-    is_factor <- is.factor(col)
+    is_numeric <- is.numeric(column)
+    is_integer <- is.integer(column)
+    is_factor <- is.factor(column)
 
     return (is_numeric && (is_integer || is_factor))
 }
