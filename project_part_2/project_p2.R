@@ -1482,11 +1482,11 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
                 column <- combined_covars[[i]]
 
                 if (is_discrete_col(column)) {
-                    logger("DEBUG", "Column ", i, " is discrete.")
                     if (!is_discrete) {
                         next
                     }
 
+                    logger("DEBUG", "Column ", i, " is discrete.")
                     if (is_binary_col(column)) {
                         logger("DEBUG", "Column ", i, " is binary.")
                         # Ensure binary data is encoded as 0s and 1s
