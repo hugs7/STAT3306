@@ -1574,6 +1574,10 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         #'                            the phenotype variant.
         #' @return {string}: Path to prepared grm output.
         
+        if (!file_exists(snps_path)) {
+            logger("ERROR", "SNPs not found at ", quotes(snps_path), ".")
+        }
+
         logger("Preparing GRM for MAF annotation: ", quotes(annotation), "...")
         logger("DEBUG", "Using SNPs in file: ", quotes(snps_path), ".")
         grm_qc_path <- add_extension(grm_qc_basepath, exts$grm, exts$id)
@@ -1598,6 +1602,11 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         #' @return part_comp_out {string}: Path to parition variance output.
 
         trait_name <- get_trait_name(suffix)
+        
+        if (!file_exists(prep_path)) {
+            logger("ERROR", "Prep for trait ", trait_name, " does not exist.")
+        }
+
         logger("Partitioning variance components for phenotype: ",
                quotes(trait_name), ".")
 
