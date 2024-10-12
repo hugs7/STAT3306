@@ -1335,7 +1335,7 @@ unrelated_individuals <- function(grm_basepath) {
         log_df(grm.diag, "GRM (diag)")
 
         hist_name <- get_plot_name(TRUE, remove)
-        wrap_histogram(grm.diag, hist_name, breaks = 2500, freq = FALSE, 
+        wrap_histogram(grm.diag, hist_name, breaks = 2500, freq = FALSE,
                   xlab = "GRM Diagonals", xlim = c(0.95, 1.2),
                   main = "GRM Diag Distribution")  
     }
@@ -1650,7 +1650,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
     covar_paths <- split_covars()
     antd_snp_paths <- split_snps()
 
-    prep_basepath <- add_extension("prep_snps", exts$txt) 
+    prep_basepath <- add_extension("prep_snps", exts$txt)
     prep_path <- construct_out_path(prep_basepath)
     delete_file(prep_path)
 
