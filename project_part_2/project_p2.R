@@ -471,9 +471,10 @@ list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
 file_exists <- function(path, match_pattern = FALSE) {
     #' Checks to see if a file exists at the specified path
     #' @param path {character}: The specified path to check. Can be relative.
-    #' @param match_pattern {bool}: If TRUE, the basename of the path will be considered as a
-    #'                        regular expression. Defaults to FALSE where the path is
-    #'                        considered exactly.
+    #' @param match_pattern {boolean}: If TRUE, the basename of the path will be
+    #'                                 considered as a regular expression.
+    #'                                 Defaults to FALSE where the path is
+    #'                                 considered exactly.
     #' @return exists {boolean}: True if file exists, false otherwise.
 
     logger("DEBUG", "Checking if file exists at path ", quotes(path), ".")
@@ -539,8 +540,9 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #'                                          number of digits prior to passint
     #'                                          to xtable.
     #' @param line_spacing_factor {integer}: Line spacing factor for LaTeX table.
-    #' @param hide_row_names {bool}: Whether to include row names from the data.frame
-    #'                               as the first column in the table. Defaults to FALSE.
+    #' @param hide_row_names {boolean}: Whether to include row names from the data.frame
+    #'                                  as the first column in the table. Defaults to
+    #'                                  FALSE.
     #' @param size {character}: LaTeX size encoding without \. Defaults to normalsize.
     #' @return path {character}: Path to saved LaTeX table.
    
@@ -605,8 +607,8 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
 get_ext_pattern <- function(extensions) {
     #' Generates a RegEx pattern to match any extension provided
     #' from a list of extensions
-    #' @param extensions {list{str}}: List of extensions to match
-    #'                                to.
+    #' @param extensions {list{string}}: List of extensions to match
+    #'                                   to.
     #' @return {character}: RegEx pattern matching provided extensions.
 
     ext_pattern <- paste0("(", to_str(regex_escape(extensions),
@@ -619,8 +621,8 @@ ends_with_extension <- function(ext_pattern, path) {
     #' Checks if a path ends with an extension given in a pattern.
     #' @param ext_pattern {character}: RegEx pattern to match path to.
     #' @param path {character}: Path to check extension in.
-    #' @return {bool}: TRUE if the path contains extension in
-    #'                 pattern, FALSE otherwise.
+    #' @return {boolean}: TRUE if the path contains extension in
+    #'                    pattern, FALSE otherwise.
 
     ends_with_ext <- grepl(ext_pattern, path)
     logger("TRACE", "Ends with extension: ", quotes(ext_pattern), " ",
@@ -649,9 +651,9 @@ match_not_log <- function(path) {
 }
 
 check_any_empty <- function(...) {
-    #' Checks if any string args are empty ("")
-    #' @param ... {character}: String args to check
-    #' @return {boolean}: True if ANY of the string args are empty, false otherwise.
+    #' Checks if any string args are empty ("").
+    #' @param ... {character}: String args to check.
+    #' @return {boolean}: TRUE if ANY of the string args are empty, FALSE otherwise.
 
     args <- list(...)
     logger("DEBUG", "Checking if empty: ", quotes(to_str(args)))
@@ -667,7 +669,7 @@ check_any_empty <- function(...) {
 delete_file <- function(path) {
     #' Deletes a file at the specified path if it exists.
     #' @param path {character}: The path of the file to delete.
-    #' @return success {boolean}: True if the file was deleted, false otherwise.
+    #' @return success {boolean}: TRUE if the file was deleted, FALSE otherwise.
 
     exists <- file_exists(path)
 
@@ -720,10 +722,14 @@ wrap_write <- function(content, basename, append = FALSE, ...) {
 
 wrap_read_table <- function(path, header = TRUE, ...) {
     #' Wrapper for reading a table from a file.
-    #' @param path {character}: The path of the file to read the table from.
-    #' @param header {boolean}. Defaults to true. If true, expects header to exist in file.
-    #' @param ... {character}: Extra arguments to provide to read.table callback.
-    #' @return {data.frame}: Dataframe containing the table data. NULL if file does not exist.
+    #' @param path {character}: The path of the file to read the table
+    #'                          from.
+    #' @param header {boolean}. Defaults to true. If true, expects header
+    #'                          to exist in file.
+    #' @param ... {character}: Extra arguments to provide to read.table
+    #'                         callback.
+    #' @return {data.frame}: Dataframe containing the table data. NULL if
+    #'                       file does not exist.
 
     if (!file_exists(path)) {
         logger("ERROR", "Could not find file to read at ", quotes(path), ".")
@@ -813,7 +819,8 @@ gcta_qc_data <- function(gcta_args, out_name = NULL) {
     
     gcta_args <- paste(gcta_fgs$bfile, data_files_pattern, gcta_args)
     
-    gcta(gcta_args, out_name)
+    gcta_out_path <- gcta(gcta_args, out_name)
+    return(gcta_out_path)
 }
 
 gcta <- function(gcta_args, out_name = NULL) {
