@@ -1549,8 +1549,8 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
                 match <- 0
             } else {
                 logger("ERROR", "Invalid split name: ", quotes(name), ".")
-                stop()
             }
+
             
             subset <- data[data$Annotated == match, snp_id_col, drop = drop]
             return(subset)
