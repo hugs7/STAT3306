@@ -1367,7 +1367,7 @@ unrelated_individuals <- function(grm_basepath) {
                            gcta_rr_threshold, gcta_fgs$mkgrm)
         out_name <- "grm_rel_rmvd"
 
-        grm_path_rr <- gcta_qc_data(gcta_args, out_name)
+        grm_path_rr <- gcta(gcta_args, out_name)
         return(grm_path_rr)
     }
     
