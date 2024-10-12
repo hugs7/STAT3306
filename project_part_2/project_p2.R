@@ -1582,12 +1582,12 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         logger("DEBUG", "Using SNPs in file: ", quotes(snps_path), ".")
         grm_qc_path <- add_extension(grm_qc_basepath, exts$grm, exts$id)
         thread_args <- get_thread_args()
-        gcta_args <- paste(gcta_fgs$bfile, grm_basepath, gcta_fgs$extract,
-                           snps_path, gcta_fgs$autosome, gcta_fgs$mkgrm,
-                           gcta_fgs$keep, grm_qc_path, thread_args)
+        gcta_args <- paste(gcta_fgs$extract, snps_path, gcta_fgs$autosome,
+                           gcta_fgs$mkgrm, gcta_fgs$keep, grm_qc_path,
+                           thread_args)
 
         out_name <- paste0("grm_prep_", annotation, suffix)
-        gcta_out_path <- gcta(gcta_args, out_name)
+        gcta_out_path <- gcta_qc_data(gcta_args, out_name)
         return(gcta_out_path)
     }
 
