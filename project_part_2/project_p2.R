@@ -1612,8 +1612,9 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
 
         mpheno <- 1
         mpheno_args <- get_mpheno_args(mpheno)
+        thread_args <- get_thread_args()
         gcta_args <- paste(gcta_fgs$mgrm, prep_path, gcta_fgs$pheno, pheno_path,
-                           mpheno_args, gcta_fgs$reml)
+                           mpheno_args, gcta_fgs$reml, thread_args)
         out_name <- paste0("nr_partition", suffix, "_", annotation)
         logger("DEBUG", "Saving partitioning result to filename: ",
                quotes(out_name), ".")
