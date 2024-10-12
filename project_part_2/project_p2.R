@@ -76,7 +76,7 @@ overwrite_gcta_out <- FALSE
 
 cat0 <- function(...) {
     #' Concatenates strings together and ouputs them to the console
-    #' @param ... {string}: String args to concatenate
+    #' @param ... {character}: String args to concatenate
     #' @return {NULL}
 
     msg <- paste0(...)
@@ -88,8 +88,8 @@ cat0("Initialising functions...")
 pad <- function(width, ...) {
     #' Pads string args to a given width
     #' @param width {integer}: width in characters to pad the string to
-    #' @param ... {string}: String args to pad
-    #' @return padded {string}: The padded string.
+    #' @param ... {character}: String args to pad
+    #' @return padded {character}: The padded string.
 
     # Do not trace log here as logger relies on pad.
     clipped <- substr(paste0(...), 1, width - 1)
@@ -99,8 +99,8 @@ pad <- function(width, ...) {
 
 quotes <- function(...) {
     #' Surrounds a string with double quotes (")
-    #' @param ... {string}: String args to surround with quotes
-    #' @return {string}: String surrounded with quotes
+    #' @param ... {character}: String args to surround with quotes
+    #' @return {character}: String surrounded with quotes
  
     str <- args_to_string(...)
     paste0("'", str, "'")
@@ -108,8 +108,8 @@ quotes <- function(...) {
 
 brackets <- function(...) {
     #' Surrounds a string with round brackets.
-    #' @param ... {string}: String args to surround with brackets.
-    #' @return {string}: String surrounded with round brackets.
+    #' @param ... {character}: String args to surround with brackets.
+    #' @return {character}: String surrounded with round brackets.
 
     str <- args_to_string(...)
     paste0("(", str, ")")
@@ -117,9 +117,9 @@ brackets <- function(...) {
 
 latex_math <- function(...) {
     #' Surrounds a string with LaTeX math mode $...$.
-    #' @param ... {string}: String args to surround with LaTeX
+    #' @param ... {character}: String args to surround with LaTeX
     #'                      math mode.
-    #' @return {string}: String surrounded by LaTex math mode.
+    #' @return {character}: String surrounded by LaTex math mode.
     
     str <- args_to_string(...)
     paste0("$", str, "$")
@@ -128,9 +128,9 @@ latex_math <- function(...) {
 to_str <- function(x, collapse = ", ") {
     #' Converts a list or vector to a string separated by commas.
     #' @param x {list|vector}: List or vector to convert to string.
-    #' @param collapse {string}: Separator to split items in list
+    #' @param collapse {character}: Separator to split items in list
     #'                           or vector. Defaults to ', '.
-    #' @return {string}: String representation of list.
+    #' @return {character}: String representation of list.
     
     if (is.list(x) || is.vector(x)) {
         x <- unlist(x)
@@ -141,8 +141,8 @@ to_str <- function(x, collapse = ", ") {
 
 args_to_string <- function(...) {
     #' Converts any argument which is a list to a string
-    #' @param ... {string}: Arguments to convert.
-    #' @return {list{string}}: String arguments.
+    #' @param ... {character}: Arguments to convert.
+    #' @return {list{character}}: String arguments.
 
     args <- list(...)
     string_args <- sapply(args, function(arg) {
@@ -159,8 +159,8 @@ args_to_string <- function(...) {
 
 named_flag <- function(fg_name) {
     #' Prefixes a flag name with --
-    #' @param fg_name {string}: The flag name to prefix
-    #' @return {string}: The flag with '--' prefixed
+    #' @param fg_name {character}: The flag name to prefix
+    #' @return {character}: The flag with '--' prefixed
 
     logger("TRACE", "Naming flag: ", quotes(fg_name), ".")
     paste0("--", fg_name)
@@ -168,8 +168,8 @@ named_flag <- function(fg_name) {
 
 ext <- function(ext_name) {
     #' Prefixes an extension name with a period (.)
-    #' @param ext_name {string}: The extension to prefix
-    #' @return {string} The extension with a period prefixed
+    #' @param ext_name {character}: The extension to prefix
+    #' @return {character} The extension with a period prefixed
 
     logger("TRACE", "Initialising extension: ", quotes(ext_name), ".")
     paste0(".", ext_name)
@@ -178,7 +178,7 @@ ext <- function(ext_name) {
 wrap_dim <- function(df) {
     #' Gets the dimension of a data frame in a string format.
     #' @param df {data.frame}: Data frame to get the dimension of.
-    #' @return {string}: Dimension of data frame in string representation.
+    #' @return {character}: Dimension of data frame in string representation.
 
     paste(dim(df), collapse = " x ")
 }
@@ -242,7 +242,7 @@ get_func_name <- function(call) {
     #' Given a call from the call stack, returns
     #' the name of the function called.
     #' @param call {object}: The call to get the function name from.
-    #' @return func_name {string}: The function name
+    #' @return func_name {character}: The function name
     
     if (is.call(call) && length(call) > 0) {
         func_name <- as.character(call[[1]])
@@ -256,7 +256,7 @@ get_func_name <- function(call) {
 get_calling_function <- function(ignore_names) {
     #' Gets the name of the function calling a function from the call stack
     #' @param ignore_names {list[string]}: List of functions to skip in the call stack
-    #' @return func_name {string}: Name of function calling.
+    #' @return func_name {character}: Name of function calling.
 
     call_stack <- sys.calls()
 
@@ -297,7 +297,7 @@ logger <- function(log_level = default_log_level, ...) {
     #' calling function, log level and message to the console. Logs the stack
     #' trace if log level is ERROR. Will not log if log_level is higher than
     #' the application log level.
-    #' @param log_level {string}: Optional. The level to log at. If not provided,
+    #' @param log_level {character}: Optional. The level to log at. If not provided,
     #'                            will default to default_log_level.
     #' @return {NULL}
 
@@ -335,8 +335,8 @@ logger <- function(log_level = default_log_level, ...) {
 log_df <- function(df, name, log_level = default_log_level) {
     #' Logs the dimension and head of a dataframe at the specified log level,
     #' @param df {data.frame}: The data frame to preview,
-    #' @param name {string}: The name of the data frame.
-    #' @param log_level {string}: The level to log at. Defaults to INFO.
+    #' @param name {character}: The name of the data frame.
+    #' @param log_level {character}: The level to log at. Defaults to INFO.
     #' @return {NULL}
 
     if (is.null(df)) {
@@ -350,16 +350,16 @@ log_df <- function(df, name, log_level = default_log_level) {
 
 space_to_underscore <- function(str) {
     #' Replaces all instances of spaces in a string with underscores.
-    #' @param str {string}: String to replace from.
-    #' @return {string}: string with ' 's as '_'s.
+    #' @param str {character}: String to replace from.
+    #' @return {character}: string with ' 's as '_'s.
 
     gsub(" ", "_", str)
 }
 
 dots_to_dashes <- function(str) {
     #' Replaces all instances of dots (.) in a string with underscores.
-    #' @param str {string}: String to replace from.
-    #' @return {string}: String with '.'s as '_'s.
+    #' @param str {character}: String to replace from.
+    #' @return {character}: String with '.'s as '_'s.
     
     logger("TRACE", "Replacing dots with dashes in ", quotes(str), ".")
     gsub(".", "_", str)
@@ -367,8 +367,8 @@ dots_to_dashes <- function(str) {
 
 title_case <- function(str) {
     #' Converts a string to titlecase.
-    #' @param str {string}: The string to convert to title case.
-    #' @return result {string}: The string in titlecase form.
+    #' @param str {character}: The string to convert to title case.
+    #' @return result {character}: The string in titlecase form.
 
     if (length(str) == 0) {
         logger("WARN", "String is empty")
@@ -387,13 +387,13 @@ title_case <- function(str) {
 regex_escape <- function(string) {
     #' Escapes characters in a string so they can be
     #' used in a RegEx string.
-    #' @param string {string|list{string}}: The string or list of strings to be escaped.
-    #' @return {string|list{string}}: The same string but RegEx escaped.
+    #' @param string {string|list{character}}: The string or list of strings to be escaped.
+    #' @return {string|list{character}}: The same string but RegEx escaped.
     
     escape_string <- function(s) {
         #' Escapes a single string.
-        #' @param s {string}: Single string to escape.
-        #' @return {string}: RegEx escaped string.
+        #' @param s {character}: Single string to escape.
+        #' @return {character}: RegEx escaped string.
 
         gsub("([\\W])", "\\\\\\1", s, perl = TRUE)
     }
@@ -414,7 +414,7 @@ regex_escape <- function(string) {
 
 shell_call <- function(...) {
     #' Makes a system call with standard out disabled.
-    #' @param ... {string}: String args containing system command.
+    #' @param ... {character}: String args containing system command.
     #' @return {NULL}
 
     system(..., ignore.stdout = TRUE)
@@ -423,7 +423,7 @@ shell_call <- function(...) {
 
 mkdir_if_not_exist <- function(path) {
     #' Makes a directory at the specified path if it doesn't already exist.
-    #' @param path {string}: The path to create a directory at.
+    #' @param path {character}: The path to create a directory at.
     #' @return {NULL}
 
     if (!dir.exists(path)) {
@@ -437,8 +437,8 @@ mkdir_if_not_exist <- function(path) {
 
 list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
     #' Wrapper for list.files to set full.names default to TRUE.
-    #' @param dir_name {string}: The directory to search in.
-    #' @param pattern {string}: Optionally match filenames with a RegEx pattern.
+    #' @param dir_name {character}: The directory to search in.
+    #' @param pattern {character}: Optionally match filenames with a RegEx pattern.
     #' @param full.names {boolean}: If true, the directory path is prepended
     #'                              to the file names
     #' @param ... {any}: Any extra arguemnts for list.files()
@@ -469,7 +469,7 @@ list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
 
 file_exists <- function(path, match_pattern = FALSE) {
     #' Checks to see if a file exists at the specified path
-    #' @param path {string}: The specified path to check. Can be relative.
+    #' @param path {character}: The specified path to check. Can be relative.
     #' @param match_pattern {bool}: If TRUE, the basename of the path will be considered as a
     #'                        regular expression. Defaults to FALSE where the path is
     #'                        considered exactly.
@@ -527,8 +527,8 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
                         size = "normalsize") {
     #' Generates a LaTeX table given a data.frame and saves to a file.
     #' @param data {data.frame}: The data.frame to output as a LaTeX table.
-    #' @param out_name {string}: Filename to save the output as.
-    #' @param table_align {string}: Latex coding for aligning columns.
+    #' @param out_name {character}: Filename to save the output as.
+    #' @param table_align {character}: Latex coding for aligning columns.
     #' @param caption {string|NULL}: Optional caption for the table.
     #' @param col.names {vec|NULL}: Optional column names to provide to the table.
     #' @param digits {integer|vector(integer)}: Number of decimal places to display
@@ -540,8 +540,8 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #' @param line_spacing_factor {integer}: Line spacing factor for LaTeX table.
     #' @param hide_row_names {bool}: Whether to include row names from the data.frame
     #'                               as the first column in the table. Defaults to FALSE.
-    #' @param size {string}: LaTeX size encoding without \. Defaults to normalsize.
-    #' @return path {string}: Path to saved LaTeX table.
+    #' @param size {character}: LaTeX size encoding without \. Defaults to normalsize.
+    #' @return path {character}: Path to saved LaTeX table.
    
     log_df(data, paste("Latex table", out_name))
     
@@ -606,7 +606,7 @@ get_ext_pattern <- function(extensions) {
     #' from a list of extensions
     #' @param extensions {list{str}}: List of extensions to match
     #'                                to.
-    #' @return {string}: RegEx pattern matching provided extensions.
+    #' @return {character}: RegEx pattern matching provided extensions.
 
     ext_pattern <- paste0("(", to_str(regex_escape(extensions),
                           collapse = "|"), ")$")
@@ -616,8 +616,8 @@ get_ext_pattern <- function(extensions) {
 
 ends_with_extension <- function(ext_pattern, path) {
     #' Checks if a path ends with an extension given in a pattern.
-    #' @param ext_pattern {string}: RegEx pattern to match path to.
-    #' @param path {string}: Path to check extension in.
+    #' @param ext_pattern {character}: RegEx pattern to match path to.
+    #' @param path {character}: Path to check extension in.
     #' @return {bool}: TRUE if the path contains extension in
     #'                 pattern, FALSE otherwise.
 
@@ -630,8 +630,8 @@ ends_with_extension <- function(ext_pattern, path) {
 match_not_log <- function(path) {
     #' Given an extensionless file path, constructs
     #' a Regex pattern to exclude matching .log files.
-    #' @param path {string}: The extensionless pattern to match.
-    #' @return {string}: The Regex pattern which includes a negative
+    #' @param path {character}: The extensionless pattern to match.
+    #' @return {character}: The Regex pattern which includes a negative
     #'                   lookahead to log files.
    
     # Check the path does not already contain an extension.
@@ -649,7 +649,7 @@ match_not_log <- function(path) {
 
 check_any_empty <- function(...) {
     #' Checks if any string args are empty ("")
-    #' @param ... {string}: String args to check
+    #' @param ... {character}: String args to check
     #' @return {boolean}: True if ANY of the string args are empty, false otherwise.
 
     args <- list(...)
@@ -665,7 +665,7 @@ check_any_empty <- function(...) {
 
 delete_file <- function(path) {
     #' Deletes a file at the specified path if it exists.
-    #' @param path {string}: The path of the file to delete.
+    #' @param path {character}: The path of the file to delete.
     #' @return success {boolean}: True if the file was deleted, false otherwise.
 
     exists <- file_exists(path)
@@ -682,12 +682,12 @@ delete_file <- function(path) {
 wrap_write <- function(content, basename, append = FALSE, ...) {
     #' Writes contents to a file. Output is always placed in out directory.
     #' Allows writing as .txt or .tex.
-    #' @param content {string}: The content to write.
-    #' @param basename {string}: Name of the file to write to.
+    #' @param content {character}: The content to write.
+    #' @param basename {character}: Name of the file to write to.
     #' @param append {boolean}: Appends to the file if it already exists.
     #'                          Defaults to FALSE.
     #' @param ... {character}: Extra arguments to provide to write callback.
-    #' @return path {string}: The full save path where the file was saved.
+    #' @return path {character}: The full save path where the file was saved.
 
     ext_pattern <- get_ext_pattern(list(exts$txt, exts$tex))
     logger("DEBUG", "Initial basename: ", quotes(basename), ".")
@@ -719,7 +719,7 @@ wrap_write <- function(content, basename, append = FALSE, ...) {
 
 wrap_read_table <- function(path, header = TRUE, ...) {
     #' Wrapper for reading a table from a file.
-    #' @param path {string}: The path of the file to read the table from.
+    #' @param path {character}: The path of the file to read the table from.
     #' @param header {boolean}. Defaults to true. If true, expects header to exist in file.
     #' @param ... {character}: Extra arguments to provide to read.table callback.
     #' @return {data.frame}: Dataframe containing the table data. NULL if file does not exist.
@@ -738,18 +738,18 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     #' Wrapper for writing a table to a file. Will overwrite file if it exists
     #' at the same path.
     #' @param data {data.frame}: The data to write.
-    #' @param basename {string}: The basename excluding the out dir to  write
+    #' @param basename {character}: The basename excluding the out dir to  write
     #'                           the file at. Ideally should include extension but if
     #'                           it doesn't this function will add .txt by default.
     #' @param row.names {boolean}: Whether to include row names. Disabled by default.
     #' @param col.names {boolean}: Whether to include col names. Enabled by default but
     #'                             if the data contains default columns, will not be
     #'                             written.
-    #' @param sep {string}: The separator to delimit between columns in the table.
+    #' @param sep {character}: The separator to delimit between columns in the table.
     #' @param quote {boolean}: Whether to include quotes for strings in the table
     #'                         data. Disabled by default.
     #' @param ... {character}: Extra arguments to provide to write.table callback.
-    #' @return path {string}: The full save path where the table was saved.
+    #' @return path {character}: The full save path where the table was saved.
 
     ext_pattern <- get_ext_pattern(list(exts$txt, exts$phen, exts$cov))
     logger("DEBUG", "Initial basename: ", quotes(basename), ".")
@@ -798,11 +798,11 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
 gcta_qc_data <- function(gcta_args, out_name = NULL) {
     #' Makes a GCTA call with the QC'd dataset and specific arguments.
     #' Serves as a wrapper to gcta function.
-    #' @param gcta_args {string}: Arguments provided to GCTA
-    #' @param out_name {string}: Basename for GCTA to output to. Should exclude
+    #' @param gcta_args {character}: Arguments provided to GCTA
+    #' @param out_name {character}: Basename for GCTA to output to. Should exclude
     #'                           gcta out directory. If NULL, output is piped to
     #'                           the console.
-    #' @return gcta_out_path {string}: Relative path from script to gcta output.
+    #' @return gcta_out_path {character}: Relative path from script to gcta output.
     #'                                 Notable, this path does not contain
     #'                                 extension added by GCTA as this differs
     #'                                 depending upon arguments provided to GCTA.
@@ -817,11 +817,11 @@ gcta_qc_data <- function(gcta_args, out_name = NULL) {
 
 gcta <- function(gcta_args, out_name = NULL) {
     #' Runs a GCTA call with the given dataset and specified arguments.
-    #' @param gcta_args {string}: Arguments provided to GCTA
-    #' @param out_name {string}: Basename for GCTA to output to. Should exclude
+    #' @param gcta_args {character}: Arguments provided to GCTA
+    #' @param out_name {character}: Basename for GCTA to output to. Should exclude
     #'                           gcta out directory. If NULL, output is piped to
     #'                           the console.
-    #' @return gcta_out_path {string}: Relative path from script to gcta output.
+    #' @return gcta_out_path {character}: Relative path from script to gcta output.
     #'                                 Notable, this path does not contain
     #'                                 extension added by GCTA as this differs
     #'                                 depending upon arguments provided to GCTA.
@@ -871,10 +871,10 @@ gcta <- function(gcta_args, out_name = NULL) {
 add_extension <- function(basename, ...) {
     #' Adds extension(s) to a given basename. The basename can by a file
     #' path or just a file basename.
-    #' @param basename {string}: File path or basename to add extension to.
-    #' @param ... {string}: String args containing additional extension(s)
+    #' @param basename {character}: File path or basename to add extension to.
+    #' @param ... {character}: String args containing additional extension(s)
     #'                      to append.
-    #' @return path {string}: Basename or path with extension(s) appended.
+    #' @return path {character}: Basename or path with extension(s) appended.
 
     args <- list(...)
     logger("TRACE", "Checking extensions ", ..., ".")
@@ -890,9 +890,9 @@ add_extension <- function(basename, ...) {
 
 construct_phenotype_path <- function(...) {
     #' Constructs a file base to the phenotypes directory given a basename.
-    #' @param ... {string}: The name of the file (potentially split) without
+    #' @param ... {character}: The name of the file (potentially split) without
     #'                      the parent directory prefixed.
-    #' @return path {string}: The relative path to the file.
+    #' @return path {character}: The relative path to the file.
 
     basename <- paste0(...)
     file.path(phenotypes_path, basename)
@@ -900,9 +900,9 @@ construct_phenotype_path <- function(...) {
 
 construct_data_path <- function(...) {
     #' Constructs a file base to the data directory given a basename.
-    #' @param ... {string}: The name of the file (potentially split) without
+    #' @param ... {character}: The name of the file (potentially split) without
     #'                      the parent directory prefixed.
-    #' @return path {string}: The relative path to the file.
+    #' @return path {character}: The relative path to the file.
 
     basename <- paste0(...)
     file.path(data_path, basename)
@@ -911,9 +911,9 @@ construct_data_path <- function(...) {
 
 construct_gcta_out_path <- function(...) {
     #' Constructs a file path in the gcta out directory given a basename.
-    #' @param ... {string}: The name of the file (potentially split) without
+    #' @param ... {character}: The name of the file (potentially split) without
     #'                      the gcta out directory prefixed.
-    #' @return path {string}: The relative path to the file.
+    #' @return path {character}: The relative path to the file.
 
     basename <- paste0(...)
     file.path(gcta_out_dir, basename)
@@ -922,16 +922,16 @@ construct_gcta_out_path <- function(...) {
 
 construct_out_path <- function(basename) {
     #' Constructs a file path in the out directory given a basename.
-    #' @param basename {string}: The name of the file without the out directory prefixed.
-    #' @return path {string}: The relative path to the file.
+    #' @param basename {character}: The name of the file without the out directory prefixed.
+    #' @return path {character}: The relative path to the file.
 
     file.path(out_dir, basename)
 }
 
 construct_plot_path <- function(basename) {
     #' Constructs a file path in the plots directory given a basename
-    #' @param basename {string}: The name of the file without the plots directory prefixed.
-    #' @return path {string}: The relative path to the file.
+    #' @param basename {character}: The name of the file without the plots directory prefixed.
+    #' @return path {character}: The relative path to the file.
 
     file.path(plots_out_dir, basename)
 }
@@ -939,8 +939,8 @@ construct_plot_path <- function(basename) {
 check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
     #' Checks the extension of a file name is present and optionally
     #' adds it if it's not present.
-    #' @param out_name {string}: File path or name to check.
-    #' @param expected_ext {string}: The expected extension (with .).
+    #' @param out_name {character}: File path or name to check.
+    #' @param expected_ext {character}: The expected extension (with .).
     #' @param add_if_missing {boolean}: Adds the expected extension if
     #'                                  not present. Defaults to true.
     #' @return out_name {string|NULL}: The (possibly revised) file path
@@ -970,10 +970,10 @@ check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
 
 check_png_ext <- function(out_name, add_if_missing = TRUE) {
     #' Wrapper to check_ext() for png extension.
-    #' @param out_name {string}: File path or name to check.
+    #' @param out_name {character}: File path or name to check.
     #' @param add_if_missing {boolean}: Adds the expected extension if
     #'                                  not present. Defaults to true.
-    #' @return out_name {string}: The (possibly revised) file path
+    #' @return out_name {character}: The (possibly revised) file path
     #'                            or name.
 
     check_ext(out_name, exts$png, add_if_missing)
@@ -981,10 +981,10 @@ check_png_ext <- function(out_name, add_if_missing = TRUE) {
 
 check_txt_ext <- function(out_name, add_if_missing = TRUE) {
     #' Wrapper to check_ext() for txt extension.
-    #' @param out_name {string}: File path or name to check.
+    #' @param out_name {character}: File path or name to check.
     #' @param add_if_missing {boolean}: Adds the expected extension if
     #'                                  not present. Defaults to true.
-    #' @return out_name {string}: The (possibly revised) file path
+    #' @return out_name {character}: The (possibly revised) file path
     #'                            or name.
     
     check_ext(out_name, exts$txt, add_if_missing)
@@ -995,12 +995,12 @@ wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height
     #' in the plots directory.
     #' @param plot_callback {function}: Function used to generate plot.
     #' @param data {data.frame}: The data to plot
-    #' @param out_name {string}: The file name to output. Should be a png and
+    #' @param out_name {character}: The file name to output. Should be a png and
     #'                           should not contain the plots directory.
     #' @param ... {any}: Extra arguemnts to provide to plot callback.
     #' @param width {integer}: The width of the plot to save in pixels. Has a default value.
     #' @param height {integer}: The height of the plot to save in pixels. Has a default value.
-    #' @return out_path {string}: Path to saved plot file.
+    #' @return out_path {character}: Path to saved plot file.
 
     out_name <- check_png_ext(out_name, TRUE)
     out_path <- construct_plot_path(out_name)
@@ -1021,7 +1021,7 @@ wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height
 wrap_histogram <- function(...) {
     #' Wrapper to wrap_plot but for histograms.
     #' @param ... {any}: Arguments to wrap_plot excluding the plot_callback.
-    #' @return out_path {string}: Path to saved plot file.
+    #' @return out_path {character}: Path to saved plot file.
 
     wrap_plot(hist, ...)
 }
@@ -1030,9 +1030,9 @@ wrap_scatter <- function(abline_h, abline_col, abline_name, ...) {
     #' Wrapper to wrap_plot but for scatterplot. Addionally plots a line on the scatterplot.
     #' @param abline_y {integer | NULL}: Height of the abline.
     #' @param abline_col {integer | NULL}: Colour of the abline.
-    #' @param abline_name {string}: Label for the abline.
+    #' @param abline_name {character}: Label for the abline.
     #' @param ... {any}: Arguments to wrap_plot excluding the plot_callback.
-    #' @return out_path {string}: Path to saved plot file.
+    #' @return out_path {character}: Path to saved plot file.
 
     plot_with_abline <- function(...) {
         #' Custom plot callback to generate plot with an abline
@@ -1059,7 +1059,7 @@ get_mpheno_args <- function(mpheno = 1) {
     #' Generates mpheno arguments for GCTA given a (n+2) mpheno column number.
     #' @param mpheno {number}: The (n+2)th column to look at in the covariate
     #'                         file. Defaults to 1
-    #' @return mpheno_args {string}: GCTA mpheno arguments.
+    #' @return mpheno_args {character}: GCTA mpheno arguments.
     
     logger("DEBUG", "Generating mpheno number args with mpheno = ", mpheno, ".")
     mpheno_args <- paste(gcta_fgs$mpheno, mpheno)
@@ -1070,7 +1070,7 @@ get_thread_args <- function(num_threads = gcta_default_tnum) {
     #' Generates thread number arguments for GCTA given a number of threads.
     #' @param num_threads {number}: How many threads for GCTA to use. Defaults
     #'                              to 2.
-    #' @return thread_args {string}: GCTA thread num arguments.
+    #' @return thread_args {character}: GCTA thread num arguments.
     
     logger("DEBUG", "Generating thread number args with ", num_threads, " threads.")
     thread_args <- paste(gcta_fgs$tnum, num_threads)
@@ -1079,8 +1079,8 @@ get_thread_args <- function(num_threads = gcta_default_tnum) {
 
 get_trait_name <- function(suffix) {
     #' Maps suffix to phenotype / trait name. E.g. "_binary1 -> "Binary 1".
-    #' @param suffix {string}: Suffix of the filename corresponding to the phenotype.
-    #' @return trait_name {string}: Name of the trait in a friendly format.
+    #' @param suffix {character}: Suffix of the filename corresponding to the phenotype.
+    #' @return trait_name {character}: Name of the trait in a friendly format.
 
     if (suffix == "") {
         logger("DEBUG", "Quantitative phenotype ", phenotype, ".")
@@ -1104,9 +1104,9 @@ get_pheno_path <- function(pheno_suffix) {
     #'                  of the phenotype are scored 1 = case and those scoring in
     #'                  the bottom 30% of the phenotype are scored 0 = control. The
     #'                  remainder are scored N/A.
-    #' @param pheno_suffix {string}: The suffix corresponding to the phenotype file
+    #' @param pheno_suffix {character}: The suffix corresponding to the phenotype file
     #'                               to compute a filepath for.
-    #' @return pheno_path {string}: The complete file path of the phenotype file.
+    #' @return pheno_path {character}: The complete file path of the phenotype file.
 
     logger("DEBUG", "Retrieving pheno path for suffix: ", quotes(pheno_suffix), ".")
     phenotype_file_prefix <- paste0(space_to_underscore(phenotype),
@@ -1155,7 +1155,7 @@ grm_build <- function(run_grm_build) {
     #' @param run_grm_build {boolean}: Whether to run the grm build
     #'                                 process. If FALSE, will try to
     #'                                 use existing file.
-    #' @return grm_basepath {string}: Base path to grm files generated.
+    #' @return grm_basepath {character}: Base path to grm files generated.
     
     tnum_args <- get_thread_args()
     gcta_args <- paste(gcta_fgs$mkgrm, gcta_fgs$autosome, tnum_args)
@@ -1183,15 +1183,15 @@ grm_build <- function(run_grm_build) {
 estimate_greml_var <- function(grm_basepath) {
     #' Estimates the proportion of phenotypic variance due to genome-wide
     #' SNPs using GCTA.
-    #' @param grm_basepath {string}: Basepath to the grm file to estimate from.
+    #' @param grm_basepath {character}: Basepath to the grm file to estimate from.
     #' @return {NULL}
     
     estimate_phen_var_prop <- function(suffix) {
         #' Given a suffix and mpheno value, estimates the phenotypic variance
         #' explained by additive genome-wide SNPs for the given phenotype.
-        #' @param suffix {string}: The suffix of the phenotype file name which in
+        #' @param suffix {character}: The suffix of the phenotype file name which in
         #'                         turn, encodes the phenotype variant.
-        #' @return hsq_basepath {string}: Base path to the hsq output from GCTA.
+        #' @return hsq_basepath {character}: Base path to the hsq output from GCTA.
         
         trait_name <- get_trait_name(suffix)
         logger("Estimating Phenotyping Variance Proportion for phenotype: ", trait_name)
@@ -1209,7 +1209,7 @@ estimate_greml_var <- function(grm_basepath) {
     
     read_hsq_res <- function(hsq_basepath) {
         #' Reads a greml file containing the hsq result from GCTA.
-        #' @param hsq_basepath {string}: Base path to the hsq output from GCTA.
+        #' @param hsq_basepath {character}: Base path to the hsq output from GCTA.
         #' @return hsq {data.frame}: Data.frame containing the hsq result.
         
         hsq_path <- add_extension(hsq_basepath, exts$hsq)
@@ -1234,13 +1234,13 @@ estimate_greml_var <- function(grm_basepath) {
 
 unrelated_individuals <- function(grm_basepath) {
     #' Investigates properties of the GRM.
-    #' @param grm_basepath {string}: Basepath (no extenision) to the GRM file.
+    #' @param grm_basepath {character}: Basepath (no extenision) to the GRM file.
     #' @return grm_rr_basepath {chatacter}: Basepath to GRM with related
     #'                                      individuals removed.
     
     read_grml <- function(grm_basepath, show_df_preview = TRUE) {
         #' Reads a grm file given its basepath.
-        #' @param grm_basepath {string}: The GRM path without extension.
+        #' @param grm_basepath {character}: The GRM path without extension.
         #' @param show_df_preview {boolean}: Whether to show a preview of
         #'                                   the greml data.frame. Defaults
         #'                                   to TRUE.
@@ -1355,8 +1355,8 @@ unrelated_individuals <- function(grm_basepath) {
         #' Removes relatness between individuals who may have an affect
         #' on the estimate of heritability. This reduces the maximum
         #' relatedness coefficient via GCTA with --grm-cutoff.
-        #' @param grm_path {string}: Path to grm file.
-        #' @return grm_path_rr {string}: Path to new grm file with individuals
+        #' @param grm_path {character}: Path to grm file.
+        #' @return grm_path_rr {character}: Path to new grm file with individuals
         #'                               not meeting the relatedness threshold
         #'                               removed from the dataset.
 
@@ -1403,8 +1403,8 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
     #' One for lower and the other for higher minor allele frequencies
     #' (or MAFs), allowing investigation of the genetic architecture of
     #' of the trait.
-    #' @param grm_basepath {string}: Basepath to the original grm data.
-    #' @param grm_qc_basepath {string}: Basepath to the QC'd grm data.
+    #' @param grm_basepath {character}: Basepath to the original grm data.
+    #' @param grm_qc_basepath {character}: Basepath to the QC'd grm data.
 
     split_generic <- function(combined_path, split_names, extension, save_prefix,
                               process_callback) {
@@ -1572,7 +1572,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         #' @param snps_path {character}: Path to file containing SNPs to extract.
         #' @param suffix {character}: Suffix of the phenotype file name, encoding
         #'                            the phenotype variant.
-        #' @return {string}: Path to prepared grm output.
+        #' @return {character}: Path to prepared grm output.
         
         if (!file_exists(snps_path)) {
             logger("ERROR", "SNPs not found at ", quotes(snps_path), ".")
@@ -1593,13 +1593,13 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
 
     partition_comp <- function(suffix, annotation, pheno_path, prep_path) {
         #' Computes the partitioned variance components via GREML.
-        #' @param suffix {string}: Suffix of the phenotype file name, encoding
+        #' @param suffix {character}: Suffix of the phenotype file name, encoding
         #'                         the phenotype variant.
         #' @param annotation {character}: Top or bottom MAFs.
-        #' @param pheno_path {string}: Path to the phenotype file.
+        #' @param pheno_path {character}: Path to the phenotype file.
         #' @param prep_path {chatacter}: Path to prep file contaning paths to
         #'                               SNP id files.
-        #' @return part_comp_out {string}: Path to parition variance output.
+        #' @return part_comp_out {character}: Path to parition variance output.
 
         trait_name <- get_trait_name(suffix)
         
