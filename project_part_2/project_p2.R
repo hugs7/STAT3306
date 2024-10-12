@@ -118,7 +118,7 @@ brackets <- function(...) {
 latex_math <- function(...) {
     #' Surrounds a string with LaTeX math mode $...$.
     #' @param ... {character}: String args to surround with LaTeX
-    #'                      math mode.
+    #'                         math mode.
     #' @return {character}: String surrounded by LaTex math mode.
     
     str <- args_to_string(...)
@@ -129,7 +129,7 @@ to_str <- function(x, collapse = ", ") {
     #' Converts a list or vector to a string separated by commas.
     #' @param x {list|vector}: List or vector to convert to string.
     #' @param collapse {character}: Separator to split items in list
-    #'                           or vector. Defaults to ', '.
+    #'                              or vector. Defaults to ', '.
     #' @return {character}: String representation of list.
     
     if (is.list(x) || is.vector(x)) {
@@ -298,7 +298,7 @@ logger <- function(log_level = default_log_level, ...) {
     #' trace if log level is ERROR. Will not log if log_level is higher than
     #' the application log level.
     #' @param log_level {character}: Optional. The level to log at. If not provided,
-    #'                            will default to default_log_level.
+    #'                               will default to default_log_level.
     #' @return {NULL}
 
     if (!is.character(log_level) || !(log_level %in% allowed_log_levels)) {
@@ -387,7 +387,8 @@ title_case <- function(str) {
 regex_escape <- function(string) {
     #' Escapes characters in a string so they can be
     #' used in a RegEx string.
-    #' @param string {string|list{character}}: The string or list of strings to be escaped.
+    #' @param string {string|list{character}}: The string or list of strings to
+    #'                                         be escaped.
     #' @return {string|list{character}}: The same string but RegEx escaped.
     
     escape_string <- function(s) {
@@ -632,7 +633,7 @@ match_not_log <- function(path) {
     #' a Regex pattern to exclude matching .log files.
     #' @param path {character}: The extensionless pattern to match.
     #' @return {character}: The Regex pattern which includes a negative
-    #'                   lookahead to log files.
+    #'                      lookahead to log files.
    
     # Check the path does not already contain an extension.
     ext_pattern <- get_ext_pattern(exts)
@@ -739,8 +740,8 @@ wrap_write_table <- function(data, basename, row.names = FALSE, col.names = TRUE
     #' at the same path.
     #' @param data {data.frame}: The data to write.
     #' @param basename {character}: The basename excluding the out dir to  write
-    #'                           the file at. Ideally should include extension but if
-    #'                           it doesn't this function will add .txt by default.
+    #'                              the file at. Ideally should include extension but if
+    #'                              it doesn't this function will add .txt by default.
     #' @param row.names {boolean}: Whether to include row names. Disabled by default.
     #' @param col.names {boolean}: Whether to include col names. Enabled by default but
     #'                             if the data contains default columns, will not be
@@ -800,12 +801,12 @@ gcta_qc_data <- function(gcta_args, out_name = NULL) {
     #' Serves as a wrapper to gcta function.
     #' @param gcta_args {character}: Arguments provided to GCTA
     #' @param out_name {character}: Basename for GCTA to output to. Should exclude
-    #'                           gcta out directory. If NULL, output is piped to
-    #'                           the console.
+    #'                              gcta out directory. If NULL, output is piped to
+    #'                              the console.
     #' @return gcta_out_path {character}: Relative path from script to gcta output.
-    #'                                 Notable, this path does not contain
-    #'                                 extension added by GCTA as this differs
-    #'                                 depending upon arguments provided to GCTA.
+    #'                                    Notable, this path does not contain
+    #'                                    extension added by GCTA as this differs
+    #'                                    depending upon arguments provided to GCTA.
 
     data_files_pattern <- construct_data_path(gcta_datafile_basename)
     logger("DEBUG", "GCTA data files pattern: ", quotes(data_files_pattern), ".")
@@ -819,12 +820,12 @@ gcta <- function(gcta_args, out_name = NULL) {
     #' Runs a GCTA call with the given dataset and specified arguments.
     #' @param gcta_args {character}: Arguments provided to GCTA
     #' @param out_name {character}: Basename for GCTA to output to. Should exclude
-    #'                           gcta out directory. If NULL, output is piped to
-    #'                           the console.
+    #'                              gcta out directory. If NULL, output is piped to
+    #'                              the console.
     #' @return gcta_out_path {character}: Relative path from script to gcta output.
-    #'                                 Notable, this path does not contain
-    #'                                 extension added by GCTA as this differs
-    #'                                 depending upon arguments provided to GCTA.
+    #'                                    Notable, this path does not contain
+    #'                                    extension added by GCTA as this differs
+    #'                                    depending upon arguments provided to GCTA.
    
     gcta_base_cmd <- paste("gcta", gcta_args)
     logger("DEBUG", "GCTA base command: ", quotes(gcta_base_cmd), ".")
@@ -873,7 +874,7 @@ add_extension <- function(basename, ...) {
     #' path or just a file basename.
     #' @param basename {character}: File path or basename to add extension to.
     #' @param ... {character}: String args containing additional extension(s)
-    #'                      to append.
+    #'                         to append.
     #' @return path {character}: Basename or path with extension(s) appended.
 
     args <- list(...)
@@ -891,7 +892,7 @@ add_extension <- function(basename, ...) {
 construct_phenotype_path <- function(...) {
     #' Constructs a file base to the phenotypes directory given a basename.
     #' @param ... {character}: The name of the file (potentially split) without
-    #'                      the parent directory prefixed.
+    #'                         the parent directory prefixed.
     #' @return path {character}: The relative path to the file.
 
     basename <- paste0(...)
@@ -901,7 +902,7 @@ construct_phenotype_path <- function(...) {
 construct_data_path <- function(...) {
     #' Constructs a file base to the data directory given a basename.
     #' @param ... {character}: The name of the file (potentially split) without
-    #'                      the parent directory prefixed.
+    #'                         the parent directory prefixed.
     #' @return path {character}: The relative path to the file.
 
     basename <- paste0(...)
@@ -912,7 +913,7 @@ construct_data_path <- function(...) {
 construct_gcta_out_path <- function(...) {
     #' Constructs a file path in the gcta out directory given a basename.
     #' @param ... {character}: The name of the file (potentially split) without
-    #'                      the gcta out directory prefixed.
+    #'                         the gcta out directory prefixed.
     #' @return path {character}: The relative path to the file.
 
     basename <- paste0(...)
@@ -922,7 +923,8 @@ construct_gcta_out_path <- function(...) {
 
 construct_out_path <- function(basename) {
     #' Constructs a file path in the out directory given a basename.
-    #' @param basename {character}: The name of the file without the out directory prefixed.
+    #' @param basename {character}: The name of the file without the out
+    #'                              directory prefixed.
     #' @return path {character}: The relative path to the file.
 
     file.path(out_dir, basename)
@@ -930,7 +932,8 @@ construct_out_path <- function(basename) {
 
 construct_plot_path <- function(basename) {
     #' Constructs a file path in the plots directory given a basename
-    #' @param basename {character}: The name of the file without the plots directory prefixed.
+    #' @param basename {character}: The name of the file without the plots
+    #'                              directory prefixed.
     #' @return path {character}: The relative path to the file.
 
     file.path(plots_out_dir, basename)
@@ -974,7 +977,7 @@ check_png_ext <- function(out_name, add_if_missing = TRUE) {
     #' @param add_if_missing {boolean}: Adds the expected extension if
     #'                                  not present. Defaults to true.
     #' @return out_name {character}: The (possibly revised) file path
-    #'                            or name.
+    #'                               or name.
 
     check_ext(out_name, exts$png, add_if_missing)
 }
@@ -985,7 +988,7 @@ check_txt_ext <- function(out_name, add_if_missing = TRUE) {
     #' @param add_if_missing {boolean}: Adds the expected extension if
     #'                                  not present. Defaults to true.
     #' @return out_name {character}: The (possibly revised) file path
-    #'                            or name.
+    #'                               or name.
     
     check_ext(out_name, exts$txt, add_if_missing)
 }
@@ -996,7 +999,7 @@ wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height
     #' @param plot_callback {function}: Function used to generate plot.
     #' @param data {data.frame}: The data to plot
     #' @param out_name {character}: The file name to output. Should be a png and
-    #'                           should not contain the plots directory.
+    #'                              should not contain the plots directory.
     #' @param ... {any}: Extra arguemnts to provide to plot callback.
     #' @param width {integer}: The width of the plot to save in pixels. Has a default value.
     #' @param height {integer}: The height of the plot to save in pixels. Has a default value.
@@ -1105,7 +1108,7 @@ get_pheno_path <- function(pheno_suffix) {
     #'                  the bottom 30% of the phenotype are scored 0 = control. The
     #'                  remainder are scored N/A.
     #' @param pheno_suffix {character}: The suffix corresponding to the phenotype file
-    #'                               to compute a filepath for.
+    #'                                  to compute a filepath for.
     #' @return pheno_path {character}: The complete file path of the phenotype file.
 
     logger("DEBUG", "Retrieving pheno path for suffix: ", quotes(pheno_suffix), ".")
@@ -1190,7 +1193,7 @@ estimate_greml_var <- function(grm_basepath) {
         #' Given a suffix and mpheno value, estimates the phenotypic variance
         #' explained by additive genome-wide SNPs for the given phenotype.
         #' @param suffix {character}: The suffix of the phenotype file name which in
-        #'                         turn, encodes the phenotype variant.
+        #'                            turn, encodes the phenotype variant.
         #' @return hsq_basepath {character}: Base path to the hsq output from GCTA.
         
         trait_name <- get_trait_name(suffix)
@@ -1357,8 +1360,8 @@ unrelated_individuals <- function(grm_basepath) {
         #' relatedness coefficient via GCTA with --grm-cutoff.
         #' @param grm_path {character}: Path to grm file.
         #' @return grm_path_rr {character}: Path to new grm file with individuals
-        #'                               not meeting the relatedness threshold
-        #'                               removed from the dataset.
+        #'                                  not meeting the relatedness threshold
+        #'                                  removed from the dataset.
 
         logger("Removing related individuals with threshold ",
                gcta_rr_threshold, "...")
@@ -1594,7 +1597,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
     partition_comp <- function(suffix, annotation, pheno_path, prep_path) {
         #' Computes the partitioned variance components via GREML.
         #' @param suffix {character}: Suffix of the phenotype file name, encoding
-        #'                         the phenotype variant.
+        #'                            the phenotype variant.
         #' @param annotation {character}: Top or bottom MAFs.
         #' @param pheno_path {character}: Path to the phenotype file.
         #' @param prep_path {chatacter}: Path to prep file contaning paths to
