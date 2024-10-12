@@ -1566,21 +1566,23 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         return(split_annotations)
     }
 
-    prep_grm <- function(maf_snps_path, suffix) {
+    prep_grm <- function(annotation, snps_path, suffix) {
         #' Prepares the GRMs for variance partitioning.
-        #' @param maf_snps_path {string}: Path to the SNPs to extract.
+        #' @param annotation {character}: 'top' or 'bottom' of SNPs to extract.
+        #' @param snps_path {character}: Path to file containing SNPs to extract.
         #' @param suffix {character}: Suffix of the phenotype file name, encoding
         #'                            the phenotype variant.
         #' @return {string}: Path to prepared grm output.
         
-        logger("Preparing GRM for MAF: ", quotes(basename(maf_snps_path)), "...")
+        logger("Preparing GRM for MAF annotation: ", quotes(annotation), "...")
+        logger("DEBUG", "Using SNPs in file: ", quotes(snps_path), ".")
         grm_qc_path <- add_extension(grm_qc_basepath, exts$grm, exts$id)
         thread_args <- get_thread_args()
         gcta_args <- paste(gcta_fgs$bfile, grm_basepath, gcta_fgs$extract,
-                           maf_snps_path, gcta_fgs$autosome, gcta_fgs$mkgrm,
+                           snps_path, gcta_fgs$autosome, gcta_fgs$mkgrm,
                            gcta_fgs$keep, grm_qc_path, thread_args)
 
-        out_name <- paste0("grm_prep", dots_to_dashes(maf_snps_path), suffix)
+        out_name <- paste0("grm_prep_", annotation, suffix)
         gcta_out_path <- gcta(gcta_args, out_name)
         return(gcta_out_path)
     }
@@ -1638,10 +1640,10 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
 
         for (annotation in names(antd_snp_paths)) {
             logger("Prepping SNPs labelled: ", quotes(annotation), ".")
-            snps_basepath <- antd_snp_paths[[annotation]]
+            snps_path <- antd_snp_paths[[annotation]]
             pheno_path <- get_pheno_path(suffix)
             
-            grm_prep_path <- prep_grm(snps_basepath, suffix)
+            grm_prep_path <- prep_grm(annotation, snps_path, suffix)
             prep_path <- append_to_prep_file(grm_prep_path)
         }
             
