@@ -360,7 +360,8 @@ dots_to_dashes <- function(str) {
     #' Replaces all instances of dots (.) in a string with underscores.
     #' @param str {string}: String to replace from.
     #' @return {string}: String with '.'s as '_'s.
-
+    
+    logger("TRACE", "Replacing dots with dashes in ", quotes(str), ".")
     gsub(".", "_", str)
 }
 
