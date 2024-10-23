@@ -1577,6 +1577,24 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         return(split_annotations)
     }
 
+    initialise_prep_snps_file <- function(suffix) {
+        #' Initialises the prep snps file containing the paths to the files
+        #' containing the SNP ids for top and bottom of this phenotype
+        #' @param suffix {character}: Suffix of the phenotype file name, encoding
+        #'                            the phenotype variant.
+        #' @return prep_path {character}: Path to prep file which is to contain
+        #'                                the paths to the SNP files.
+
+        trait_name <- get_trait_name(suffix)
+        logger("Initialising prep snps file for trait ", trait_name, ".")
+
+        prep_filename <- add_extension(paste0("prep_snps", suffix), exts$txt)
+        prep_path <- construct_out_path(prep_filename)
+        delete_file(prep_path)
+
+        return(prep_path)
+    }
+
     prep_grm <- function(annotation, snps_path, suffix) {
         #' Prepares the GRMs for variance partitioning.
         #' @param annotation {character}: 'top' or 'bottom' of SNPs to extract.
