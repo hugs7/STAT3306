@@ -1741,7 +1741,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
     for (annotation in names(antd_snp_paths)) {
         logger("Prepping SNPs labelled: ", quotes(annotation), ".")
         snps_path <- antd_snp_paths[[annotation]]
-        grm_prep_path <- prep_grm(annotation, snps_path, suffix)
+        grm_prep_path <- prep_grm(annotation, snps_path)
         prep_path <- append_to_prep_file(grm_prep_path, grm_prep_filename)
     }
 
