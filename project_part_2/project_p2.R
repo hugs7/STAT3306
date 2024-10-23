@@ -1745,10 +1745,8 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
     for (suffix in phenotype_suffixes) {
         trait_name <- get_trait_name(suffix)
         logger("Partitioning variance components for trait: ", quotes(trait_name), ".")
-                    
-            part_comp_out <- partition_comp(suffix, pheno_path, prep_path, covar_paths)
-            save_greml_partition(suffix, part_comp_path)
-        }
+        part_comp_out <- partition_comp(suffix, pheno_path, prep_path, covar_paths)
+        save_greml_partition(suffix, part_comp_path)
     }
     
     logger("<<< End Variance Partition")
