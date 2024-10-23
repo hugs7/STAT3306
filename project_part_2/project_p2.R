@@ -525,7 +525,7 @@ is_binary_col <- function(column) {
 }
 
 latex_table <- function(data, out_name, table_align, caption = NULL, col.names = NULL,
-                        digits = 2, line_spacing_factor = 1, hide_row_names = FALSE,
+                        digits = 2, line_spacing_factor = 1.0, hide_row_names = FALSE,
                         size = "normalsize") {
     #' Generates a LaTeX table given a data.frame and saves to a file.
     #' @param data {data.frame}: The data.frame to output as a LaTeX table.
@@ -533,6 +533,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #' @param table_align {character}: Latex coding for aligning columns.
     #' @param caption {string|NULL}: Optional caption for the table.
     #' @param col.names {vec|NULL}: Optional column names to provide to the table.
+    #'                              If NULL, column names of data will be used.
     #' @param digits {integer|vector(integer)}: Number of decimal places to display
     #'                                          numbers as. If digits < 0, values
     #'                                          will be converted to scientific
@@ -540,6 +541,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #'                                          number of digits prior to passint
     #'                                          to xtable.
     #' @param line_spacing_factor {integer}: Line spacing factor for LaTeX table.
+    #'                                       Defaults to 1.0.
     #' @param hide_row_names {boolean}: Whether to include row names from the data.frame
     #'                                  as the first column in the table. Defaults to
     #'                                  FALSE.
@@ -581,7 +583,9 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     
     table <- xtable(data, align = xtable_table_align, caption = caption, digits = digits)
 
-    if (!is.null(col.names)) {
+    if (is.null(col.names)) {
+        colnames(table) <- colnames(data)
+    } else {
         colnames(table) <- col.names
     }
 
@@ -1231,12 +1235,34 @@ estimate_greml_var <- function(grm_basepath) {
         log_df(hsq, "HSQ Results")
         return(hsq)
     }
+
+    save_phen_var_estimate <- function(suffix, hsq) {
+        #' Saves the phenotype variance estimate from GCTA to a LaTeX table.
+        #' @param suffix {character}: The suffix of the phenotype file name which in
+        #'                            turn, encodes the phenotype variant.
+        #' @param hsq {data.frame}: Data.frame containing the hsq result.
+        #' @return {NULL}
+    
+        trait_name <- get_trait_name(suffix)
+        logger("Saving phenotype variance estaimte for trait ", trait_name, ".")
+
+        out_name <- add_extension(paste0("greml_var_estimate", suffix), exts$tex)
+        num_cols <- ncol(hsq)
+        logger("TRACE", "Num greml cols: ", num_cols)
+        latex_col_align <- paste0("|", paste0(rep("r|", num_cols)))
+        logger("DEBUG", "LaTeX col align: ", latex_col_align)
+        caption <- paste("GREML genetic variance ($V(G)$) for", trait_name)
+        digits <- c(0, 6, 6)
+        latex_table(hsq, out_name, latex_col_align, caption, NULL,
+                    digits, hide_row_names = TRUE) 
+    }
     
     logger(">>> Begin Estimate of Proportion of Phenotypic Variance.")
     for (suffix in phenotype_suffixes) {
         logger("Inspecting phenotype: ", quotes(suffix), ".")
         hsq_basepath <- estimate_phen_var_prop(suffix)
         hsq <- read_hsq_res(hsq_basepath)
+        save_phen_var_estimate(suffix, hsq)
     }
 
     logger("<<< End Estimate of Proportion of Phenotypic Variance.")
