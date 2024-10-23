@@ -1337,7 +1337,7 @@ unrelated_individuals <- function(grm_basepath) {
 
         hist_name <- get_plot_name(TRUE, remove)
         wrap_histogram(grm.diag, hist_name, breaks = 2500, freq = FALSE,
-                  xlab = "GRM Diagonals", xlim = c(0.95, 1.2),
+                  xlab = "GRM Diagonals", xlim = c(0.95, 1.1),
                   main = "GRM Diag Distribution")  
     }
 
@@ -1352,13 +1352,14 @@ unrelated_individuals <- function(grm_basepath) {
         grm.off.diag <- off_diag(grm)
         
         hist_name <- get_plot_name(FALSE, remove)
+        xlim <- c(0.0, 0.1)
         wrap_histogram(grm.off.diag, hist_name, breaks = 200, freq = FALSE,
-                  xlab = "GRM Off-Diagonals", xlim = c(0.1, 1.1),
+                  xlab = "GRM Off-Diagonals", xlim = xlim,
                   main = "GRM Off-Diag Distribution")
 
         grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > gcta_rr_threshold)]
         wrap_histogram(grm.off.diag.clipped, hist_name, breaks = 200, freq = FALSE,
-                  xlab = "GRM Off-Diagonals", xlim = c(0.1, 1.1),
+                  xlab = "GRM Off-Diagonals", xlim = xlim,
                   main = "GRM Off-Diag Distribution")
     }
     
