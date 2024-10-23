@@ -590,9 +590,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     
     table <- xtable(data, align = xtable_table_align, caption = caption, digits = digits)
 
-    if (is.null(col.names)) {
-        colnames(table) <- colnames(data)
-    } else {
+    if (!is.null(col.names)) {
         colnames(table) <- col.names
     }
 
