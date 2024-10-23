@@ -1311,8 +1311,8 @@ unrelated_individuals <- function(grm_basepath) {
     
         logger("Checking plot requirements for remove = ", remove, "...")
         diag_plot_required <- plot_required(TRUE, remove, FALSE)
-        off_diag_plot_required <- plot_required(FALSE, remove, FALSE)
-                                  | plot_required(FALSE, remove, TRUE)
+        off_diag_plot_required <- plot_required(FALSE, remove, FALSE) |
+                                  plot_required(FALSE, remove, TRUE)
 
         return(diag_plot_required || off_diag_plot_required)
     }
