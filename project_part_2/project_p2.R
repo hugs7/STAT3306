@@ -1310,16 +1310,16 @@ unrelated_individuals <- function(grm_basepath) {
     }
 
     get_plot_name <- function(diag, remove) {
-        #' Calculates the name of the diag plot
+        #' Calculates the name of the diag or off-diag plot
         #' @param diag {boolean}: If TRUE, plot is diagonal, else
         #'                        off-diagonal.
         #' @param remove {boolean}: Whether we are removing indivdiuals.
     
-        hist_name <- add_extension(paste0("grm.diag", exts$png))
+        hist_name <- add_extension(paste0("grm.", diag ? "" : "off",
+                                          "diag"), exts$png)
          
         logger("DEBUG", "Hist name for remove = ", remove,
-               "diag = ", diag, ": ",
-                quotes(hist_name), ".")
+               "diag = ", diag, ": ", quotes(hist_name), ".")
         return(hist_name)
     }
 
