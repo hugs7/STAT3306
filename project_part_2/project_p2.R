@@ -1654,6 +1654,18 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         return(gcta_out_path)
     }
 
+    append_to_prep_file <- function(grm_prep_path, prep_filename) {
+        #' Appends a file path to the grm prep path list.
+        #' @param grm_prep_path {chatacter}: Path to grm prep datafile.
+        #' @param prep_filename {character}: Name of file to contain grm prep paths
+        #' @return prep_path {character}: Path to file containing grm prep paths.
+
+        logger("Appending ", quotes(grm_prep_path), " to prep file.")
+        content <- paste0(grm_prep_path)
+        prep_path <- wrap_write(content, prep_filename, append = TRUE)
+        return(prep_path)
+    }
+
     partition_comp <- function(suffix, annotation, pheno_path, prep_path, covar_paths) {
         #' Computes the partitioned variance components via GREML.
         #' @param suffix {character}: Suffix of the phenotype file name, encoding
@@ -1691,18 +1703,6 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         part_comp_out <- gcta(gcta_args, out_name)
         logger("DEBUG", "GCTA variance partitioning complete!")
         return(part_comp_out)
-    }
-
-    append_to_prep_file <- function(grm_prep_path, prep_filename) {
-        #' Appends a file path to the grm prep path list.
-        #' @param grm_prep_path {chatacter}: Path to grm prep datafile.
-        #' @param prep_filename {character}: Name of file to contain grm prep paths
-        #' @return prep_path {character}: Path to file containing grm prep paths.
-
-        logger("Appending ", quotes(grm_prep_path), " to prep file.")
-        content <- paste0(grm_prep_path)
-        prep_path <- wrap_write(content, prep_filename, append = TRUE)
-        return(prep_path)
     }
 
     # Main
