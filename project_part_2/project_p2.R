@@ -1310,48 +1310,56 @@ unrelated_individuals <- function(grm_basepath) {
         #'                    FALSE otherwise.
     
         logger("Checking plot requirements for remove = ", remove, "...")
-        diag_plot_required <- plot_required(TRUE, remove)
-        off_diag_plot_required <- plot_required(FALSE, remove)
+        diag_plot_required <- plot_required(TRUE, remove, FALSE)
+        off_diag_plot_required <- plot_required(FALSE, remove, FALSE) |
+                                  plot_required(FALSE, remove, TRUE)
 
         return(diag_plot_required || off_diag_plot_required)
     }
 
-    plot_required <- function(diag, remove) {
+    plot_required <- function(diag, remove, clipped) {
         #' Determines if plot is required for given diag, remove
         #' combination.
         #' @param diag {boolean}: If TRUE, plot is diagonal, else
         #'                        off-diagonal.
         #' @param remove {boolean}: Whether we are removing indivdiuals.
+        #' @param clipped {boolean}: Whether the values have been clipped
+        #'                           by a threshold.
         #' @return {boolean}: TRUE if plot is required, FALSE otherwise.
 
         logger("Checking if diag plot required, diag = ", diag,
                ", remove = ", remove, ".")
 
-        hist_name <- get_plot_name(diag, remove)
+        hist_name <- get_plot_name(diag, remove, clipped)
         exp_plot_path <- construct_plot_path(hist_name)
-        plot_required <- !file_exists(exp_plot_path)
+        make_plot <- !file_exists(exp_plot_path)
 
         prefix <- paste0(diag ? "Diag p" : "P", "lot ")
-        if (plot_required) {
+        if (make_plot) {
             logger(prefix, "required.")
         } else {
             logger(prefix, "not required.")
         }
 
-        return(plot_required)
+        return(make_plot)
     }
 
-    get_plot_name <- function(diag, remove) {
+    get_plot_name <- function(diag, remove, clipped) {
         #' Calculates the name of the diag or off-diag plot
         #' @param diag {boolean}: If TRUE, plot is diagonal, else
         #'                        off-diagonal.
         #' @param remove {boolean}: Whether we are removing indivdiuals.
+        #' @param clipped {boolean}: Whether the values have been clipped
+        #'                           by a threshold.
+        #' @return hist_name {character}: Filename for histogram.
     
-        hist_name <- add_extension(paste0("grm.", diag ? "" : "off",
-                                          "diag"), exts$png)
+        hist_name <- add_extension(paste0("grm.", diag ? "" : "off.",
+                                          "diag", clipped ? ".clipped" : ""),
+                                   exts$png)
          
         logger("DEBUG", "Hist name for remove = ", remove,
-               "diag = ", diag, ": ", quotes(hist_name), ".")
+               "diag = ", diag, ", clippped = ", clipped,
+               ": ", quotes(hist_name), ".")
         return(hist_name)
     }
 
@@ -1367,7 +1375,7 @@ unrelated_individuals <- function(grm_basepath) {
 
         log_df(grm.diag, "GRM (diag)")
 
-        hist_name <- get_plot_name(TRUE, remove)
+        hist_name <- get_plot_name(TRUE, remove, FALSE)
         wrap_histogram(grm.diag, hist_name, breaks = 2500, freq = FALSE,
                   xlab = "GRM Diagonals", xlim = c(0.95, 1.1),
                   main = "GRM Diag Distribution")  
@@ -1383,15 +1391,16 @@ unrelated_individuals <- function(grm_basepath) {
         logger("Plotting GRM Off-Diagonals...")
         grm.off.diag <- off_diag(grm)
         
-        hist_name <- get_plot_name(FALSE, remove)
+        hist_name <- get_plot_name(FALSE, remove, FALSE)
         xlim <- c(0.0, 0.1)
         wrap_histogram(grm.off.diag, hist_name, breaks = 200, freq = FALSE,
                   xlab = "GRM Off-Diagonals", xlim = xlim,
                   main = "GRM Off-Diag Distribution")
 
         grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > gcta_rr_threshold)]
-        wrap_histogram(grm.off.diag.clipped, hist_name, breaks = 200, freq = FALSE,
-                  xlab = "GRM Off-Diagonals", xlim = xlim,
+        clipped_hist_name <- get_plot_name(FALSE, remove, TRUE)
+        wrap_histogram(grm.off.diag.clipped, clipped_hist_name, breaks = 200,
+                  freq = FALSE, xlab = "GRM Off-Diagonals", xlim = xlim,
                   main = "GRM Off-Diag Distribution")
     }
     
@@ -1610,30 +1619,25 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         return(split_annotations)
     }
 
-    initialise_prep_snps_file <- function(suffix) {
+    initialise_prep_snps_file <- function() {
         #' Initialises the prep snps file containing the paths to the files
         #' containing the SNP ids for top and bottom of this phenotype
-        #' @param suffix {character}: Suffix of the phenotype file name, encoding
-        #'                            the phenotype variant.
         #' @return prep_filename {character}: Filename of prep file which is to
         #'                                    contains the paths to the SNP files.
 
-        trait_name <- get_trait_name(suffix)
-        logger("Initialising prep snps file for trait ", trait_name, ".")
+        logger("Initialising prep snps file...")
 
-        prep_filename <- add_extension(paste0("prep_snps", suffix), exts$txt)
+        prep_filename <- add_extension("prep_snps", exts$txt)
         prep_path <- construct_out_path(prep_filename)
         delete_file(prep_path)
 
         return(prep_filename)
     }
 
-    prep_grm <- function(annotation, snps_path, suffix) {
+    prep_grm <- function(annotation, snps_path) {
         #' Prepares the GRMs for variance partitioning.
         #' @param annotation {character}: 'top' or 'bottom' of SNPs to extract.
         #' @param snps_path {character}: Path to file containing SNPs to extract.
-        #' @param suffix {character}: Suffix of the phenotype file name, encoding
-        #'                            the phenotype variant.
         #' @return {character}: Path to prepared grm output.
         
         if (!file_exists(snps_path)) {
@@ -1649,22 +1653,33 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
                            gcta_fgs$mkgrm, gcta_fgs$keep, grm_qc_path,
                            thread_args)
 
-        out_name <- paste0("grm_prep_", annotation, suffix)
+        out_name <- paste0("grm_prep_", annotation)
         gcta_out_path <- gcta_qc_data(gcta_args, out_name)
         return(gcta_out_path)
     }
 
-    partition_comp <- function(suffix, annotation, pheno_path, prep_path, covar_paths) {
+    append_to_prep_file <- function(grm_prep_path, prep_filename) {
+        #' Appends a file path to the grm prep path list.
+        #' @param grm_prep_path {chatacter}: Path to grm prep datafile.
+        #' @param prep_filename {character}: Name of file to contain grm prep paths
+        #' @return prep_path {character}: Path to file containing grm prep paths.
+
+        logger("Appending ", quotes(grm_prep_path), " to prep file.")
+        content <- paste0(grm_prep_path)
+        prep_path <- wrap_write(content, prep_filename, append = TRUE)
+        return(prep_path)
+    }
+
+    partition_comp <- function(suffix, pheno_path, prep_path, covar_paths) {
         #' Computes the partitioned variance components via GREML.
         #' @param suffix {character}: Suffix of the phenotype file name, encoding
         #'                            the phenotype variant.
-        #' @param annotation {character}: Top or bottom MAFs.
         #' @param pheno_path {character}: Path to the phenotype file.
         #' @param prep_path {character}: Path to prep file contaning paths to
         #'                               SNP id files.
         #' @param covar_paths {list}: Paths to split covariate paths for discrete
         #'                            and continuous.
-        #' @return part_comp_out {character}: Path to parition variance output.
+        #' @return part_comp_path {character}: Path to parition variance output.
 
         trait_name <- get_trait_name(suffix)
         
@@ -1685,24 +1700,37 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         logger("DEBUG", "Covar args: ", quotes(covar_args), ".")
         gcta_args <- paste(gcta_fgs$mgrm, prep_path, gcta_fgs$pheno, pheno_path,
                            mpheno_args, gcta_fgs$reml, covar_args, thread_args)
-        out_name <- paste0("nr_partition", suffix, "_", annotation)
+        out_name <- paste0("nr_partition", suffix)
         logger("DEBUG", "Saving partitioning result to filename: ",
                quotes(out_name), ".")
-        part_comp_out <- gcta(gcta_args, out_name)
+        part_comp_path <- gcta(gcta_args, out_name)
         logger("DEBUG", "GCTA variance partitioning complete!")
-        return(part_comp_out)
+        return(part_comp_path)
     }
 
-    append_to_prep_file <- function(grm_prep_path, prep_filename) {
-        #' Appends a file path to the grm prep path list.
-        #' @param grm_prep_path {chatacter}: Path to grm prep datafile.
-        #' @param prep_filename {character}: Name of file to contain grm prep paths
-        #' @return prep_path {character}: Path to file containing grm prep paths.
+    save_greml_partition <- function(suffix, part_comp_basepath) {
+        #' Saves the GREML partition result to a LaTeX table.
+        #' @param suffix {character}: Suffix of the phenotype file name, encoding
+        #'                            the phenotype variant.
+        #' @param part_comp_basepath {character}: Baspath to parition variance
+        #'                                        output (without extension).
+        #' @return {NULL}
 
-        logger("Appending ", quotes(grm_prep_path), " to prep file.")
-        content <- paste0(grm_prep_path)
-        prep_path <- wrap_write(content, prep_filename, append = TRUE)
-        return(prep_path)
+        trait_name <- get_trait_name(suffix)
+        logger("Saving GREML partition result for trait ", quotes(trait_name), ".")
+
+        part_comp_path <- add_extension(part_comp_basepath, exts$hsq)
+        comp_df <- wrap_read_table(part_comp_path, blank.lines.skip = TRUE, fill = TRUE)
+
+        out_name <- add_extension(paste0("greml_part_var_estimate", suffix), exts$tex)
+        num_cols <- ncol(comp_df)
+        logger("TRACE", "Num greml cols: ", num_cols)
+        latex_col_align <- paste0("|", paste0(rep("r|", num_cols), collapse = ""))
+        logger("DEBUG", "LaTeX col align: ", latex_col_align)
+        caption <- paste("GREML partitioned genetic variance ($V(G)$) for", trait_name)
+        digits <- c(0, 6, 6)
+        latex_table(comp_df, out_name, latex_col_align, caption, NULL,
+                    digits, hide_row_names = TRUE) 
     }
 
     # Main
@@ -1710,26 +1738,23 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
     
     covar_paths <- split_covars()
     antd_snp_paths <- split_snps()
+    grm_prep_filename <- initialise_prep_snps_file()
 
+    for (annotation in names(antd_snp_paths)) {
+        logger("Prepping SNPs labelled: ", quotes(annotation), ".")
+        snps_path <- antd_snp_paths[[annotation]]
+        grm_prep_path <- prep_grm(annotation, snps_path)
+        prep_path <- append_to_prep_file(grm_prep_path, grm_prep_filename)
+    }
+
+    logger("Annotation preparation complete.")
+    
     for (suffix in phenotype_suffixes) {
         trait_name <- get_trait_name(suffix)
-        logger("Partitioning varaince components for trait: ", quotes(trait_name), ".")
-
-        grm_prep_filename <- initialise_prep_snps_file(suffix)
-
-        for (annotation in names(antd_snp_paths)) {
-            logger("Prepping SNPs labelled: ", quotes(annotation), ".")
-            snps_path <- antd_snp_paths[[annotation]]
-            pheno_path <- get_pheno_path(suffix)
-            
-            grm_prep_path <- prep_grm(annotation, snps_path, suffix)
-            prep_path <- append_to_prep_file(grm_prep_path, grm_prep_filename)
-        }
-            
-        for (annotation in names(antd_snp_paths)) {
-            logger("Partitioning SNPs labelled: ", quotes(annotation), ".")
-            partition_comp(suffix, annotation, pheno_path, prep_path, covar_paths)
-        }
+        logger("Partitioning variance components for trait: ", quotes(trait_name), ".")
+        pheno_path <- get_pheno_path(suffix)
+        part_comp_path <- partition_comp(suffix, pheno_path, prep_path, covar_paths)
+        save_greml_partition(suffix, part_comp_path)
     }
     
     logger("<<< End Variance Partition")
