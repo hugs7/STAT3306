@@ -1457,8 +1457,8 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
                 
                 split_data <- process_callback(combined_df, name)
                 
-                output_path <- wrap_write_table(split_data,
-                                        output_filename, col.names = FALSE)
+                output_path <- wrap_write_table(split_data, output_filename,
+                                                col.names = FALSE)
                 logger("DEBUG", "Output path: ", quotes(output_path), ".")
                 output_paths[[name]] <- output_path
             }
