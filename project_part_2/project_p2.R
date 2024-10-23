@@ -1721,7 +1721,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         comp_df <- wrap_read_table(part_comp_path)
 
         out_name <- add_extension(paste0("greml_part_var_estimate", suffix), exts$tex)
-        num_cols <- ncol(hsq)
+        num_cols <- ncol(comp_df)
         logger("TRACE", "Num greml cols: ", num_cols)
         latex_col_align <- paste0("|", paste0(rep("r|", num_cols), collapse = ""))
         logger("DEBUG", "LaTeX col align: ", latex_col_align)
