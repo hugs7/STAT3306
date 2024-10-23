@@ -530,7 +530,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #' Generates a LaTeX table given a data.frame and saves to a file.
     #' @param data {data.frame}: The data.frame to output as a LaTeX table.
     #' @param out_name {character}: Filename to save the output as.
-    #' @param table_align {character}: Latex coding for aligning columns.
+    #' @param table_align {character}: LaTeX coding for aligning columns.
     #' @param caption {string|NULL}: Optional caption for the table.
     #' @param col.names {vec|NULL}: Optional column names to provide to the table.
     #'                              If NULL, column names of data will be used.
@@ -550,10 +550,17 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
    
     log_df(data, paste("Latex table", out_name))
     
+    logger("Typeof table align: ", typeof(table_align))
+    if (typeof(table_align) != "character") {
+        logger("ERROR", "Table align is not of type character.")
+        stop()
+    }
+
     xtable_table_align <- gsub(":", "|", table_align)
-    align_num_cols <- nchar(gsub("\\|", "", xtable_table_align))
+    align_num_cols <- sum(nchar(gsub("\\|", "", xtable_table_align)))
     logger("DEBUG", "Table align num cols: ", align_num_cols)
     df_ncols <- ncol(data)
+    logger("DEBUG", "DF num cols: ", args_to_string(df_ncols))
    
     if (align_num_cols != df_ncols) {
         logger("WARN", "Number of columns in table alignment ", brackets(align_num_cols),
@@ -562,7 +569,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
    
     # Add leading dummy align character for index column.
     xtable_table_align <- paste0("l", xtable_table_align)
-    logger("DEBUG", "DF num cols: ", df_ncols)
+    logger("DEBUG", "x-table table align: ", quotes(xtable_table_align), ".")
     
     if (hide_row_names) {
         table_align <- sub("A-Z|a-z", "", table_align)
@@ -1250,7 +1257,7 @@ estimate_greml_var <- function(grm_basepath) {
         out_name <- add_extension(paste0("greml_var_estimate", suffix), exts$tex)
         num_cols <- ncol(hsq)
         logger("TRACE", "Num greml cols: ", num_cols)
-        latex_col_align <- paste0("|", paste0(rep("r|", num_cols)))
+        latex_col_align <- paste0("|", paste0(rep("r|", num_cols), collapse = ""))
         logger("DEBUG", "LaTeX col align: ", latex_col_align)
         caption <- paste("GREML genetic variance ($V(G)$) for", trait_name)
         digits <- c(0, 6, 6)
