@@ -1310,35 +1310,38 @@ unrelated_individuals <- function(grm_basepath) {
         #'                    FALSE otherwise.
     
         logger("Checking plot requirements for remove = ", remove, "...")
-        diag_plot_required <- plot_required(TRUE, remove)
-        off_diag_plot_required <- plot_required(FALSE, remove)
+        diag_plot_required <- plot_required(TRUE, remove, FALSE)
+        off_diag_plot_required <- plot_required(FALSE, remove, FALSE)
+                                  | plot_required(FALSE, remove, TRUE)
 
         return(diag_plot_required || off_diag_plot_required)
     }
 
-    plot_required <- function(diag, remove) {
+    plot_required <- function(diag, remove, clipped) {
         #' Determines if plot is required for given diag, remove
         #' combination.
         #' @param diag {boolean}: If TRUE, plot is diagonal, else
         #'                        off-diagonal.
         #' @param remove {boolean}: Whether we are removing indivdiuals.
+        #' @param clipped {boolean}: Whether the values have been clipped
+        #'                           by a threshold.
         #' @return {boolean}: TRUE if plot is required, FALSE otherwise.
 
         logger("Checking if diag plot required, diag = ", diag,
                ", remove = ", remove, ".")
 
-        hist_name <- get_plot_name(diag, remove)
+        hist_name <- get_plot_name(diag, remove, clipped)
         exp_plot_path <- construct_plot_path(hist_name)
-        plot_required <- !file_exists(exp_plot_path)
+        make_plot <- !file_exists(exp_plot_path)
 
         prefix <- paste0(diag ? "Diag p" : "P", "lot ")
-        if (plot_required) {
+        if (make_plot) {
             logger(prefix, "required.")
         } else {
             logger(prefix, "not required.")
         }
 
-        return(plot_required)
+        return(make_plot)
     }
 
     get_plot_name <- function(diag, remove, clipped) {
@@ -1348,6 +1351,7 @@ unrelated_individuals <- function(grm_basepath) {
         #' @param remove {boolean}: Whether we are removing indivdiuals.
         #' @param clipped {boolean}: Whether the values have been clipped
         #'                           by a threshold.
+        #' @return hist_name {character}: Filename for histogram.
     
         hist_name <- add_extension(paste0("grm.", diag ? "" : "off.",
                                           "diag", clipped ? ".clipped" : ""),
