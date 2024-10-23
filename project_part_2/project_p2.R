@@ -1667,7 +1667,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         #' @return prep_path {character}: Path to file containing grm prep paths.
 
         logger("Appending ", quotes(grm_prep_path), " to prep file.")
-        content <- paste0(grm_prep_path, "\n")
+        content <- paste0(grm_prep_path)
         prep_path <- wrap_write(content, prep_filename, append = TRUE)
         return(prep_path)
     }
