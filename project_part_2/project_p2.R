@@ -1416,6 +1416,9 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
     #' @param grm_basepath {character}: Basepath to the original grm data.
     #' @param grm_qc_basepath {character}: Basepath to the QC'd grm data.
 
+    discrete <- "discrete"
+    continuous <- "continuous"
+
     split_generic <- function(combined_path, split_names, extension, save_prefix,
                               process_callback) {
         #' Generic function to handle split of data.frames into a number of
@@ -1471,9 +1474,6 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         #'                   - discrete: Path to discrete covars file.
         #'                   - continuous: Path to continuous covars file.
         
-        discrete <- "discrete"
-        continuous <- "continuous"
-
         split_covars_callback <- function(combined_covars, name) {
             #' Callback function to separate discrete and continuous covariates.
             #' @param combined_covars {data.frame}: Combined covariates data.frame.
@@ -1601,14 +1601,16 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         return(gcta_out_path)
     }
 
-    partition_comp <- function(suffix, annotation, pheno_path, prep_path) {
+    partition_comp <- function(suffix, annotation, pheno_path, prep_path, covar_paths) {
         #' Computes the partitioned variance components via GREML.
         #' @param suffix {character}: Suffix of the phenotype file name, encoding
         #'                            the phenotype variant.
         #' @param annotation {character}: Top or bottom MAFs.
         #' @param pheno_path {character}: Path to the phenotype file.
-        #' @param prep_path {chatacter}: Path to prep file contaning paths to
+        #' @param prep_path {character}: Path to prep file contaning paths to
         #'                               SNP id files.
+        #' @param covar_paths {list}: Paths to split covariate paths for discrete
+        #'                            and continuous.
         #' @return part_comp_out {character}: Path to parition variance output.
 
         trait_name <- get_trait_name(suffix)
@@ -1623,8 +1625,13 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         mpheno <- 1
         mpheno_args <- get_mpheno_args(mpheno)
         thread_args <- get_thread_args()
+        discrete_covar_path <- covar_paths[[discrete]]
+        continuous_covar_path <- covar_paths[[continuous]]
+        covar_args <- paste(gcta_fgs$covar, discrete_covar_path, gcta_fgs$qcovar,
+                            continuous_covar_path)
+        logger("DEBUG", "Covar args: ", quotes(covar_args), ".")
         gcta_args <- paste(gcta_fgs$mgrm, prep_path, gcta_fgs$pheno, pheno_path,
-                           mpheno_args, gcta_fgs$reml, thread_args)
+                           mpheno_args, gcta_fgs$reml, covar_args, thread_args)
         out_name <- paste0("nr_partition", suffix, "_", annotation)
         logger("DEBUG", "Saving partitioning result to filename: ",
                quotes(out_name), ".")
@@ -1669,7 +1676,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
             
         for (annotation in names(antd_snp_paths)) {
             logger("Partitioning SNPs labelled: ", quotes(annotation), ".")
-            partition_comp(suffix, annotation, pheno_path, prep_path)
+            partition_comp(suffix, annotation, pheno_path, prep_path, covar_paths)
         }
     }
     
