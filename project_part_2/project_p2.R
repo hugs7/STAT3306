@@ -1741,8 +1741,6 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
     for (annotation in names(antd_snp_paths)) {
         logger("Prepping SNPs labelled: ", quotes(annotation), ".")
         snps_path <- antd_snp_paths[[annotation]]
-        pheno_path <- get_pheno_path(suffix)
-        
         grm_prep_path <- prep_grm(annotation, snps_path, suffix)
         prep_path <- append_to_prep_file(grm_prep_path, grm_prep_filename)
     }
@@ -1752,6 +1750,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
     for (suffix in phenotype_suffixes) {
         trait_name <- get_trait_name(suffix)
         logger("Partitioning variance components for trait: ", quotes(trait_name), ".")
+        pheno_path <- get_pheno_path(suffix)
         part_comp_out <- partition_comp(suffix, pheno_path, prep_path, covar_paths)
         save_greml_partition(suffix, part_comp_path)
     }
