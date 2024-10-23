@@ -1678,13 +1678,11 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
     covar_paths <- split_covars()
     antd_snp_paths <- split_snps()
 
-    prep_basepath <- add_extension("prep_snps", exts$txt)
-    prep_path <- construct_out_path(prep_basepath)
-    delete_file(prep_path)
-
     for (suffix in phenotype_suffixes) {
         trait_name <- get_trait_name(suffix)
         logger("Partitioning varaince components for trait: ", quotes(trait_name), ".")
+
+        grm_prep_filename <- initialise_prep_snps_file(suffix)
 
         for (annotation in names(antd_snp_paths)) {
             logger("Prepping SNPs labelled: ", quotes(annotation), ".")
@@ -1692,7 +1690,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
             pheno_path <- get_pheno_path(suffix)
             
             grm_prep_path <- prep_grm(annotation, snps_path, suffix)
-            prep_path <- append_to_prep_file(grm_prep_path)
+            prep_path <- append_to_prep_file(grm_prep_path, grm_prep_filename)
         }
             
         for (annotation in names(antd_snp_paths)) {
