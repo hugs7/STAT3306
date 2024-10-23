@@ -1341,17 +1341,21 @@ unrelated_individuals <- function(grm_basepath) {
         return(plot_required)
     }
 
-    get_plot_name <- function(diag, remove) {
+    get_plot_name <- function(diag, remove, clipped) {
         #' Calculates the name of the diag or off-diag plot
         #' @param diag {boolean}: If TRUE, plot is diagonal, else
         #'                        off-diagonal.
         #' @param remove {boolean}: Whether we are removing indivdiuals.
+        #' @param clipped {boolean}: Whether the values have been clipped
+        #'                           by a threshold.
     
         hist_name <- add_extension(paste0("grm.", diag ? "" : "off.",
-                                          "diag"), exts$png)
+                                          "diag", clipped ? ".clipped" : ""),
+                                   exts$png)
          
         logger("DEBUG", "Hist name for remove = ", remove,
-               "diag = ", diag, ": ", quotes(hist_name), ".")
+               "diag = ", diag, ", clippped = ", clipped,
+               ": ", quotes(hist_name), ".")
         return(hist_name)
     }
 
@@ -1367,7 +1371,7 @@ unrelated_individuals <- function(grm_basepath) {
 
         log_df(grm.diag, "GRM (diag)")
 
-        hist_name <- get_plot_name(TRUE, remove)
+        hist_name <- get_plot_name(TRUE, remove, FALSE)
         wrap_histogram(grm.diag, hist_name, breaks = 2500, freq = FALSE,
                   xlab = "GRM Diagonals", xlim = c(0.95, 1.1),
                   main = "GRM Diag Distribution")  
@@ -1383,15 +1387,16 @@ unrelated_individuals <- function(grm_basepath) {
         logger("Plotting GRM Off-Diagonals...")
         grm.off.diag <- off_diag(grm)
         
-        hist_name <- get_plot_name(FALSE, remove)
+        hist_name <- get_plot_name(FALSE, remove, FALSE)
         xlim <- c(0.0, 0.1)
         wrap_histogram(grm.off.diag, hist_name, breaks = 200, freq = FALSE,
                   xlab = "GRM Off-Diagonals", xlim = xlim,
                   main = "GRM Off-Diag Distribution")
 
         grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > gcta_rr_threshold)]
-        wrap_histogram(grm.off.diag.clipped, hist_name, breaks = 200, freq = FALSE,
-                  xlab = "GRM Off-Diagonals", xlim = xlim,
+        clipped_hist_name <- get_plot_name(FALSE, remove, TRUE)
+        wrap_histogram(grm.off.diag.clipped, clipped_hist_name, breaks = 200,
+                  freq = FALSE, xlab = "GRM Off-Diagonals", xlim = xlim,
                   main = "GRM Off-Diag Distribution")
     }
     
