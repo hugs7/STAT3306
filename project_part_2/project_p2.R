@@ -1699,17 +1699,15 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         return(part_comp_path)
     }
 
-    save_greml_partition <- function(suffix, annotation, part_comp_out) {
+    save_greml_partition <- function(suffix, part_comp_out) {
         #' Saves the GREML partition result to a LaTeX table.
         #' @param suffix {character}: Suffix of the phenotype file name, encoding
         #'                            the phenotype variant.
-        #' @param annotation {character}: Top or bottom MAFs.
         #' @param part_comp_path {character}: Path to parition variance output.
         #' @return {NULL}
 
         trait_name <- get_trait_name(suffix)
-        logger("Saving GREML partition result for trait ", quotes(trait_name),
-               " with annotation: ", quotes(annotation), ".")
+        logger("Saving GREML partition result for trait ", quotes(trait_name), ".")
 
         comp_df <- wrap_read_table(part_comp_out)
 
