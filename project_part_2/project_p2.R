@@ -1608,6 +1608,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         }
 
         logger("Preparing GRM for MAF annotation: ", quotes(annotation), "...")
+       
         logger("DEBUG", "Using SNPs in file: ", quotes(snps_path), ".")
         grm_qc_path <- add_extension(grm_qc_basepath, exts$grm, exts$id)
         thread_args <- get_thread_args()
@@ -1659,14 +1660,15 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         return(part_comp_out)
     }
 
-    append_to_prep_file <- function(grm_prep_path) {
+    append_to_prep_file <- function(grm_prep_path, prep_filename) {
         #' Appends a file path to the grm prep path list.
         #' @param grm_prep_path {chatacter}: Path to grm prep datafile.
+        #' @param prep_filename {character}: Name of file to contain grm prep paths
         #' @return prep_path {character}: Path to file containing grm prep paths.
 
-        logger("DEBUG", "Appending ", quotes(grm_prep_path), " to prep file.")
+        logger("Appending ", quotes(grm_prep_path), " to prep file.")
         content <- paste0(grm_prep_path, "\n")
-        prep_path <- wrap_write(content, prep_basepath, append = TRUE)
+        prep_path <- wrap_write(content, prep_filename, append = TRUE)
         return(prep_path)
     }
 
