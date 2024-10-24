@@ -502,14 +502,16 @@ file_exists <- function(path, match_pattern = FALSE) {
 
 is_discrete_col <- function(column) {
     #' Determines if a column of a data.frame is discrete.
+    #' In GCTA, a column is discrete only if it has factors. That is
+    #' a column taking integer values in Z^+ is classified as
+    #' continuous.
     #' @param column {data.frame}: Column of a data frame to check.
     #' @return {boolean}: TRUE if column is discrete, FALSE otherwise.
 
     is_numeric <- is.numeric(column)
-    is_integer <- is.integer(column)
     is_factor <- is.factor(column)
 
-    return (is_numeric && (is_integer || is_factor))
+    return (is_numeric && is_factor)
 }
 
 is_binary_col <- function(column) {
