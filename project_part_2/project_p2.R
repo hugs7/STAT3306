@@ -103,7 +103,7 @@ quotes <- function(...) {
     #' Surrounds a string with double quotes (")
     #' @param ... {character}: String args to surround with quotes
     #' @return {character}: String surrounded with quotes
- 
+
     str <- args_to_string(...)
     paste0("'", str, "'")
 }
@@ -122,7 +122,7 @@ latex_math <- function(...) {
     #' @param ... {character}: String args to surround with LaTeX
     #'                         math mode.
     #' @return {character}: String surrounded by LaTex math mode.
-    
+
     str <- args_to_string(...)
     paste0("$", str, "$")
 }
@@ -133,7 +133,7 @@ to_str <- function(x, collapse = ", ") {
     #' @param collapse {character}: Separator to split items in list
     #'                              or vector. Defaults to ', '.
     #' @return {character}: String representation of list.
-    
+
     if (is.list(x) || is.vector(x)) {
         x <- unlist(x)
     }
@@ -213,7 +213,7 @@ wrap_dim <- function(df) {
     #' @param x {any}: the condition (before the ?).
     #' @param y {any}: both outcomes (separated by :).
     #' @return the outcome based on the condition prior to the `?`.
-                              
+
     xs <- as.list(substitute(x))
     logger("TRACE", "? Eval xs: ", quotes(x), ".")
 
@@ -267,7 +267,7 @@ get_func_name <- function(call) {
     #' the name of the function called.
     #' @param call {object}: The call to get the function name from.
     #' @return func_name {character}: The function name
-    
+
     if (is.call(call) && length(call) > 0) {
         func_name <- as.character(call[[1]])
     } else {
@@ -300,7 +300,7 @@ get_calling_function <- function(ignore_names) {
 log_stack <- function(log_level = default_log_level) {
     #' Logs the call stack to the console.
     #' @return {NULL}
-   
+
     call_stack <- sys.calls()
 
     logger(log_level, "Stack Trace")
@@ -339,13 +339,13 @@ logger <- function(log_level = default_log_level, ...) {
     parent_call <- get_calling_function(c(logger_func_name))
     timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
     msg <- paste0("[", timestamp, "]", "  ", pad(7, log_level), pad(25, parent_call), ...)
-    
+
     colour_func <- level_colours[[log_level]]
     if (is.null(colour_func)) {
         logger("ERROR", "Could not identify log level")
         colour_func <- identity
     }
-    
+
     coloured_msg <- colour_func(msg)
     cat(coloured_msg, "\n")
 
@@ -384,7 +384,7 @@ dots_to_dashes <- function(str) {
     #' Replaces all instances of dots (.) in a string with underscores.
     #' @param str {character}: String to replace from.
     #' @return {character}: String with '.'s as '_'s.
-    
+
     logger("TRACE", "Replacing dots with dashes in ", quotes(str), ".")
     gsub(".", "_", str)
 }
@@ -403,7 +403,7 @@ title_case <- function(str) {
     words <- strsplit(str, " ")[[1]]
     titlecased_words <- paste0(toupper(substring(words, 1, 1)), tolower(substring(words, 2)))
     result <- to_str(paste(titlecased_words), " ")
-    
+
     logger("TRACE", "Title case version: ", quotes(result), ".")
     return(result)
 }
@@ -414,7 +414,7 @@ regex_escape <- function(string) {
     #' @param string {string|list{character}}: The string or list of strings to
     #'                                         be escaped.
     #' @return {string|list{character}}: The same string but RegEx escaped.
-    
+
     escape_string <- function(s) {
         #' Escapes a single string.
         #' @param s {character}: Single string to escape.
@@ -469,7 +469,7 @@ list_files <- function(dir_name, pattern = NULL, full.names = TRUE, ...) {
     #' @param ... {any}: Any extra arguemnts for list.files()
     #' @return {charvec}: Character vector containing filenames/filepaths
     #'                    matching criteria.
-    
+
     logger("DEBUG", "Listing files in dir ", quotes(dir_name), ".")
     if (!is.null(pattern)) {
         logger("DEBUG", "Matching pattern ", quotes(pattern), ".")
@@ -540,7 +540,7 @@ is_binary_col <- function(column) {
     #' Determines if a column of a data.frame is binary.
     #' @param column {data.frame}: Column of a data frame to check.
     #' @return {boolean}: TRUE if column is binary, FALSE otherwise.
-    
+
     if (is.factor(column) || is.integer(column)) {
         unique_values <- unique(column)
 
@@ -573,9 +573,9 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #'                                  FALSE.
     #' @param size {character}: LaTeX size encoding without \. Defaults to normalsize.
     #' @return path {character}: Path to saved LaTeX table.
-   
+
     log_df(data, paste("Latex table", out_name))
-    
+
     logger("Typeof table align: ", typeof(table_align))
     if (typeof(table_align) != "character") {
         logger("ERROR", "Table align is not of type character.")
@@ -587,16 +587,16 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     logger("DEBUG", "Table align num cols: ", align_num_cols)
     df_ncols <- ncol(data)
     logger("DEBUG", "DF num cols: ", args_to_string(df_ncols))
-   
+
     if (align_num_cols != df_ncols) {
         logger("WARN", "Number of columns in table alignment ", brackets(align_num_cols),
                " does not match number of cols in df ", brackets(df_ncols), ".")
     }
-   
+
     # Add leading dummy align character for index column.
     xtable_table_align <- paste0("l", xtable_table_align)
     logger("DEBUG", "x-table table align: ", quotes(xtable_table_align), ".")
-    
+
     if (hide_row_names) {
         table_align <- sub("A-Z|a-z", "", table_align)
         logger("TRACE", "Table align with first col hidden: ", quotes(table_align), ".")
@@ -610,10 +610,10 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
         # Prefix with dummy digit for index column
         digits <- c(0, digits)
     }
-    
+
     logger("DEBUG", "Digits: ", quotes(digits), ", length: ", length(digits), ", typeof: ",
            brackets(typeof(digits)), ".")
-    
+
     table <- xtable(data, align = xtable_table_align, caption = caption, digits = digits)
 
     if (!is.null(col.names)) {
@@ -631,9 +631,9 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
                         ),
                   latex,
                   fixed=TRUE)
-    
+
     latex <- sub(regex_escape(xtable_table_align), table_align, latex)
-    
+
     logger("DEBUG", "Writing latex table...")
     latex_path <- wrap_write(latex, out_name)
     return(latex_path)
@@ -671,7 +671,7 @@ match_not_log <- function(path) {
     #' @param path {character}: The extensionless pattern to match.
     #' @return {character}: The Regex pattern which includes a negative
     #'                      lookahead to log files.
-   
+
     # Check the path does not already contain an extension.
     ext_pattern <- get_ext_pattern(exts)
     if (ends_with_extension(ext_pattern, path)) {
@@ -747,7 +747,7 @@ wrap_write <- function(content, basename, append = FALSE, ...) {
     if (!ends_with_extension(ext_pattern, basename)) {
         basename <- check_txt_ext(basename)
     }
-    
+
     path <- construct_out_path(basename)
 
     if (file_exists(path) && !append) {
@@ -759,7 +759,7 @@ wrap_write <- function(content, basename, append = FALSE, ...) {
         logger("ERROR", "Cannot write content. Type is not character.")
         return(path)
     }
-    
+
     logger("DEBUG", "Writing data to ", quotes(path), " ...")
 
     write(content, path, append = append, ...)
@@ -866,9 +866,9 @@ gcta_qc_data <- function(gcta_args, out_name = NULL) {
 
     data_files_pattern <- construct_data_path(gcta_datafile_basename)
     logger("DEBUG", "GCTA data files pattern: ", quotes(data_files_pattern), ".")
-    
+
     gcta_args <- paste(gcta_fgs$bfile, data_files_pattern, gcta_args)
-    
+
     gcta_out_path <- gcta(gcta_args, out_name)
     return(gcta_out_path)
 }
@@ -883,7 +883,7 @@ gcta <- function(gcta_args, out_name = NULL) {
     #'                                    Notable, this path does not contain
     #'                                    extension added by GCTA as this differs
     #'                                    depending upon arguments provided to GCTA.
-   
+
     gcta_base_cmd <- paste("gcta", gcta_args)
     logger("DEBUG", "GCTA base command: ", quotes(gcta_base_cmd), ".")
 
@@ -1017,7 +1017,7 @@ check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
         logger("WARN", "Out name ", quotes(out_name), " does not end with ",
                quotes(expected_ext), ".")
         if (add_if_missing) {
-            logger("DEBUG", "Adding ", quotes(expected_ext), " to file name")   
+            logger("DEBUG", "Adding ", quotes(expected_ext), " to file name")
             out_name <- paste0(out_name, expected_ext)
         }
     } else {
@@ -1046,7 +1046,7 @@ check_txt_ext <- function(out_name, add_if_missing = TRUE) {
     #'                                  not present. Defaults to true.
     #' @return out_name {character}: The (possibly revised) file path
     #'                               or name.
-    
+
     check_ext(out_name, exts$txt, add_if_missing)
 }
 
@@ -1064,7 +1064,7 @@ wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height
 
     out_name <- check_png_ext(out_name, TRUE)
     out_path <- construct_plot_path(out_name)
-    
+
     if (file_exists(out_path) && !overwrite_ext_plots) {
         logger("Plot already saved at: ", quotes(out_path), ".")
         logger("Skipping plot")
@@ -1087,7 +1087,7 @@ wrap_histogram <- function(data, ...) {
     #' @param data {data.frame}: The data to plot
     #' @param ... {any}: Arguments to wrap_plot excluding the plot_callback.
     #' @return out_path {character}: Path to saved plot file.
-    
+
     data_clean <- na.omit(data)
 
     if (length(data_clean) == 0) {
@@ -1135,7 +1135,7 @@ get_mpheno_args <- function(mpheno = 1) {
     #' @param mpheno {number}: The (n+2)th column to look at in the covariate
     #'                         file. Defaults to 1
     #' @return mpheno_args {character}: GCTA mpheno arguments.
-    
+
     logger("DEBUG", "Generating mpheno number args with mpheno = ", mpheno, ".")
     mpheno_args <- paste(gcta_fgs$mpheno, mpheno)
     return(mpheno_args)
@@ -1146,7 +1146,7 @@ get_thread_args <- function(num_threads = gcta_default_tnum) {
     #' @param num_threads {number}: How many threads for GCTA to use. Defaults
     #'                              to 2.
     #' @return thread_args {character}: GCTA thread num arguments.
-    
+
     logger("DEBUG", "Generating thread number args with ", num_threads, " threads.")
     thread_args <- paste(gcta_fgs$tnum, num_threads)
     return(thread_args)
@@ -1207,9 +1207,9 @@ split_generic <- function(combined_path, split_names, extension, save_prefix,
     #'                                     the splitting logic.
     #' @return {list}: Contains paths to each split file, with names
     #'                 corresponding to entries in split_names.
-    
+
     logger("DEBUG", ">>> Begin split generic")
-    
+
     output_paths <- list()
     combined_df <- wrap_read_table(combined_path)
 
@@ -1225,9 +1225,9 @@ split_generic <- function(combined_path, split_names, extension, save_prefix,
             output_paths[[name]] <- output_path
         } else {
             logger("Output for ", quotes(name), " doesn't exist. Computing...")
-            
+
             split_data <- process_callback(combined_df, name)
-            
+
             output_path <- wrap_write_table(split_data, output_filename,
                                             col.names = FALSE)
             logger("DEBUG", "Output path: ", quotes(output_path), ".")
@@ -1280,15 +1280,15 @@ grm_build <- function(run_grm_build) {
     #'                                 process. If FALSE, will try to
     #'                                 use existing file.
     #' @return grm_basepath {character}: Base path to grm files generated.
-    
+
     tnum_args <- get_thread_args()
     gcta_args <- paste(gcta_fgs$mkgrm, gcta_fgs$autosome, tnum_args)
     out_name <- "grm"
-    
+
     if (!run_grm_build) {
         expected_grm_path <- add_extension(construct_gcta_out_path(out_name),
                                            exts$grm)
-        
+
         if (!file_exists(expected_grm_path)) {
             logger("ERROR", "GRM path not found.")
             stop()
@@ -1309,9 +1309,9 @@ split_covars <- function() {
     #' and one continuous, so they can be used by GCTA. Note the
     #' headers of the files are stripped as per GCTA requirements.
     #' @return covar_args {character}: Covariate arguments to provide to GCTA.
-   
+
     logger("Splitting covariates")
-    
+
     split_covars_callback <- function(combined_covars, name) {
         #' Callback function to separate discrete and continuous covariates.
         #' @param combined_covars {data.frame}: Combined covariates data.frame.
@@ -1319,12 +1319,12 @@ split_covars <- function() {
         #'                          (continuous)
         #' @return split_data {data.frame}: Updated data.frame with the
         #'                                  appropriate covariates.
-        
+
         logger("DEBUG", "  >>> Begin split covars callback.")
         split_data <- combined_covars[, fam_ind_cols, drop = FALSE]
         is_discrete <- name == discrete
         is_continuous <- name == continuous
-        
+
         start_index <- length(fam_ind_cols) + 1
         i_cum <- start_index
         for (i in start_index:ncol(combined_covars)) {
@@ -1349,10 +1349,10 @@ split_covars <- function() {
                 if (!is_continuous) {
                     next
                 }
-                
+
                 logger("DEBUG", "Column ", i, " is continuous.")
             }
-            
+
             split_data[[names(combined_covars)[i_cum]]] <- column
             i_cum <- i_cum + 1
         }
@@ -1371,7 +1371,7 @@ split_covars <- function() {
         #'                             - continuous: Path to continuous covars
         #'                                           file.
         #' @return covar_args {character}: Covariate arguments to provide to GCTA.
-        
+
         logger("DEBUG", "Constructing covar arguments")
         discrete_covar_path <- covar_paths[[discrete]]
         continuous_covar_path <- covar_paths[[continuous]]
@@ -1389,7 +1389,7 @@ split_covars <- function() {
     split_names <- c(discrete, continuous)
     split_paths <- split_generic(combined_covars_path, split_names,
                                  exts$cov, "covars", split_covars_callback)
-    
+
     covar_args <- get_covar_args(split_paths)
     return(covar_args)
 }
@@ -1400,14 +1400,14 @@ estimate_greml_var <- function(grm_basepath, covar_args) {
     #' @param grm_basepath {character}: Basepath to the grm file to estimate from.
     #' @param covar_args {character}: Covariate arguments to provide to GCTA.
     #' @return {NULL}
-    
+
     estimate_phen_var_prop <- function(suffix) {
         #' Given a suffix and mpheno value, estimates the phenotypic variance
         #' explained by additive genome-wide SNPs for the given phenotype.
         #' @param suffix {character}: The suffix of the phenotype file name which in
         #'                            turn, encodes the phenotype variant.
         #' @return hsq_basepath {character}: Base path to the hsq output from GCTA.
-        
+
         trait_name <- get_trait_name(suffix)
         logger("Estimating Phenotyping Variance Proportion for phenotype: ", trait_name)
         pheno_path <- get_pheno_path(suffix)
@@ -1421,12 +1421,12 @@ estimate_greml_var <- function(grm_basepath, covar_args) {
         logger("DEBUG", "HSQ Basepath: ", quotes(hsq_basepath), ".")
         return(hsq_basepath)
     }
-    
+
     read_hsq_res <- function(hsq_basepath) {
         #' Reads a greml file containing the hsq result from GCTA.
         #' @param hsq_basepath {character}: Base path to the hsq output from GCTA.
         #' @return hsq {data.frame}: Data.frame containing the hsq result.
-        
+
         hsq_path <- add_extension(hsq_basepath, exts$hsq)
         logger("Reading HSQ result from: ", quotes(hsq_path), ".")
 
@@ -1442,7 +1442,7 @@ estimate_greml_var <- function(grm_basepath, covar_args) {
         #'                            turn, encodes the phenotype variant.
         #' @param hsq {data.frame}: Data.frame containing the hsq result.
         #' @return {NULL}
-    
+
         trait_name <- get_trait_name(suffix)
         logger("Saving phenotype variance estaimte for trait ", trait_name, ".")
 
@@ -1454,9 +1454,9 @@ estimate_greml_var <- function(grm_basepath, covar_args) {
         caption <- paste("GREML genetic variance ($V(G)$) for", trait_name)
         digits <- c(0, 6, 6)
         latex_table(hsq, out_name, latex_col_align, caption, NULL,
-                    digits, hide_row_names = TRUE) 
+                    digits, hide_row_names = TRUE)
     }
-    
+
     logger(">>> Begin Estimate of Proportion of Phenotypic Variance.")
     for (suffix in phenotype_suffixes) {
         logger("Inspecting phenotype: ", quotes(suffix), ".")
@@ -1474,7 +1474,7 @@ unrelated_individuals <- function(grm_basepath) {
     #' @param grm_basepath {character}: Basepath (no extenision) to the GRM file.
     #' @return grm_rr_basepath {chatacter}: Basepath to GRM with related
     #'                                      individuals removed.
-    
+
     read_grml <- function(grm_basepath, show_df_preview = TRUE) {
         #' Reads a grm file given its basepath.
         #' @param grm_basepath {character}: The GRM path without extension.
@@ -1482,27 +1482,27 @@ unrelated_individuals <- function(grm_basepath) {
         #'                                   the greml data.frame. Defaults
         #'                                   to TRUE.
         #' @return grm {data.frame}: The data.frame containing the grm data.
-        
+
         grm_path <- add_extension(grm_basepath, exts$grm)
         logger("Reading GRM binary file from: ", quotes(grm_path), "...")
         grm <- read_GRMBin(grm_path)
 
         names_grm <- c("IND_1", "IND_2", "SNP_NUM", "REL")
         names(grm) <- names_grm
-        
+
         if (show_df_preview) {
             log_df(grm[, 1:5], paste("GRM from", quotes(grm_path)))
         }
 
         return(grm)
     }
-    
+
     plots_required <- function(remove) {
         #' Determines if plots are required for given remove setting.
         #' @param remove {boolean}: Whether we are removing indivdiuals.
         #' @return {boolean}: TRUE if at least one plot is required,
         #'                    FALSE otherwise.
-    
+
         logger("Checking plot requirements for remove = ", remove, "...")
         diag_plot_required <- plot_required(TRUE, remove, FALSE)
         off_diag_plot_required <- plot_required(FALSE, remove, FALSE) |
@@ -1550,12 +1550,12 @@ unrelated_individuals <- function(grm_basepath) {
         #' @param clipped {boolean}: Whether the values have been clipped
         #'                           by a threshold.
         #' @return hist_name {character}: Filename for histogram.
-    
+
         hist_name <- add_extension(paste0("grm.", diag ? "" : "off.",
                                           "diag", remove ? ".removed" : "",
                                           clipped ? ".clipped" : ""),
                                    exts$png)
-         
+
         logger("DEBUG", "Hist filename for remove = ", remove,
                ", diag = ", diag, ", clippped = ", clipped,
                ": ", quotes(hist_name), ".")
@@ -1579,7 +1579,7 @@ unrelated_individuals <- function(grm_basepath) {
         }
         logger("DEBUG", "Plot title options: ", quotes(options), ".")
         title <- paste0("GRM ", diag ? "" : "Off-", "Diag Distribution", options)
- 
+
         logger("DEBUG", "Hist plot title for remove = ", remove,
                ", diag = ", diag, ", clippped = ", clipped,
                ": ", quotes(title), ".")
@@ -1591,7 +1591,7 @@ unrelated_individuals <- function(grm_basepath) {
         #' @param grm {data.frame}: The data.frame containing the grm data.
         #' @param remove {boolean}: Whether we are removing indivdiuals.
         #' @return {NULL}
-        
+
         logger("Plotting GRM Diagonals for remove = ", remove, "...")
         grm.diag <- diag(grm)
         logger("GRM diag length: ", length(grm.diag), ".")
@@ -1602,7 +1602,7 @@ unrelated_individuals <- function(grm_basepath) {
         title <- get_plot_title(TRUE, remove, FALSE)
         wrap_histogram(grm.diag, hist_name, breaks = 2500, freq = FALSE,
                   xlab = "GRM Diagonals", xlim = c(0.95, 1.1),
-                  main = title)  
+                  main = title)
     }
 
     plot_grm_off_diag <- function(grm, remove) {
@@ -1611,19 +1611,19 @@ unrelated_individuals <- function(grm_basepath) {
         #' @param grm {data.frame}: The data.frame containing the grm data.
         #' @param remove {boolean}: Whether we are removing indivdiuals.
         #' @return {NULL}
-        
+
         logger("Plotting GRM Off-Diagonals for remove = ", remove, "...")
         grm.off.diag <- off_diag(grm)
         logger("GRM off-diag length: ", length(grm.off.diag), ".")
         log_df(grm.off.diag, paste0("GRM Off Diag for remove = ", remove, "."))
-        
+
         hist_name <- get_plot_filename(FALSE, remove, FALSE)
         xlim <- c(0.0, 0.1)
         title <- get_plot_title(FALSE, remove, FALSE)
         wrap_histogram(grm.off.diag, hist_name, breaks = 200, freq = FALSE,
                   xlab = "GRM Off-Diagonals", xlim = xlim,
                   main = title)
-        
+
         logger("Plotting GRM Off-Diagonals (clipped) for remove = ", remove, "...")
         grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > gcta_rr_threshold)]
         off_diag_clipped_len <- length(grm.off.diag.clipped)
@@ -1633,7 +1633,7 @@ unrelated_individuals <- function(grm_basepath) {
         } else {
             log_df(grm.off.diag.clipped, paste0("GRM Off Diag (clipped) for remove = ",
                                                 remove, "."))
-            
+
             clipped_hist_name <- get_plot_filename(FALSE, remove, TRUE)
             title <- get_plot_title(FALSE, remove, TRUE)
             wrap_histogram(grm.off.diag.clipped, clipped_hist_name, breaks = 200,
@@ -1641,7 +1641,7 @@ unrelated_individuals <- function(grm_basepath) {
                       main = title)
         }
     }
-    
+
     remove_relatedness <- function(grm_path) {
         #' Removes relatness between individuals who may have an affect
         #' on the estimate of heritability. This reduces the maximum
@@ -1661,9 +1661,9 @@ unrelated_individuals <- function(grm_basepath) {
         grm_path_rr <- gcta(gcta_args, out_name)
         return(grm_path_rr)
     }
-    
+
     logger(">>> Begin Unrelated Individuals")
-    
+
     for (remove in c(FALSE, TRUE)) {
         logger("Estimating Proportion of Phenotypic Variance",
                remove ? " with threshold removal" : "", "...")
@@ -1674,17 +1674,17 @@ unrelated_individuals <- function(grm_basepath) {
         } else {
             loop_grm_basepath <- grm_basepath
         }
-        
+
         if (plots_required(remove)) {
             grm <- read_grml(loop_grm_basepath)
-            
+
             plot_grm_diag(grm, remove)
             plot_grm_off_diag(grm, remove)
         } else {
             logger("Skipping greml - plots already generated.")
         }
     }
-    
+
     logger("<<< End unrelated indivduals")
     return(grm_rr_basepath)
 }
@@ -1708,7 +1708,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath, covar_args) {
 
         top <- "top"
         bottom <- "bottom"
-        
+
         split_snp_ids_callback <- function(data, name) {
             #" Callback function to split SNP IDs based on Annotated status.
             #' @param data {data.frame}: Input data containing combined SNP
@@ -1729,7 +1729,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath, covar_args) {
                 logger("ERROR", "Invalid split name: ", quotes(name), ".")
             }
 
-            
+
             subset <- data[data$Annotated == match, snp_id_col, drop = drop]
             return(subset)
         }
@@ -1764,13 +1764,13 @@ partition_variance <- function(grm_basepath, grm_qc_basepath, covar_args) {
         #' @param annotation {character}: 'top' or 'bottom' of SNPs to extract.
         #' @param snps_path {character}: Path to file containing SNPs to extract.
         #' @return {character}: Path to prepared grm output.
-        
+
         if (!file_exists(snps_path)) {
             logger("ERROR", "SNPs not found at ", quotes(snps_path), ".")
         }
 
         logger("Preparing GRM for MAF annotation: ", quotes(annotation), "...")
-       
+
         logger("DEBUG", "Using SNPs in file: ", quotes(snps_path), ".")
         grm_qc_path <- add_extension(grm_qc_basepath, exts$grm, exts$id)
         thread_args <- get_thread_args()
@@ -1805,7 +1805,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath, covar_args) {
         #' @return part_comp_path {character}: Path to parition variance output.
 
         trait_name <- get_trait_name(suffix)
-        
+
         if (!file_exists(prep_path)) {
             logger("ERROR", "Prep for trait ", trait_name, " does not exist.")
         }
@@ -1841,7 +1841,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath, covar_args) {
         part_comp_path <- add_extension(part_comp_basepath, exts$hsq)
         comp_df <- wrap_read_table(part_comp_path, blank.lines.skip = TRUE, fill = TRUE,
                                    sep = "\t")
- 
+
         out_name <- add_extension(paste0("greml_part_var_estimate", suffix), exts$tex)
         num_cols <- ncol(comp_df)
         logger("TRACE", "Num greml cols: ", num_cols)
@@ -1860,7 +1860,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath, covar_args) {
 
     # Main
     logger(">>> Begin Variance Partition")
-    
+
     antd_snp_paths <- split_snps()
     grm_prep_filename <- initialise_prep_snps_file()
 
@@ -1872,7 +1872,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath, covar_args) {
     }
 
     logger("Annotation preparation complete.")
-    
+
     for (suffix in phenotype_suffixes) {
         trait_name <- get_trait_name(suffix)
         logger("Partitioning variance components for trait: ", quotes(trait_name), ".")
@@ -1880,7 +1880,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath, covar_args) {
         part_comp_path <- partition_comp(suffix, pheno_path, prep_path)
         save_greml_partition(suffix, part_comp_path)
     }
-    
+
     logger("<<< End Variance Partition")
     invisible(NULL)
 }
