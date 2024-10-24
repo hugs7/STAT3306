@@ -71,7 +71,7 @@ plot_h <- 300
 gcta_rr_threshold <- 0.05
 
 # Overrides
-overwrite_ext_plots <- FALSE
+overwrite_ext_plots <- TRUE
 overwrite_gcta_out <- FALSE
 
 # === Functions ===
@@ -1046,6 +1046,10 @@ wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height
         logger("Skipping plot")
     } else {
         logger("DEBUG", "Plotting at: ", quotes(out_path), " ...")
+        if (file_exists(out_path)) {
+            delete_file(out_path)
+        }
+
         png(out_path, width, height)
         plot_callback(data, ...)
         dev.off()
@@ -1480,6 +1484,10 @@ unrelated_individuals <- function(grm_basepath) {
 
         logger("Checking if diag plot required, diag = ", diag,
                ", remove = ", remove, ".")
+
+        if (overwrite_ext_plots) {
+            return(TRUE)
+        }
 
         hist_name <- get_plot_name(diag, remove, clipped)
         exp_plot_path <- construct_plot_path(hist_name)
