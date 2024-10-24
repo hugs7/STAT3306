@@ -1351,10 +1351,11 @@ split_covars <- function() {
     return(covar_args)
 }
 
-estimate_greml_var <- function(grm_basepath) {
+estimate_greml_var <- function(grm_basepath, covar_args) {
     #' Estimates the proportion of phenotypic variance due to genome-wide
     #' SNPs using GCTA.
     #' @param grm_basepath {character}: Basepath to the grm file to estimate from.
+    #' @param covar_args {character}: Covariate arguments to provide to GCTA.
     #' @return {NULL}
     
     estimate_phen_var_prop <- function(suffix) {
@@ -1371,7 +1372,7 @@ estimate_greml_var <- function(grm_basepath) {
         mpheno_args <- get_mpheno_args(mpheno)
         thread_args <- get_thread_args()
         gcta_args <- paste(gcta_fgs$grm, grm_basepath, gcta_fgs$pheno, pheno_path,
-                           mpheno_args, gcta_fgs$reml, thread_args)
+                           mpheno_args, gcta_fgs$reml, covar_args, thread_args)
         out_name <- paste0("greml_var", suffix)
         hsq_basepath <- gcta(gcta_args, out_name)
         logger("DEBUG", "HSQ Basepath: ", quotes(hsq_basepath), ".")
@@ -1829,7 +1830,7 @@ grm_basepath <- grm_build(run_make_grm)
 covar_args <- split_covars()
 
 if (estimate_grm_var) {
-    estimate_greml_var(grm_basepath)
+    estimate_greml_var(grm_basepath, covar_args)
 }
 
 if (run_relatedness) {
