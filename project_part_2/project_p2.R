@@ -45,6 +45,8 @@ cat("Initialising globals...\n")
 phenotype <- "Fasting Glucose"
 phenotype_suffixes <- list("", "_binary1", "_binary2")
 fam_ind_cols <- c("FID", "IID")
+discrete <- "discrete"
+continuous <- "continuous"
 
 # Data Paths
 course_shared_data_path <- file.path("/data/STAT3306")
@@ -1151,6 +1153,53 @@ get_pheno_path <- function(pheno_suffix) {
     return(pheno_path)
 }
 
+split_generic <- function(combined_path, split_names, extension, save_prefix,
+                              process_callback) {
+    #' Generic function to handle split of data.frames into a number of
+    #' sub data.frames by cases based on a callback function. This
+    #' function handles any number of cases specified in split_names.
+    #' @param combined_path {character}: The path to the combined file.
+    #' @param split_names {character vector}: A vector of names for the
+    #'                                        output files.
+    #' @param extension {character}: The file extension for the input
+    #'                               and output files.
+    #' @param save_prefix {character}: Prefix to add on split files.
+    #' @param process_callback {function}: A callback function defining
+    #'                                     the splitting logic.
+    #' @return {list}: Contains paths to each split file, with names
+    #'                 corresponding to entries in split_names.
+    
+    logger("DEBUG", ">>> Begin split generic")
+    
+    output_paths <- list()
+    combined_df <- wrap_read_table(combined_path)
+
+    for (name in split_names) {
+        logger("DEBUG", "Name: ", quotes(name), ".")
+
+        basename <- paste0(save_prefix, "_", name)
+        output_filename <- add_extension(basename, extension)
+        output_path <- construct_out_path(output_filename)
+
+        if (file_exists(output_path)) {
+            logger("Output for ", quotes(name), " already exists.")
+            output_paths[[name]] <- output_path
+        } else {
+            logger("Output for ", quotes(name), " doesn't exist. Computing...")
+            
+            split_data <- process_callback(combined_df, name)
+            
+            output_path <- wrap_write_table(split_data, output_filename,
+                                            col.names = FALSE)
+            logger("DEBUG", "Output path: ", quotes(output_path), ".")
+            output_paths[[name]] <- output_path
+        }
+    }
+
+    logger("DEBUG", "<<< End split generic")
+    return(output_paths)
+}
+
 ####
 
 init <- function() {
@@ -1216,10 +1265,97 @@ grm_build <- function(run_grm_build) {
     return(grm_basepath)
 }
 
-estimate_greml_var <- function(grm_basepath) {
+split_covars <- function() {
+    #' Splits the combined covariates into two files: one disctrete
+    #' and one continuous, so they can be used by GCTA. Note the
+    #' headers of the files are stripped as per GCTA requirements.
+    #' @return covar_args {character}: Covariate arguments to provide to GCTA.
+   
+    logger("Splitting covariates")
+    
+    split_covars_callback <- function(combined_covars, name) {
+        #' Callback function to separate discrete and continuous covariates.
+        #' @param combined_covars {data.frame}: Combined covariates data.frame.
+        #' @param name {character}: The name of the split type (discrete or
+        #'                          (continuous)
+        #' @return split_data {data.frame}: Updated data.frame with the
+        #'                                  appropriate covariates.
+        
+        logger("DEBUG", "  >>> Begin split covars callback.")
+        split_data <- combined_covars[, fam_ind_cols, drop = FALSE]
+        is_discrete <- name == discrete
+        is_continuous <- name == continuous
+        
+        start_index <- length(fam_ind_cols) + 1
+        i_cum <- start_index
+        for (i in start_index:ncol(combined_covars)) {
+            column <- combined_covars[[i]]
+
+            if (is_discrete_col(column)) {
+                if (!is_discrete) {
+                    next
+                }
+
+                logger("DEBUG", "Column ", i, " is discrete.")
+                if (is_binary_col(column)) {
+                    logger("DEBUG", "Column ", i, " is binary.")
+                    # Ensure binary data is encoded as 0s and 1s
+                    column <- ifelse(column == 1, 0, 1)
+                }
+            } else {
+                if (!is_continuous) {
+                    next
+                }
+                
+                logger("DEBUG", "Column ", i, " is continuous.")
+            }
+            
+            split_data[[names(combined_covars)[i_cum]]] <- column
+            i_cum <- i_cum + 1
+        }
+
+        logger("DEBUG", "  <<< End split covars callback.")
+        return(split_data)
+    }
+
+    get_covar_args <- function(covar_paths) {
+        #' Constructs covariate arguments to provide to GCTA given
+        #' the paths to the discrete and continuous split.
+        #' @param covar_paths {list}: Contains paths to each covariate file
+        #'                            with keys
+        #'                             - discrete: Path to discrete covars
+        #'                                         file.
+        #'                             - continuous: Path to continuous covars
+        #'                                           file.
+        #' @return covar_args {character}: Covariate arguments to provide to GCTA.
+        
+        logger("DEBUG", "Constructing covar arguments")
+        discrete_covar_path <- covar_paths[[discrete]]
+        continuous_covar_path <- covar_paths[[continuous]]
+        covar_args <- paste(gcta_fgs$covar, discrete_covar_path, gcta_fgs$qcovar,
+                            continuous_covar_path)
+        logger("DEBUG", "Covar args: ", quotes(covar_args), ".")
+        return(covar_args)
+    }
+
+    combined_basename <- add_extension("covariateFiltered", exts$cov)
+    combined_covars_path <- construct_data_path(combined_basename)
+    logger("DEBUG", "Combined covars path: ", quotes(combined_covars_path),
+           ".")
+
+    split_names <- c(discrete, continuous)
+    split_paths <- split_generic(combined_covars_path, split_names,
+                                 exts$cov, "covars", split_covars_callback)
+    
+    covar_args <- get_covar_args(split_paths)
+    return(covar_args)
+}
+
+estimate_greml_var <- function(grm_basepath, covar_args) {
     #' Estimates the proportion of phenotypic variance due to genome-wide
     #' SNPs using GCTA.
     #' @param grm_basepath {character}: Basepath to the grm file to estimate from.
+    #' @param covar_args {character}: Covariate arguments to provide to GCTA.
     #' @return {NULL}
     
     estimate_phen_var_prop <- function(suffix) {
@@ -1236,7 +1372,7 @@ estimate_greml_var <- function(grm_basepath) {
         mpheno_args <- get_mpheno_args(mpheno)
         thread_args <- get_thread_args()
         gcta_args <- paste(gcta_fgs$grm, grm_basepath, gcta_fgs$pheno, pheno_path,
-                           mpheno_args, gcta_fgs$reml, thread_args)
+                           mpheno_args, gcta_fgs$reml, covar_args, thread_args)
         out_name <- paste0("greml_var", suffix)
         hsq_basepath <- gcta(gcta_args, out_name)
         logger("DEBUG", "HSQ Basepath: ", quotes(hsq_basepath), ".")
@@ -1466,128 +1602,15 @@ unrelated_individuals <- function(grm_basepath) {
     return(grm_rr_basepath)
 }
 
-partition_variance <- function(grm_basepath, grm_qc_basepath) {
+partition_variance <- function(grm_basepath, grm_qc_basepath, covar_args) {
     #' Partitions variance components by creating two GRM matrices.
     #' One for lower and the other for higher minor allele frequencies
     #' (or MAFs), allowing investigation of the genetic architecture of
     #' of the trait.
     #' @param grm_basepath {character}: Basepath to the original grm data.
     #' @param grm_qc_basepath {character}: Basepath to the QC'd grm data.
-
-    discrete <- "discrete"
-    continuous <- "continuous"
-
-    split_generic <- function(combined_path, split_names, extension, save_prefix,
-                              process_callback) {
-        #' Generic function to handle split of data.frames into a number of
-        #' sub data.frames by cases based on a callback function. This
-        #' function handles any number of cases specified in split_names.
-        #' @param combined_path {character}: The path to the combined file.
-        #' @param split_names {character vector}: A vector of names for the
-        #'                                        output files.
-        #' @param extension {character}: The file extension for the input
-        #'                               and output files.
-        #' @param save_prefix {character}: Prefix to add on split files.
-        #' @param process_callback {function}: A callback function defining
-        #'                                     the splitting logic.
-        #' @return {list}: Contains paths to each split file, with names
-        #'                 corresponding to entries in split_names.
-        
-        logger("DEBUG", ">>> Begin split generic")
-        
-        output_paths <- list()
-        combined_df <- wrap_read_table(combined_path)
-
-        for (name in split_names) {
-            logger("DEBUG", "Name: ", quotes(name), ".")
-
-            basename <- paste0(save_prefix, "_", name)
-            output_filename <- add_extension(basename, extension)
-            output_path <- construct_out_path(output_filename)
-
-            if (file_exists(output_path)) {
-                logger("Output for ", quotes(name), " already exists.")
-                output_paths[[name]] <- output_path
-            } else {
-                logger("Output for ", quotes(name), " doesn't exist. Computing...")
-                
-                split_data <- process_callback(combined_df, name)
-                
-                output_path <- wrap_write_table(split_data, output_filename,
-                                                col.names = FALSE)
-                logger("DEBUG", "Output path: ", quotes(output_path), ".")
-                output_paths[[name]] <- output_path
-            }
-        }
-
-        logger("DEBUG", "<<< End split generic")
-        return(output_paths)
-    }
-
-    split_covars <- function() {
-        #' Splits the combined covariates into two files: one disctrete
-        #' and one continuous, so they can be used by GCTA. Note the
-        #' headers of the files are stripped as per GCTA requirements.
-        #' @return {list}: Contains paths to each covariate file with keys
-        #'                   - discrete: Path to discrete covars file.
-        #'                   - continuous: Path to continuous covars file.
-        
-        split_covars_callback <- function(combined_covars, name) {
-            #' Callback function to separate discrete and continuous covariates.
-            #' @param combined_covars {data.frame}: Combined covariates data.frame.
-            #' @param name {character}: The name of the split type (discrete or
-            #'                          (continuous)
-            #' @return split_data {data.frame}: Updated data.frame with the
-            #'                                  appropriate covariates.
-            
-            logger("DEBUG", "  >>> Begin split covars callback.")
-            split_data <- combined_covars[, fam_ind_cols, drop = FALSE]
-            is_discrete <- name == discrete
-            is_continuous <- name == continuous
-            
-            start_index <- length(fam_ind_cols) + 1
-            i_cum <- start_index
-            for (i in start_index:ncol(combined_covars)) {
-                column <- combined_covars[[i]]
-
-                if (is_discrete_col(column)) {
-                    if (!is_discrete) {
-                        next
-                    }
-
-                    logger("DEBUG", "Column ", i, " is discrete.")
-                    if (is_binary_col(column)) {
-                        logger("DEBUG", "Column ", i, " is binary.")
-                        # Ensure binary data is encoded as 0s and 1s
-                        column <- ifelse(column == 1, 0, 1)
-                    }
-                } else {
-                    if (!is_continuous) {
-                        next
-                    }
-                    
-                    logger("DEBUG", "Column ", i, " is continuous.")
-                }
-                
-                split_data[[names(combined_covars)[i_cum]]] <- column
-                i_cum <- i_cum + 1
-            }
-
-            logger("DEBUG", "  <<< End split covars callback.")
-            return(split_data)
-        }
-       
-        combined_basename <- add_extension("covariateFiltered", exts$cov)
-        combined_covars_path <- construct_data_path(combined_basename)
-        logger("DEBUG", "Combined covars path: ", quotes(combined_covars_path),
-               ".")
-
-        split_names <- c(discrete, continuous)
-        split_paths <- split_generic(combined_covars_path, split_names,
-                                     exts$cov, "covars", split_covars_callback)
-
-        return(split_paths)
-    }
+    #' @param covar_args {character}: Covariate arguments to provide to GCTA.
+    #' @return {NULL}
 
     split_snps <- function() {
         #' Splits SNPs by the label from the annotation file into two files.
@@ -1685,15 +1708,13 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         return(prep_path)
     }
 
-    partition_comp <- function(suffix, pheno_path, prep_path, covar_paths) {
+    partition_comp <- function(suffix, pheno_path, prep_path) {
         #' Computes the partitioned variance components via GREML.
         #' @param suffix {character}: Suffix of the phenotype file name, encoding
         #'                            the phenotype variant.
         #' @param pheno_path {character}: Path to the phenotype file.
         #' @param prep_path {character}: Path to prep file contaning paths to
         #'                               SNP id files.
-        #' @param covar_paths {list}: Paths to split covariate paths for discrete
-        #'                            and continuous.
         #' @return part_comp_path {character}: Path to parition variance output.
 
         trait_name <- get_trait_name(suffix)
@@ -1708,11 +1729,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         mpheno <- 1
         mpheno_args <- get_mpheno_args(mpheno)
         thread_args <- get_thread_args()
-        discrete_covar_path <- covar_paths[[discrete]]
-        continuous_covar_path <- covar_paths[[continuous]]
-        covar_args <- paste(gcta_fgs$covar, discrete_covar_path, gcta_fgs$qcovar,
-                            continuous_covar_path)
-        logger("DEBUG", "Covar args: ", quotes(covar_args), ".")
+
         gcta_args <- paste(gcta_fgs$mgrm, prep_path, gcta_fgs$pheno, pheno_path,
                            mpheno_args, gcta_fgs$reml, covar_args, thread_args)
         out_name <- paste0("nr_partition", suffix)
@@ -1757,7 +1774,6 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
     # Main
     logger(">>> Begin Variance Partition")
     
-    covar_paths <- split_covars()
     antd_snp_paths <- split_snps()
     grm_prep_filename <- initialise_prep_snps_file()
 
@@ -1774,7 +1790,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         trait_name <- get_trait_name(suffix)
         logger("Partitioning variance components for trait: ", quotes(trait_name), ".")
         pheno_path <- get_pheno_path(suffix)
-        part_comp_path <- partition_comp(suffix, pheno_path, prep_path, covar_paths)
+        part_comp_path <- partition_comp(suffix, pheno_path, prep_path)
         save_greml_partition(suffix, part_comp_path)
     }
     
@@ -1811,16 +1827,17 @@ if (length(args) > 0) {
 }
 
 grm_basepath <- grm_build(run_make_grm)
+covar_args <- split_covars()
 
 if (estimate_grm_var) {
-    estimate_greml_var(grm_basepath)
+    estimate_greml_var(grm_basepath, covar_args)
 }
 
 if (run_relatedness) {
     grm_rr_basepath <- unrelated_individuals(grm_basepath)
 
     if (run_partition) {
-        partition_variance(grm_basepath, grm_rr_basepath)
+        partition_variance(grm_basepath, grm_rr_basepath, covar_args)
     }
 }
 
