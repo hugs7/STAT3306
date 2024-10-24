@@ -1544,7 +1544,7 @@ unrelated_individuals <- function(grm_basepath) {
         #' @param remove {boolean}: Whether we are removing indivdiuals.
         #' @return {NULL}
         
-        logger("Plotting GRM Diagonals...")
+        logger("Plotting GRM Diagonals for remove = ", remove, "...")
         grm.diag <- diag(grm)
         logger("GRM diag length: ", length(grm.diag), ".")
 
@@ -1565,8 +1565,10 @@ unrelated_individuals <- function(grm_basepath) {
         #' @param remove {boolean}: Whether we are removing indivdiuals.
         #' @return {NULL}
         
-        logger("Plotting GRM Off-Diagonals...")
+        logger("Plotting GRM Off-Diagonals for remove = ", remove, "...")
         grm.off.diag <- off_diag(grm)
+        logger("GRM diag length: ", length(grm.off.diag), ".")
+        log_df(grm.off.diag, paste0("GRM Off Diag for remove = ", remove, "."))
         
         hist_name <- get_plot_name(FALSE, remove, FALSE)
         xlim <- c(0.0, 0.1)
@@ -1575,8 +1577,11 @@ unrelated_individuals <- function(grm_basepath) {
         wrap_histogram(grm.off.diag, hist_name, breaks = 200, freq = FALSE,
                   xlab = "GRM Off-Diagonals", xlim = xlim,
                   main = title)
-
+        
+        logger("Plotting GRM Off-Diagonals (clipped) for remove = ", remove, "...")
         grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > gcta_rr_threshold)]
+        log_df(grm.off.diag.clipped, paste0("GRM Off Diag (clipped) for remove = ", remove, "."))
+        
         clipped_hist_name <- get_plot_name(FALSE, remove, TRUE)
         title <- paste0("GRM Off-Diag Distribution", remove ? paste0(" ",
                         brackets("removed, clipped")) : "")
