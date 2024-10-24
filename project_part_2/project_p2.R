@@ -972,7 +972,6 @@ construct_data_path <- function(...) {
     file.path(data_path, basename)
 }
 
-
 construct_gcta_out_path <- function(...) {
     #' Constructs a file path in the gcta out directory given a basename.
     #' @param ... {character}: The name of the file (potentially split) without
@@ -982,7 +981,6 @@ construct_gcta_out_path <- function(...) {
     basename <- paste0(...)
     file.path(gcta_out_dir, basename)
 }
-
 
 construct_out_path <- function(basename) {
     #' Constructs a file path in the out directory given a basename.
