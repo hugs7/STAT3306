@@ -519,7 +519,7 @@ is_binary_col <- function(column) {
     #' @param column {data.frame}: Column of a data frame to check.
     #' @return {boolean}: TRUE if column is binary, FALSE otherwise.
     
-    if (is.factor(column) || is.numeric(column)) {
+    if (is.factor(column) || is.integer(column)) {
         unique_values <- unique(column)
 
         return(length(unique_values) == 2)
@@ -1312,11 +1312,15 @@ split_covars <- function() {
                 }
 
                 logger("DEBUG", "Column ", i, " is discrete.")
-                if (is_binary_col(column)) {
-                    logger("DEBUG", "Column ", i, " is binary.")
-                    # Ensure binary data is encoded as 0s and 1s
-                    column <- ifelse(column == 1, 0, 1)
+            } else if (is_binary_col(column)) {
+                if (!is_discrete) {
+                    next
                 }
+
+                logger("DEBUG", "Column ", i, " is binary.")
+
+                # Ensure binary data is encoded as 0s and 1s
+                column <- ifelse(column == 1, 0, 1)
             } else {
                 if (!is_continuous) {
                     next
