@@ -71,7 +71,7 @@ plot_h <- 300
 gcta_rr_threshold <- 0.05
 
 # Overrides
-overwrite_ext_plots <- TRUE
+overwrite_ext_plots <- FALSE
 overwrite_gcta_out <- FALSE
 
 # === Functions ===
@@ -1865,7 +1865,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath, covar_args) {
 
         # Shorten "Sum of" to $\sum$ in LaTeX
         contents <- wrap_read(path)
-        replaced_cts <- sub("Sum of", "$\\\\sum$", contents)
+        replaced_cts <- sub("Sum of", latex_math("\\\\sum"), contents)
         wrap_write(replaced_cts, out_name)
     }
 
