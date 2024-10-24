@@ -1635,7 +1635,7 @@ unrelated_individuals <- function(grm_basepath) {
         
         if (remove) {
             # We do not plot clipped since there is no overlap of samples.
-            return
+            return(NULL)
         }
 
         logger("Plotting GRM Off-Diagonals (clipped) for remove = ", remove, "...")
