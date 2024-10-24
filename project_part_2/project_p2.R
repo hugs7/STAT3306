@@ -279,7 +279,8 @@ get_func_name <- function(call) {
 
 get_calling_function <- function(ignore_names) {
     #' Gets the name of the function calling a function from the call stack
-    #' @param ignore_names {list[string]}: List of functions to skip in the call stack
+    #' @param ignore_names {list[character]}: List of functions to skip in
+    #'                                     the call stack
     #' @return func_name {character}: Name of function calling.
 
     call_stack <- sys.calls()
@@ -338,7 +339,8 @@ logger <- function(log_level = default_log_level, ...) {
     logger_func_name <- deparse(sys.call()[[1]])
     parent_call <- get_calling_function(c(logger_func_name))
     timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    msg <- paste0("[", timestamp, "]", "  ", pad(7, log_level), pad(25, parent_call), ...)
+    msg <- paste0("[", timestamp, "]", "  ", pad(7, log_level),
+                  pad(25, parent_call), ...)
 
     colour_func <- level_colours[[log_level]]
     if (is.null(colour_func)) {
@@ -401,7 +403,8 @@ title_case <- function(str) {
 
     logger("TRACE", "Converting ", quotes(str), " to title case...")
     words <- strsplit(str, " ")[[1]]
-    titlecased_words <- paste0(toupper(substring(words, 1, 1)), tolower(substring(words, 2)))
+    titlecased_words <- paste0(toupper(substring(words, 1, 1)),
+                               tolower(substring(words, 2)))
     result <- to_str(paste(titlecased_words), " ")
 
     logger("TRACE", "Title case version: ", quotes(result), ".")
@@ -411,9 +414,9 @@ title_case <- function(str) {
 regex_escape <- function(string) {
     #' Escapes characters in a string so they can be
     #' used in a RegEx string.
-    #' @param string {string|list{character}}: The string or list of strings to
-    #'                                         be escaped.
-    #' @return {string|list{character}}: The same string but RegEx escaped.
+    #' @param string {character|list{character}}: The string or list of strings to
+    #'                                            be escaped.
+    #' @return {character|list{character}}: The same string but RegEx escaped.
 
     escape_string <- function(s) {
         #' Escapes a single string.
@@ -518,7 +521,8 @@ file_exists <- function(path, match_pattern = FALSE) {
         exists <- file.exists(path)
     }
 
-    logger("DEBUG", "File ", exists ? "exists" : "does not exist", " at ", quotes(path), ".")
+    logger("DEBUG", "File ", exists ? "exists" : "does not exist",
+           " at ", quotes(path), ".")
     return(exists)
 }
 
@@ -557,7 +561,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
     #' @param data {data.frame}: The data.frame to output as a LaTeX table.
     #' @param out_name {character}: Filename to save the output as.
     #' @param table_align {character}: LaTeX coding for aligning columns.
-    #' @param caption {string|NULL}: Optional caption for the table.
+    #' @param caption {character|NULL}: Optional caption for the table.
     #' @param col.names {vec|NULL}: Optional column names to provide to the table.
     #'                              If NULL, column names of data will be used.
     #' @param digits {integer|vector(integer)}: Number of decimal places to display
@@ -622,7 +626,9 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
 
     latex <- print.xtable(table, print.results = FALSE, table.placement = "H",
                           comment = FALSE, include.rownames = !hide_row_names,
-                          sanitize.colnames.function = function(x) {paste0("\\textbf{", x, "}")})
+                          sanitize.colnames.function = function(x) {
+                              paste0("\\textbf{", x, "}")
+                          })
 
     latex <- gsub("\\begin{tabular}",
                   paste0(size == "normalsize" ? "" : paste0("\\", size, "\n"),
@@ -642,7 +648,7 @@ latex_table <- function(data, out_name, table_align, caption = NULL, col.names =
 get_ext_pattern <- function(extensions) {
     #' Generates a RegEx pattern to match any extension provided
     #' from a list of extensions
-    #' @param extensions {list{string}}: List of extensions to match
+    #' @param extensions {list{character}}: List of extensions to match
     #'                                   to.
     #' @return {character}: RegEx pattern matching provided extensions.
 
@@ -1003,7 +1009,7 @@ check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
     #' @param expected_ext {character}: The expected extension (with .).
     #' @param add_if_missing {boolean}: Adds the expected extension if
     #'                                  not present. Defaults to true.
-    #' @return out_name {string|NULL}: The (possibly revised) file path
+    #' @return out_name {character|NULL}: The (possibly revised) file path
     #'                                 or name. NULL if expected extension
     #'                                 is blank.
 
@@ -1012,7 +1018,8 @@ check_ext <- function(out_name, expected_ext, add_if_missing = TRUE) {
         return(NULL)
     }
 
-    logger("DEBUG", "Checking ", quotes(out_name), " for extension ", quotes(expected_ext), ".")
+    logger("DEBUG", "Checking ", quotes(out_name), " for extension ",
+           quotes(expected_ext), ".")
     if (!endsWith(out_name, expected_ext)) {
         logger("WARN", "Out name ", quotes(out_name), " does not end with ",
                quotes(expected_ext), ".")
@@ -1050,7 +1057,8 @@ check_txt_ext <- function(out_name, add_if_missing = TRUE) {
     check_ext(out_name, exts$txt, add_if_missing)
 }
 
-wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height = plot_h) {
+wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w,
+                      height = plot_h) {
     #' Plots a data.frame using the specified callback and saves to a file
     #' in the plots directory.
     #' @param plot_callback {function}: Function used to generate plot.
@@ -1058,8 +1066,10 @@ wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height
     #' @param out_name {character}: The file name to output. Should be a png and
     #'                              should not contain the plots directory.
     #' @param ... {any}: Extra arguemnts to provide to plot callback.
-    #' @param width {integer}: The width of the plot to save in pixels. Has a default value.
-    #' @param height {integer}: The height of the plot to save in pixels. Has a default value.
+    #' @param width {integer}: The width of the plot to save in pixels. Has
+    #'                         a default value.
+    #' @param height {integer}: The height of the plot to save in pixels. Has
+    #'                          a default value.
     #' @return out_path {character}: Path to saved plot file.
 
     out_name <- check_png_ext(out_name, TRUE)
@@ -1102,7 +1112,8 @@ wrap_histogram <- function(data, ...) {
 }
 
 wrap_scatter <- function(abline_h, abline_col, abline_name, ...) {
-    #' Wrapper to wrap_plot but for scatterplot. Addionally plots a line on the scatterplot.
+    #' Wrapper to wrap_plot but for scatterplot. Addionally plots a line
+    #' on the scatterplot.
     #' @param abline_y {integer | NULL}: Height of the abline.
     #' @param abline_col {integer | NULL}: Colour of the abline.
     #' @param abline_name {character}: Label for the abline.
