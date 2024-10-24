@@ -1737,7 +1737,7 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         part_comp_path <- add_extension(part_comp_basepath, exts$hsq)
         comp_df <- wrap_read_table(part_comp_path, blank.lines.skip = TRUE, fill = TRUE,
                                    sep = "\t")
-
+ 
         out_name <- add_extension(paste0("greml_part_var_estimate", suffix), exts$tex)
         num_cols <- ncol(comp_df)
         logger("TRACE", "Num greml cols: ", num_cols)
@@ -1745,8 +1745,13 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         logger("DEBUG", "LaTeX col align: ", latex_col_align)
         caption <- paste("GREML partitioned genetic variance ($V(G)$) for", trait_name)
         digits <- c(0, 6, 6)
-        latex_table(comp_df, out_name, latex_col_align, caption, NULL,
-                    digits, hide_row_names = TRUE) 
+        path <- latex_table(comp_df, out_name, latex_col_align, caption, NULL,
+                            digits, hide_row_names = TRUE, size = "footnotesize")
+
+        # Shorten "Sum of" to $\sum$ in LaTeX
+        contents <- wrap_read(path)
+        replaced_cts <- sub("Sum of", "$\\\\sum$", contents)
+        wrap_write(replaced_cts, out_name)
     }
 
     # Main
