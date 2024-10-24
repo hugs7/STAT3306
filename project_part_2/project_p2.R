@@ -1720,7 +1720,8 @@ partition_variance <- function(grm_basepath, grm_qc_basepath) {
         logger("Saving GREML partition result for trait ", quotes(trait_name), ".")
 
         part_comp_path <- add_extension(part_comp_basepath, exts$hsq)
-        comp_df <- wrap_read_table(part_comp_path, blank.lines.skip = TRUE, fill = TRUE)
+        comp_df <- wrap_read_table(part_comp_path, blank.lines.skip = TRUE, fill = TRUE,
+                                   sep = "\t")
 
         out_name <- add_extension(paste0("greml_part_var_estimate", suffix), exts$tex)
         num_cols <- ncol(comp_df)
