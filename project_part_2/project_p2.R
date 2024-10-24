@@ -1069,9 +1069,11 @@ wrap_histogram <- function(data, ...) {
     data_clean <- na.omit(data)
 
     if (length(data_clean) == 0) {
-        stop("The data is empty or contains only missing values!")
+        logger("ERROR", "The data is empty or contains only missing values!")
+        return
     } else if (!is.numeric(data_clean)) {
-        stop("The data is not numeric!")
+        logger("ERROR", "The data is not numeric!")
+        return
     }
 
     wrap_plot(hist, data_clean, ...)
