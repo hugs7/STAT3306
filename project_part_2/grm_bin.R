@@ -1,4 +1,4 @@
-read_GRMBin <- function(prefix, size = 4){
+read_GRMBin <- function(prefix, size = 4) {
     #' Reads a GRM binary file
     #' @param prefix {string}: File basepath.
     #' @param size {integer}: BLock size in the binary file.
