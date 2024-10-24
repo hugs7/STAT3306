@@ -1513,7 +1513,8 @@ unrelated_individuals <- function(grm_basepath) {
         #' @return hist_name {character}: Filename for histogram.
     
         hist_name <- add_extension(paste0("grm.", diag ? "" : "off.",
-                                          "diag", clipped ? ".clipped" : ""),
+                                          "diag", remove ? ".removed" : "",
+                                          clipped ? ".clipped" : ""),
                                    exts$png)
          
         logger("DEBUG", "Hist name for remove = ", remove,
@@ -1535,9 +1536,11 @@ unrelated_individuals <- function(grm_basepath) {
         log_df(grm.diag, "GRM (diag)")
 
         hist_name <- get_plot_name(TRUE, remove, FALSE)
+        title <- paste0("GRM Diag Distribution", remove ? paste0(" ",
+                        brackets("removed")) : "")
         wrap_histogram(grm.diag, hist_name, breaks = 2500, freq = FALSE,
                   xlab = "GRM Diagonals", xlim = c(0.95, 1.1),
-                  main = "GRM Diag Distribution")  
+                  main = title)  
     }
 
     plot_grm_off_diag <- function(grm, remove) {
@@ -1552,15 +1555,19 @@ unrelated_individuals <- function(grm_basepath) {
         
         hist_name <- get_plot_name(FALSE, remove, FALSE)
         xlim <- c(0.0, 0.1)
+        title <- paste0("GRM Off-Diag Distribution", remove ? paste0(" ",
+                        brackets("removed")) : "")
         wrap_histogram(grm.off.diag, hist_name, breaks = 200, freq = FALSE,
                   xlab = "GRM Off-Diagonals", xlim = xlim,
-                  main = "GRM Off-Diag Distribution")
+                  main = title)
 
         grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > gcta_rr_threshold)]
         clipped_hist_name <- get_plot_name(FALSE, remove, TRUE)
+        title <- paste0("GRM Off-Diag Distribution", remove ? paste0(" ",
+                        brackets("removed, clipped")) : "")
         wrap_histogram(grm.off.diag.clipped, clipped_hist_name, breaks = 200,
                   freq = FALSE, xlab = "GRM Off-Diagonals", xlim = xlim,
-                  main = "GRM Off-Diag Distribution")
+                  main = title)
     }
     
     remove_relatedness <- function(grm_path) {
