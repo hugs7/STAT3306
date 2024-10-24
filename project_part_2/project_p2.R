@@ -1571,8 +1571,8 @@ unrelated_individuals <- function(grm_basepath) {
         #'                           by a threshold.
         #' @return title {character}: Plot title for histogram.
 
-        options <- args_to_string_filtered(c(remove ? "remove" : "",
-                                             clipped ? "clipped" : ""))
+        options <- args_to_string_filtered(remove ? "remove" : "",
+                                             clipped ? "clipped" : "")
         logger("DEBUG", "Plot title options: ", quotes(options), ".")
         if (options != "") {
             options <- paste0(" ", brackets(options))
