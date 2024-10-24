@@ -1601,8 +1601,8 @@ unrelated_individuals <- function(grm_basepath) {
         hist_name <- get_plot_filename(TRUE, remove, FALSE)
         title <- get_plot_title(TRUE, remove, FALSE)
         wrap_histogram(grm.diag, hist_name, breaks = 2500, freq = FALSE,
-                  xlab = "GRM Diagonals", xlim = c(0.95, 1.1),
-                  main = title)
+                       xlab = "GRM Diagonals", xlim = c(0.95, 1.1),
+                       main = title)
     }
 
     plot_grm_off_diag <- function(grm, remove) {
@@ -1621,8 +1621,8 @@ unrelated_individuals <- function(grm_basepath) {
         xlim <- c(0.0, 0.1)
         title <- get_plot_title(FALSE, remove, FALSE)
         wrap_histogram(grm.off.diag, hist_name, breaks = 200, freq = FALSE,
-                  xlab = "GRM Off-Diagonals", xlim = xlim,
-                  main = title)
+                       xlab = "GRM Off-Diagonals", xlim = xlim,
+                       main = title)
 
         logger("Plotting GRM Off-Diagonals (clipped) for remove = ", remove, "...")
         grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > gcta_rr_threshold)]
@@ -1637,8 +1637,8 @@ unrelated_individuals <- function(grm_basepath) {
             clipped_hist_name <- get_plot_filename(FALSE, remove, TRUE)
             title <- get_plot_title(FALSE, remove, TRUE)
             wrap_histogram(grm.off.diag.clipped, clipped_hist_name, breaks = 200,
-                      freq = FALSE, xlab = "GRM Off-Diagonals", xlim = xlim,
-                      main = title)
+                           freq = FALSE, xlab = "GRM Off-Diagonals", xlim = xlim,
+                           main = title)
         }
     }
 
