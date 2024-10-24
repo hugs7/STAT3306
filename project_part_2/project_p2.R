@@ -1603,7 +1603,7 @@ unrelated_individuals <- function(grm_basepath) {
         grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > gcta_rr_threshold)]
         off_diag_clipped_len <- length(grm.off.diag.clipped)
         logger("GRM off-diag (clipped) length: ", off_diag_clipped_len, ".")
-        if (off_diag_clipped_len = 0) {
+        if (off_diag_clipped_len == 0) {
             logger("No data to plot. Skipping.")
         } else {
             log_df(grm.off.diag.clipped, paste0("GRM Off Diag (clipped) for remove = ",
@@ -1615,7 +1615,7 @@ unrelated_individuals <- function(grm_basepath) {
                       freq = FALSE, xlab = "GRM Off-Diagonals", xlim = xlim,
                       main = title)
         }
-    
+    }
     
     remove_relatedness <- function(grm_path) {
         #' Removes relatness between individuals who may have an affect
