@@ -141,21 +141,43 @@ to_str <- function(x, collapse = ", ") {
     paste(x, collapse = collapse)
 }
 
-args_to_string <- function(...) {
-    #' Converts any argument which is a list to a string
-    #' @param ... {character}: Arguments to convert.
-    #' @return {list{character}}: String arguments.
+convert_args_to_strings <- function(args) {
+    #' Helper function to convert arguments to strings.
+    #' @param args {list}: Arguments to convert.
+    #' @return {character}: String representations of arguments.
 
-    args <- list(...)
-    string_args <- sapply(args, function(arg) {
+    sapply(args, function(arg) {
         if (is.list(arg) || is.vector(arg)) {
             to_str(arg)
         } else {
             as.character(arg)
         }
     })
+}
+
+args_to_string <- function(...) {
+    #' Converts any argument which is a list to a string
+    #' @param ... {character}: Arguments to convert.
+    #' @return {list{character}}: String arguments.
+
+    args <- list(...)
+    string_args <- convert_args_to_strings(args)
 
     str <- paste0(string_args)
+    return(str)
+}
+
+args_to_string_filtered <- function(...) {
+    #' Converts any argument which is a list into a string,
+    #' filtering out empty values.
+    #' @param ... {character}: Arguments to convert.
+    #' @return {character}: String arguments without empty values.
+
+    args <- list(...)
+    string_args <- convert_args_to_strings(args)
+
+    filtered_args <- string_args[string_args != ""]
+    str <- paste(filtered_args, collapse = ", ")
     return(str)
 }
 
@@ -1548,8 +1570,9 @@ unrelated_individuals <- function(grm_basepath) {
         #' @param clipped {boolean}: Whether the values have been clipped
         #'                           by a threshold.
         #' @return title {character}: Plot title for histogram.
-        
-        options <- args_to_string(c(remove ? "remove" : "", clipped ? "clipped" : ""))
+
+        options <- args_to_string_filtered(c(remove ? "remove" : "",
+                                             clipped ? "clipped" : ""))
         logger("DEBUG", "Plot title options: ", quotes(options), ".")
         if (options != "") {
             options <- paste0(" ", brackets(options))
