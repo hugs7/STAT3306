@@ -1058,12 +1058,21 @@ wrap_plot <- function(plot_callback, data, out_name, ..., width = plot_w, height
     return(out_path)
 }
 
-wrap_histogram <- function(...) {
+wrap_histogram <- function(data, ...) {
     #' Wrapper to wrap_plot but for histograms.
+    #' @param data {data.frame}: The data to plot
     #' @param ... {any}: Arguments to wrap_plot excluding the plot_callback.
     #' @return out_path {character}: Path to saved plot file.
+    
+    data_clean <- na.omit(data)
 
-    wrap_plot(hist, ...)
+    if (length(data_clean) == 0) {
+        stop("The data is empty or contains only missing values!")
+    } else if (!is.numeric(data_clean)) {
+        stop("The data is not numeric!")
+    }
+
+    wrap_plot(hist, data_clean, ...)
 }
 
 wrap_scatter <- function(abline_h, abline_col, abline_name, ...) {
@@ -1518,7 +1527,7 @@ unrelated_individuals <- function(grm_basepath) {
                                    exts$png)
          
         logger("DEBUG", "Hist name for remove = ", remove,
-               "diag = ", diag, ", clippped = ", clipped,
+               ", diag = ", diag, ", clippped = ", clipped,
                ": ", quotes(hist_name), ".")
         return(hist_name)
     }
