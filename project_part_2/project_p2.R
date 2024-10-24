@@ -1601,15 +1601,21 @@ unrelated_individuals <- function(grm_basepath) {
         
         logger("Plotting GRM Off-Diagonals (clipped) for remove = ", remove, "...")
         grm.off.diag.clipped <- grm.off.diag[which(grm.off.diag > gcta_rr_threshold)]
-        logger("GRM off-diag (clipped) length: ", length(grm.off.diag.clipped), ".")
-        log_df(grm.off.diag.clipped, paste0("GRM Off Diag (clipped) for remove = ", remove, "."))
-        
-        clipped_hist_name <- get_plot_filename(FALSE, remove, TRUE)
-        title <- get_plot_title(FALSE, remove, TRUE)
-        wrap_histogram(grm.off.diag.clipped, clipped_hist_name, breaks = 200,
-                  freq = FALSE, xlab = "GRM Off-Diagonals", xlim = xlim,
-                  main = title)
-    }
+        off_diag_clipped_len <- length(grm.off.diag.clipped)
+        logger("GRM off-diag (clipped) length: ", off_diag_clipped_len, ".")
+        if (off_diag_clipped_len = 0) {
+            logger("No data to plot. Skipping.")
+        } else {
+            log_df(grm.off.diag.clipped, paste0("GRM Off Diag (clipped) for remove = ",
+                                                remove, "."))
+            
+            clipped_hist_name <- get_plot_filename(FALSE, remove, TRUE)
+            title <- get_plot_title(FALSE, remove, TRUE)
+            wrap_histogram(grm.off.diag.clipped, clipped_hist_name, breaks = 200,
+                      freq = FALSE, xlab = "GRM Off-Diagonals", xlim = xlim,
+                      main = title)
+        }
+    
     
     remove_relatedness <- function(grm_path) {
         #' Removes relatness between individuals who may have an affect
