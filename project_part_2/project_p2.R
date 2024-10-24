@@ -1644,6 +1644,7 @@ unrelated_individuals <- function(grm_basepath) {
                                                 remove, "."))
 
             clipped_hist_name <- get_plot_filename(FALSE, remove, TRUE)
+            xlim <- c(gcta_rr_threshold, 0.1)
             title <- get_plot_title(FALSE, remove, TRUE)
             wrap_histogram(grm.off.diag.clipped, clipped_hist_name, breaks = 200,
                            freq = FALSE, xlab = "GRM Off-Diagonals", xlim = xlim,
