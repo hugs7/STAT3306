@@ -16,7 +16,7 @@ install_if_missing <- function(packages) {
 
 # === Packages ===
 
-required_packages <- c("crayon", "xtable")
+required_packages <- c("crayon", "xtable", "readr")
 install_if_missing(required_packages)
 invisible(lapply(required_packages, require, character.only = TRUE))
 
@@ -689,6 +689,21 @@ delete_file <- function(path) {
 
     # Assume if the file exists and we didn't crash, we were able to delete.
     return(exists)
+}
+
+wrap_read <- function(path, ...) {
+    #' Reads a file to text from a path.
+    #' @param path {character}: Path to read file from.
+    #' @return contents {character}: Contents of file as character vector.
+
+    if (!file_exists(path)) {
+        logger("ERROR", "Could not find file to read at ", quotes(path), ".")
+        return(NULL)
+    }
+
+    logger("DEBUG", "Reading file at ", quotes(path), ".")
+    contents <- read_file(path, ...)
+    return(contents)
 }
 
 wrap_write <- function(content, basename, append = FALSE, ...) {
