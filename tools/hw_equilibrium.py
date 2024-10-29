@@ -3,7 +3,7 @@ Tool to calculate the test statistic and p-value for the Hardy-Weinberg equilibr
 Uses chi-squared with 1 degree of freedom.
 """
 
-from typing import Dict,    Tuple, Union
+from typing import Dict, Tuple, Union
 from utils.logger_helper import init_logger
 
 logger = init_logger()
