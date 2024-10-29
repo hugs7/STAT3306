@@ -3,14 +3,17 @@ Tool to calculate the test statistic and p-value for the Hardy-Weinberg equilibr
 Uses chi-squared with 1 degree of freedom.
 """
 
+from typing import Dict,    Tuple, Union
 from utils.logger_helper import init_logger
 
 logger = init_logger()
 
 DEGREES_OF_FREEDOM = 1
+GENOTYPES = ["AA", "AB", "BB"]
+ALLELES = ["A", "B"]
 
 
-def get_input():
+def get_input() -> int:
     while True:
         try:
             value = int(input("> "))
@@ -25,12 +28,57 @@ def get_input():
         return value
 
 
+def calculate_probability(observed: Dict[str, int], total: int, genotype=None) -> Union[float, Tuple[float, float]]:
+    """
+    Calculate probability based on observed counts and total.
+
+    If genotype is provided, return the probability of that genotype.
+    Otherwise, return the probability of alleles A and B.
+
+    Args:
+        observed: observed counts for each genotype
+        total: total number of individuals
+        genotype: genotype for which to calculate probability
+
+    Returns:
+        probability of the given genotype or alleles A and B
+    """
+    if genotype is not None:
+        return observed[genotype] / total
+    else:
+        pr_a = (2 * observed["AA"] + observed["AB"]) / (2 * total)
+        pr_b = (2 * observed["BB"] + observed["AB"]) / (2 * total)
+        return pr_a, pr_b
+
+
+def compute_chi_squared(observed: Dict[str, int], expected: Dict[str, float], total: int) -> float:
+    """
+    Compute the chi-squared test statistic.
+
+    Args:
+        observed: observed counts for each genotype
+        expected: expected probabilities for each genotype
+        total: total number of individuals
+
+    Returns:
+        chi-squared test statistic
+    """
+    chi_squared = 0
+    for genotype in GENOTYPES:
+        expected_count = expected[genotype] * total
+        chi_squared += (observed[genotype] -
+                        expected_count) ** 2 / expected_count
+
+    logger.info("Chi-squared: %.2f", chi_squared)
+    return chi_squared
+
+
 def main():
     logger.info("Running HW equilibrium test")
 
     logger.info("Observed values")
-    observed_values = {}
-    for i in ["AA", "AB", "BB"]:
+    observed_values: Dict[str, int] = {}
+    for i in GENOTYPES:
         logger.info(f"Enter observed count with genotype {i}: ")
         observed = get_input()
         observed_values[i] = observed
@@ -39,14 +87,14 @@ def main():
     logger.info("Total observed count: %d", obs_total)
 
     logger.info("Computing expected values")
-    pr_a = (2 * observed_values["AA"] +
-            observed_values["AB"]) / (2 * obs_total)
-    pr_b = (2 * observed_values["BB"] +
-            observed_values["AB"]) / (2 * obs_total)
+    allele_probabilities = {allele: calculate_probability(
+        observed_values, obs_total, allele) for allele in ALLELES}
 
-    pr_aa = observed_values["AA"] / obs_total
-    pr_ab = observed_values["AB"] / obs_total
-    pr_bb = observed_values["BB"] / obs_total
+    genotype_probabilities = {genotype: calculate_probability(
+        observed_values, obs_total, genotype) for genotype in GENOTYPES}
+
+    chi_squared = compute_chi_squared(
+        observed_values, genotype_probabilities, obs_total)
 
 
 if __name__ == "__main__":
