@@ -75,21 +75,20 @@ def calcualate_expected_count(genotype: str, allele_probabilities: Dict[str, flo
         return 2 * allele_probabilities[allele1] * allele_probabilities[allele2] * total
 
 
-def compute_chi_squared(observed: Dict[str, int], expected_counts: Dict[str, float], total: int) -> float:
+def compute_chi_squared(observed: Dict[str, int], expected_counts: Dict[str, float]) -> float:
     """
     Compute the chi-squared test statistic.
 
     Args:
         observed: observed counts for each genotype
         expected_counts: expected probabilities for each genotype
-        total: total number of individuals
 
     Returns:
         chi-squared test statistic
     """
     chi_squared = 0
     for genotype in GENOTYPES:
-        expected_count = expected_counts[genotype] * total
+        expected_count = expected_counts[genotype]
         chi_squared += (observed[genotype] -
                         expected_count) ** 2 / expected_count
 
@@ -120,7 +119,7 @@ def main():
     expected_counts = {genotype: calcualate_expected_count(
         genotype, allele_probabilities, obs_total) for genotype in GENOTYPES}
     chi_squared = compute_chi_squared(
-        observed_values, expected_counts, obs_total)
+        observed_values, expected_counts)
 
 
 if __name__ == "__main__":
