@@ -63,3 +63,4 @@ rsconnect/
 **/gcta_out
 
 __pycache__
+configs
