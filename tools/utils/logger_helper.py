@@ -103,6 +103,7 @@ def get_logger_config() -> OmegaConf:
         Logger configuration
     """
     configs_folder = files.get_configs_folder()
+    files.create_folder_if_not_exists(configs_folder)
     config_path = configs_folder / "logger.yaml"
     if not config_path.exists():
         raise FileNotFoundError(
